@@ -419,15 +419,19 @@ table.rpt-tbl tbody tr:hover td { background: var(--rpt-row-hover); }
 @media print {
     @page {
         size: letter landscape;
-        margin: 8mm 10mm;
+        margin: 6mm 8mm;
     }
     
     header, nav, aside, .no-print, .rpt-interactive-view, .rpt-tabs-bar, #toast-container, .global-button-spark {
         display: none !important;
+        visibility: hidden !important;
+        width: 0 !important;
+        height: 0 !important;
     }
     
     body, html, main, .rpt-page {
         background: #ffffff !important;
+        background-color: #ffffff !important;
         color: #0f172a !important;
         margin: 0 !important;
         padding: 0 !important;
@@ -438,7 +442,16 @@ table.rpt-tbl tbody tr:hover td { background: var(--rpt-row-hover); }
         border: none !important;
     }
     
-    .exec-report-container {
+    .exec-report-container, .print-only {
+        display: block !important;
+        width: 100% !important;
+    }
+
+    .exec-tab-pane {
+        display: none !important;
+    }
+
+    .exec-tab-pane.exec-active-print {
         display: block !important;
         width: 100% !important;
     }
@@ -468,8 +481,8 @@ table.rpt-tbl tbody tr:hover td { background: var(--rpt-row-hover); }
         }
      }">
 
-    {{-- ═══════════════ INTERACTIVE WEB DASHBOARD VIEW ═══════════════ --}}
-    <div class="rpt-interactive-view space-y-6">
+    {{-- ═══════════════ INTERACTIVE WEB DASHBOARD VIEW (HIDDEN ON PRINT) ═══════════════ --}}
+    <div class="rpt-interactive-view space-y-6 no-print">
 
     {{-- ═══════════════ HEADER & GLOBAL ACTIONS ═══════════════ --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 no-print">
@@ -489,7 +502,7 @@ table.rpt-tbl tbody tr:hover td { background: var(--rpt-row-hover); }
             <button class="rpt-export-btn btn-pdf" onclick="window.doExportPDF()">
                 <i class="fa-solid fa-file-pdf"></i> PDF
             </button>
-            <button class="rpt-export-btn btn-print" onclick="window.print()">
+            <button class="rpt-export-btn btn-print" onclick="window.doPrintReport()">
                 <i class="fa-solid fa-print"></i> Imprimir
             </button>
         </div>
@@ -995,10 +1008,10 @@ table.rpt-tbl tbody tr:hover td { background: var(--rpt-row-hover); }
     {{-- ══════════════════════════════════════════════════════════════ --}}
     {{-- 🏛️ EXECUTIVE CORPORATE REPORT VIEW (PDF EXPORT & PRINT)        --}}
     {{-- ══════════════════════════════════════════════════════════════ --}}
-    <div id="executiveReportView" class="exec-report-container">
+    <div id="executiveReportView" class="exec-report-container print-only">
 
         {{-- ── TAB 3 EXEC: BOCAMINAS ── --}}
-        <div id="exec-report-bocamina" x-show="tab === 'bocamina'" class="exec-tab-pane">
+        <div id="exec-report-bocamina" x-show="tab === 'bocamina'" :class="{ 'exec-active-print': tab === 'bocamina' }" class="exec-tab-pane">
             <div class="exec-doc">
                 {{-- Corporate Header --}}
                 <div class="exec-header">
@@ -1214,7 +1227,7 @@ table.rpt-tbl tbody tr:hover td { background: var(--rpt-row-hover); }
         </div>
 
         {{-- ── TAB 2 EXEC: TRABAJADORES ── --}}
-        <div id="exec-report-trabajador" x-show="tab === 'trabajador'" class="exec-tab-pane">
+        <div id="exec-report-trabajador" x-show="tab === 'trabajador'" :class="{ 'exec-active-print': tab === 'trabajador' }" class="exec-tab-pane">
             <div class="exec-doc">
                 <div class="exec-header">
                     <div class="exec-header-left">
@@ -1343,7 +1356,7 @@ table.rpt-tbl tbody tr:hover td { background: var(--rpt-row-hover); }
         </div>
 
         {{-- ── TAB 4 EXEC: ANTICIPOS ── --}}
-        <div id="exec-report-anticipos" x-show="tab === 'anticipos'" class="exec-tab-pane">
+        <div id="exec-report-anticipos" x-show="tab === 'anticipos'" :class="{ 'exec-active-print': tab === 'anticipos' }" class="exec-tab-pane">
             <div class="exec-doc">
                 <div class="exec-header">
                     <div class="exec-header-left">
@@ -1471,7 +1484,7 @@ table.rpt-tbl tbody tr:hover td { background: var(--rpt-row-hover); }
         </div>
 
         {{-- ── TAB 1 EXEC: RESUMEN GENERAL ── --}}
-        <div id="exec-report-general" x-show="tab === 'general'" class="exec-tab-pane">
+        <div id="exec-report-general" x-show="tab === 'general'" :class="{ 'exec-active-print': tab === 'general' }" class="exec-tab-pane">
             <div class="exec-doc">
                 <div class="exec-header">
                     <div class="exec-header-left">
@@ -1846,5 +1859,40 @@ function doExportExcel() {
     link.click();
     document.body.removeChild(link);
 }
+
+function doPrintReport() {
+    preparePrintLayout();
+    window.print();
+}
+
+function preparePrintLayout() {
+    const alpineEl = document.querySelector('.rpt-page');
+    let currentTab = 'general';
+    if (alpineEl && alpineEl.__x && alpineEl.__x.$data) {
+        currentTab = alpineEl.__x.$data.tab;
+    } else {
+        const urlParams = new URLSearchParams(window.location.search);
+        currentTab = urlParams.get('tab') || 'general';
+    }
+
+    document.querySelectorAll('.exec-tab-pane').forEach(el => {
+        el.classList.remove('exec-active-print');
+        el.style.display = 'none';
+    });
+
+    const activeEl = document.getElementById('exec-report-' + currentTab);
+    if (activeEl) {
+        activeEl.classList.add('exec-active-print');
+        activeEl.style.display = 'block';
+    }
+}
+
+window.addEventListener('beforeprint', preparePrintLayout);
+
+window.addEventListener('afterprint', () => {
+    document.querySelectorAll('.exec-tab-pane').forEach(el => {
+        el.style.display = '';
+    });
+});
 </script>
 @endpush

@@ -454,25 +454,79 @@
             to { width: 0%; }
         }
         
-        /* Print Styles */
+        /* Global Master Print Styles */
         @media print {
-            .no-print {
-                display: none !important;
+            @page {
+                size: auto;
+                margin: 5mm 8mm;
             }
+            
+            html, body {
+                background: #ffffff !important;
+                background-color: #ffffff !important;
+                color: #0f172a !important;
+                height: auto !important;
+                min-height: 100% !important;
+                overflow: visible !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+            }
+
+            /* Completely hide all app layout chrome, sidebars, headers, particles, modals, toasts */
+            .no-print,
+            header,
+            nav,
+            aside,
+            #particle-canvas,
+            #toast-container,
+            #custom-confirm-modal,
+            .global-button-spark {
+                display: none !important;
+                visibility: hidden !important;
+                width: 0 !important;
+                height: 0 !important;
+            }
+
+            /* Reset the desktop sidebar margin and layout wrappers */
+            .md\:pl-64,
+            [class*="md:pl-64"],
+            .sidebar-bg {
+                padding-left: 0 !important;
+                margin-left: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+
+            main {
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                background: #ffffff !important;
+                background-color: #ffffff !important;
+                overflow: visible !important;
+                position: static !important;
+            }
+
             .print-only {
                 display: block !important;
             }
-            body {
-                background: white !important;
-                color: black !important;
-            }
+
             .print-container {
                 width: 100% !important;
                 padding: 0 !important;
                 margin: 0 !important;
                 border: none !important;
-                background: white !important;
+                background: #ffffff !important;
                 box-shadow: none !important;
+            }
+
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
             }
         }
 
