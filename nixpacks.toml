@@ -1,0 +1,6 @@
+# Configuración de Nixpacks para Dokploy con PHP 8.3 y PostgreSQL
+[phases.setup]
+nixPkgs = ["...", "php83Extensions.pdo_pgsql", "php83Extensions.pgsql"]
+
+[phases.build]
+cmds = ["...", "npm run build"]
