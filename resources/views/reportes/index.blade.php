@@ -1514,25 +1514,25 @@ table.rpt-tbl tbody tr:hover td { background: var(--rpt-row-hover); }
                 <div class="exec-kpi-bar">
                     <div class="exec-kpi-card">
                         <div class="exec-kpi-title">TOTAL RECARGADO CAJA</div>
-                        <div class="exec-kpi-val" style="color: #2563eb;">Bs. {{ number_format($genTotalRecargado, 2) }}</div>
+                        <div class="exec-kpi-val" style="color: #2563eb;">Bs. {{ number_format($genTotalRecargado ?? 0, 2) }}</div>
                     </div>
                     <div class="exec-kpi-card">
                         <div class="exec-kpi-title">TOTAL PAGOS PLANILLA</div>
-                        <div class="exec-kpi-val" style="color: #7c3aed;">Bs. {{ number_format($genTotalPagado, 2) }}</div>
+                        <div class="exec-kpi-val" style="color: #7c3aed;">Bs. {{ number_format($genTotalPagado ?? 0, 2) }}</div>
                     </div>
                     <div class="exec-kpi-card">
                         <div class="exec-kpi-title">TOTAL ANTICIPOS</div>
-                        <div class="exec-kpi-val" style="color: #be123c;">Bs. {{ number_format($genTotalAnticipos, 2) }}</div>
+                        <div class="exec-kpi-val" style="color: #be123c;">Bs. {{ number_format($genTotalAnticipos ?? 0, 2) }}</div>
                     </div>
-                    <div class="exec-kpi-card" style="background: {{ $genSaldoCaja >= 0 ? '#f0fdf4; border-color: #86efac;' : '#fff1f2; border-color: #fecdd3;' }}">
-                        <div class="exec-kpi-title" style="color: {{ $genSaldoCaja >= 0 ? '#15803d;' : '#be123c;' }}">SALDO DISPONIBLE CAJA</div>
-                        <div class="exec-kpi-val" style="color: {{ $genSaldoCaja >= 0 ? '#15803d;' : '#be123c;' }}; font-size: 16px;">
-                            Bs. {{ number_format(abs($genSaldoCaja), 2) }}
+                    <div class="exec-kpi-card" style="background: {{ ($genSaldoCaja ?? 0) >= 0 ? '#f0fdf4; border-color: #86efac;' : '#fff1f2; border-color: #fecdd3;' }}">
+                        <div class="exec-kpi-title" style="color: {{ ($genSaldoCaja ?? 0) >= 0 ? '#15803d;' : '#be123c;' }}">SALDO DISPONIBLE CAJA</div>
+                        <div class="exec-kpi-val" style="color: {{ ($genSaldoCaja ?? 0) >= 0 ? '#15803d;' : '#be123c;' }}; font-size: 16px;">
+                            Bs. {{ number_format(abs($genSaldoCaja ?? 0), 2) }}
                         </div>
                     </div>
                     <div class="exec-kpi-card">
                         <div class="exec-kpi-title">TRABAJADORES ACTIVOS</div>
-                        <div class="exec-kpi-val">{{ $genTrabajadoresActivos }} Operarios</div>
+                        <div class="exec-kpi-val">{{ $genTrabajadoresActivos ?? 0 }} Operarios</div>
                     </div>
                 </div>
 

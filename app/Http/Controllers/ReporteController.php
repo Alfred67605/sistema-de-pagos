@@ -325,6 +325,7 @@ class ReporteController extends Controller
             'fechaHasta',
 
             // Tab 1 Data
+            'genTotalRecargado',
             'genTotalPagado',
             'genTotalAnticipos',
             'genSaldoCaja',
