@@ -230,7 +230,7 @@ class ReporteController extends Controller
                 return null;
             }
 
-            $workersQuery = Trabajador::where('bocamina_id', $b->id);
+            $workersQuery = Trabajador::where('bocamina_id', $b->id)->with('tipoContrato');
             if ($bocRol) $workersQuery->where('rol', $bocRol);
             if ($bocContratoId) $workersQuery->where('tipo_contrato_id', $bocContratoId);
 
