@@ -213,6 +213,13 @@ if (!function_exists('montoEnLetrasOficial')) {
             <a href="{{ route('pagos.edit', $pago->id) }}" class="btn-3d-receipt inline-flex items-center justify-center px-4 py-2.5 text-xs bg-slate-800 text-amber-400 border border-slate-700 hover:bg-slate-700 font-bold rounded-xl shadow-md transition">
                 <i class="fa-solid fa-pen-to-square mr-2 text-sm"></i> Editar Pago
             </a>
+            <form action="{{ route('pagos.destroy', $pago->id) }}" method="POST" class="inline" onsubmit="return confirm('¿Está seguro de eliminar este comprobante de pago #{{ $pago->id }}? Al confirmar, los anticipos descontados se restaurarán automáticamente en la cuenta del trabajador.')">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn-3d-receipt inline-flex items-center justify-center px-4 py-2.5 text-xs bg-rose-500/20 text-rose-300 border border-rose-500/30 hover:bg-rose-500/30 font-bold rounded-xl shadow-md transition cursor-pointer" title="Eliminar este Pago">
+                    <i class="fa-solid fa-trash mr-2 text-sm"></i> Eliminar
+                </button>
+            </form>
             <button onclick="downloadPDF()" class="btn-3d-receipt btn-3d-receipt-pdf inline-flex items-center justify-center px-4 py-2.5 text-xs">
                 <i class="fa-solid fa-file-pdf mr-2 text-sm"></i> PDF
             </button>

@@ -210,6 +210,13 @@ if (!function_exists('montoEnLetrasOficial')) {
             <h1 class="text-3xl font-bold tracking-tight text-slate-100 mt-1">Comprobante de Anticipo</h1>
         </div>
         <div class="flex flex-wrap gap-3">
+            <form action="{{ route('anticipos.destroy', $anticipo->id) }}" method="POST" class="inline" onsubmit="return confirm('¿Está seguro de eliminar este vale de anticipo #{{ $anticipo->id }}? Al confirmar, el saldo prestado se restaurará automáticamente en la Caja Personal.')">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn-3d-receipt inline-flex items-center justify-center px-4 py-2.5 text-xs bg-rose-500/20 text-rose-300 border border-rose-500/30 hover:bg-rose-500/30 font-bold rounded-xl shadow-md transition cursor-pointer" title="Eliminar este Anticipo">
+                    <i class="fa-solid fa-trash mr-2 text-sm"></i> Eliminar
+                </button>
+            </form>
             <button onclick="downloadPDF()" class="btn-3d-receipt btn-3d-receipt-pdf inline-flex items-center justify-center px-4 py-2.5 text-xs">
                 <i class="fa-solid fa-file-pdf mr-2 text-sm"></i> PDF
             </button>

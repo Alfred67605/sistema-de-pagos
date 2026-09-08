@@ -227,23 +227,29 @@
                 </div>
 
                 {{-- Modalidad de pago --}}
+                {{-- Modalidad de pago --}}
                 <div x-show="trabajadorId" x-cloak>
                     <label class="p-label">Modalidad de Pago</label>
-                    <div class="grid grid-cols-3 gap-2">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         <button type="button" @click="seleccionarModalidad('completo')"
                                 :class="tipoPago==='completo' ? 'bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-bold shadow-lg shadow-teal-500/20' : 'p-btn-ghost'"
-                                class="p-btn justify-center text-xs py-2.5 rounded-xl">
+                                class="p-btn justify-center text-[11px] py-2.5 rounded-xl">
                             <i class="fa-solid fa-circle-check"></i> Completo
                         </button>
                         <button type="button" @click="seleccionarModalidad('parcial')"
                                 :class="tipoPago==='parcial' ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold shadow-lg shadow-amber-500/20' : 'p-btn-ghost'"
-                                class="p-btn justify-center text-xs py-2.5 rounded-xl">
+                                class="p-btn justify-center text-[11px] py-2.5 rounded-xl">
                             <i class="fa-solid fa-hourglass-half"></i> Parcial
                         </button>
                         <button type="button" @click="seleccionarModalidad('adelanto')"
                                 :class="tipoPago==='adelanto' ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold shadow-lg shadow-cyan-500/20' : 'p-btn-ghost'"
-                                class="p-btn justify-center text-xs py-2.5 rounded-xl">
-                            <i class="fa-solid fa-hand-holding-dollar"></i> Adelanto
+                                class="p-btn justify-center text-[11px] py-2.5 rounded-xl">
+                            <i class="fa-solid fa-hand-holding-dollar"></i> Adelanto (Bs)
+                        </button>
+                        <button type="button" @click="seleccionarModalidad('debe_dias')"
+                                :class="tipoPago==='debe_dias' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold shadow-lg shadow-purple-500/20 ring-1 ring-purple-400' : 'p-btn-ghost'"
+                                class="p-btn justify-center text-[11px] py-2.5 rounded-xl">
+                            <i class="fa-solid fa-calendar-minus"></i> Debe Días
                         </button>
                     </div>
                 </div>
@@ -253,8 +259,9 @@
                     <div>
                         <label class="p-label flex items-center justify-between">
                             <span x-show="tipoPago==='completo'">Total a Pagar (Neto)</span>
-                            <span x-show="tipoPago==='parcial'">Monto Entregado (Parcial)</span>
-                            <span x-show="tipoPago==='adelanto'">Monto Total Entregado (Con Adelanto)</span>
+                            <span x-show="tipoPago==='parcial'">Monto Entregado (Menor al Neto)</span>
+                            <span x-show="tipoPago==='adelanto'">Monto Entregado (Con Adelanto en Dinero)</span>
+                            <span x-show="tipoPago==='debe_dias'">Monto Entregado (Con Días Adelantados)</span>
                             <span class="text-[10px] text-slate-400 font-mono" x-show="tipoPago !== 'completo'">Neto: Bs. <span x-text="parseFloat(neto).toFixed(2)"></span></span>
                         </label>
                         <div class="relative">
@@ -268,32 +275,66 @@
                         </div>
                     </div>
 
-                    {{-- Opciones específicas cuando es Adelanto --}}
-                    <div x-show="tipoPago==='adelanto'" x-cloak class="p-3.5 rounded-xl bg-cyan-500/10 border border-cyan-500/25 space-y-2.5">
+                    {{-- Opciones específicas cuando es DEBE DÍAS DE TRABAJO --}}
+                    <div x-show="tipoPago==='debe_dias'" x-cloak class="p-3.5 rounded-xl bg-purple-500/10 border border-purple-500/30 space-y-2.5">
                         <div class="flex items-center justify-between">
-                            <label class="p-label !mb-0 text-cyan-300 font-bold">
-                                <i class="fa-solid fa-calendar-day mr-1"></i> Días de trabajo que debe:
+                            <label class="p-label !mb-0 text-purple-300 font-bold flex items-center gap-1.5">
+                                <i class="fa-solid fa-calendar-minus text-purple-400"></i> Días de trabajo que debe:
                             </label>
-                            <span class="text-[10px] text-cyan-300 font-mono" x-show="getTarifaReferencia() > 0" x-text="'Ref: Bs. ' + getTarifaReferencia() + '/día'"></span>
+                            <span class="text-[10px] text-purple-300 font-mono" x-show="getTarifaReferencia() > 0" x-text="'Jornal: Bs. ' + getTarifaReferencia() + '/día'"></span>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <input type="number" step="0.5" min="0" x-model="diasDebe" @input="onDiasDebeInput()"
-                                       placeholder="0.0"
-                                       class="p-input font-mono font-black text-center text-cyan-300 text-sm !py-2">
-                                <span class="text-[9px] text-slate-400 block text-center mt-0.5">Días adeudados</span>
+                                <input type="number" step="0.5" min="0.5" x-model="diasDebe" @input="onDiasDebeInput()"
+                                       placeholder="Ej. 2"
+                                       class="p-input font-mono font-black text-center text-purple-300 text-base !py-1.5 border-purple-500/40">
+                                <div class="flex gap-1 mt-1 justify-center">
+                                    <button type="button" @click="setDiasDebe(1)" class="px-2 py-0.5 rounded bg-purple-500/20 hover:bg-purple-500/30 text-[10px] text-purple-300 font-bold">+1 d</button>
+                                    <button type="button" @click="setDiasDebe(2)" class="px-2 py-0.5 rounded bg-purple-500/20 hover:bg-purple-500/30 text-[10px] text-purple-300 font-bold">+2 d</button>
+                                    <button type="button" @click="setDiasDebe(3)" class="px-2 py-0.5 rounded bg-purple-500/20 hover:bg-purple-500/30 text-[10px] text-purple-300 font-bold">+3 d</button>
+                                </div>
                             </div>
-                            <div class="flex flex-col justify-center px-2 py-1 bg-slate-900/60 rounded-lg border border-cyan-500/20">
-                                <div class="text-[9px] text-slate-400 uppercase font-bold">Adelanto extra:</div>
-                                <div class="text-xs font-mono font-black text-cyan-300">
+                            <div class="flex flex-col justify-center px-3 py-1.5 bg-slate-900/60 rounded-lg border border-purple-500/20">
+                                <div class="text-[9px] text-purple-300/80 uppercase font-bold">Valor de Días:</div>
+                                <div class="text-sm font-mono font-black text-purple-300">
                                     Bs. <span x-text="Math.max(0, (parseFloat(montoPagado||0) - parseFloat(neto))).toFixed(2)"></span>
+                                </div>
+                                <div class="text-[9px] text-slate-400 mt-0.5">El trabajador queda debiendo estos días</div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="dias_debe" :value="diasDebe">
+                        <input type="text" name="adelanto_observacion" x-model="adelantoObservacion"
+                               placeholder="Detalle (ej. Trabajador debe 2 días de trabajo)..."
+                               class="p-input text-xs !py-1.5 border-purple-500/25">
+                    </div>
+
+                    {{-- Opciones específicas cuando es ADELANTO EN DINERO --}}
+                    <div x-show="tipoPago==='adelanto'" x-cloak class="p-3.5 rounded-xl bg-cyan-500/10 border border-cyan-500/25 space-y-2.5">
+                        <div class="flex items-center justify-between">
+                            <label class="p-label !mb-0 text-cyan-300 font-bold flex items-center gap-1.5">
+                                <i class="fa-solid fa-hand-holding-dollar text-cyan-400"></i> Monto Extra en Efectivo (Bs.):
+                            </label>
+                            <span class="text-[10px] text-cyan-300 font-mono" x-show="getTarifaReferencia() > 0" x-text="'Tarifa: Bs. ' + getTarifaReferencia() + '/día'"></span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-black text-cyan-400 font-mono pointer-events-none">Bs.</span>
+                                <input type="number" step="0.01" min="0" x-model="montoAdelantoExtra" @input="onMontoAdelantoExtraInput()"
+                                       placeholder="0.00"
+                                       class="p-input font-mono font-black text-right text-cyan-300 text-sm !py-2 !pl-9 border-cyan-500/40">
+                                <span class="text-[9px] text-slate-400 block text-center mt-0.5">Efectivo adicional</span>
+                            </div>
+                            <div class="flex flex-col justify-center px-2.5 py-1.5 bg-slate-900/60 rounded-lg border border-cyan-500/20">
+                                <div class="text-[9px] text-slate-400 uppercase font-bold">Equivalente a:</div>
+                                <div class="text-xs font-mono font-black text-cyan-300">
+                                    <span x-text="parseFloat(diasDebe) > 0 ? diasDebe + ' día(s)' : 'Efectivo puro'"></span>
                                 </div>
                             </div>
                         </div>
                         <input type="hidden" name="dias_debe" :value="diasDebe">
                         <input type="text" name="adelanto_observacion" x-model="adelantoObservacion"
-                               placeholder="Detalle del adelanto / días que debe (opcional)..."
-                               class="p-input text-xs !py-1.5">
+                               placeholder="Motivo del adelanto en efectivo (opcional)..."
+                               class="p-input text-xs !py-1.5 border-cyan-500/20">
                     </div>
 
                     {{-- Indicador Reactivo: ¿Quién debe a quién? --}}
@@ -302,10 +343,10 @@
                          class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 space-y-1">
                         <div class="flex items-center gap-1.5 text-amber-400 text-xs font-bold">
                             <i class="fa-solid fa-triangle-exclamation"></i>
-                            <span>La empresa debe al trabajador</span>
+                            <span>La empresa debe al trabajador / contratista</span>
                         </div>
                         <div class="flex justify-between items-baseline">
-                            <span class="text-[11px] text-slate-400">Saldo pendiente:</span>
+                            <span class="text-[11px] text-slate-400">Saldo pendiente acumulable:</span>
                             <span class="text-sm font-mono font-black text-amber-300">
                                 Bs. <span x-text="(parseFloat(neto) - parseFloat(montoPagado || 0)).toFixed(2)"></span>
                             </span>
@@ -313,27 +354,49 @@
                         <p class="text-[10px] text-slate-400">Quedará registrado para saldarse en próximas planillas.</p>
                     </div>
 
-                    <!-- Caso B: El trabajador debe a la empresa -->
-                    <div x-show="parseFloat(montoPagado) > parseFloat(neto)" x-cloak
+                    <!-- Caso B: El trabajador debe días de trabajo -->
+                    <div x-show="tipoPago==='debe_dias' && parseFloat(montoPagado) > parseFloat(neto)" x-cloak
+                         class="p-3 rounded-xl bg-purple-500/10 border border-purple-500/30 space-y-1">
+                        <div class="flex items-center gap-1.5 text-purple-300 text-xs font-bold uppercase tracking-wider">
+                            <i class="fa-solid fa-calendar-minus text-purple-400"></i>
+                            <span>El trabajador debe días de trabajo a la empresa</span>
+                        </div>
+                        <div class="flex justify-between items-baseline">
+                            <span class="text-[11px] text-slate-300">Días que debe cumplir:</span>
+                            <span class="text-sm font-mono font-black text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded">
+                                <span x-text="diasDebe || 0"></span> día(s)
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-baseline text-[11px]">
+                            <span class="text-slate-400">Equivalente monetario:</span>
+                            <span class="font-mono font-bold text-slate-200">
+                                Bs. <span x-text="(parseFloat(montoPagado || 0) - parseFloat(neto)).toFixed(2)"></span>
+                            </span>
+                        </div>
+                        <p class="text-[10px] text-purple-300/80">Se registrará como anticipo de jornadas pendientes de cumplimiento.</p>
+                    </div>
+
+                    <!-- Caso C: El trabajador debe adelanto en dinero -->
+                    <div x-show="tipoPago!=='debe_dias' && parseFloat(montoPagado) > parseFloat(neto)" x-cloak
                          class="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 space-y-1">
                         <div class="flex items-center gap-1.5 text-cyan-400 text-xs font-bold">
                             <i class="fa-solid fa-hand-holding-dollar"></i>
-                            <span>El trabajador debe a la empresa</span>
+                            <span>El trabajador debe a la empresa (Adelanto)</span>
                         </div>
                         <div class="flex justify-between items-baseline">
-                            <span class="text-[11px] text-slate-400">Adelanto que debe:</span>
+                            <span class="text-[11px] text-slate-400">Adelanto recibido en exceso:</span>
                             <span class="text-sm font-mono font-black text-cyan-300">
                                 Bs. <span x-text="(parseFloat(montoPagado || 0) - parseFloat(neto)).toFixed(2)"></span>
                             </span>
                         </div>
                         <div class="flex justify-between items-baseline text-[11px] text-cyan-400 font-semibold" x-show="parseFloat(diasDebe) > 0">
-                            <span>Días de trabajo pendientes:</span>
+                            <span>Equivalente aprox:</span>
                             <span class="font-mono font-bold bg-cyan-500/20 px-1.5 py-0.5 rounded" x-text="diasDebe + ' día(s)'"></span>
                         </div>
-                        <p class="text-[10px] text-slate-400">Se registrará automáticamente como anticipo adeudado.</p>
+                        <p class="text-[10px] text-slate-400">Se registrará como anticipo adeudado para futuras planillas.</p>
                     </div>
 
-                    <!-- Caso C: Cuenta Saldada -->
+                    <!-- Caso D: Cuenta Saldada -->
                     <div x-show="Math.abs(parseFloat(montoPagado || 0) - parseFloat(neto)) < 0.01" x-cloak
                          class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs flex items-center gap-2">
                         <i class="fa-solid fa-circle-check"></i>
@@ -742,15 +805,32 @@
                             </div>
                         </div>
 
-                        <!-- Caso B: Trabajador debe a la empresa (Adelanto) -->
-                        <div x-show="parseFloat(montoPagado) > parseFloat(neto)" x-cloak
+                        <!-- Caso B: Trabajador debe DÍAS DE TRABAJO -->
+                        <div x-show="tipoPago==='debe_dias' && parseFloat(montoPagado) > parseFloat(neto)" x-cloak
+                             class="mt-3 px-4 py-3 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-between">
+                            <div>
+                                <div class="text-purple-300 font-bold text-xs flex items-center gap-1.5">
+                                    <i class="fa-solid fa-calendar-minus text-purple-400"></i> El Trabajador debe jornadas de trabajo:
+                                </div>
+                                <div class="text-[10px] text-purple-200 mt-0.5">
+                                    Debe cumplir: <strong class="text-white font-bold" x-text="(diasDebe || 0) + ' día(s)'"></strong> de trabajo
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[9px] text-purple-400 block uppercase font-bold">Valor Adelantado</span>
+                                <span class="text-purple-300 font-black font-mono text-base" x-text="'Bs. ' + (parseFloat(montoPagado||0) - parseFloat(neto)).toFixed(2)"></span>
+                            </div>
+                        </div>
+
+                        <!-- Caso C: Trabajador debe ADELANTO EN DINERO -->
+                        <div x-show="tipoPago!=='debe_dias' && parseFloat(montoPagado) > parseFloat(neto)" x-cloak
                              class="mt-3 px-4 py-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-between">
                             <div>
                                 <div class="text-cyan-400 font-bold text-xs flex items-center gap-1.5">
                                     <i class="fa-solid fa-hand-holding-dollar"></i> El Trabajador debe a la empresa (Adelanto):
                                 </div>
                                 <div class="text-[10px] text-cyan-300/80 mt-0.5" x-show="parseFloat(diasDebe) > 0">
-                                    Debe <span class="font-bold text-cyan-200" x-text="diasDebe"></span> día(s) de trabajo
+                                    Equivalente aprox: <span class="font-bold text-cyan-200" x-text="diasDebe + ' día(s)'"></span>
                                 </div>
                             </div>
                             <div class="text-right">
@@ -804,6 +884,7 @@ function pagoWizard() {
         // Payment mode
         tipoPago: 'completo',
         montoPagado: 0,
+        montoAdelantoExtra: 0,
         userEditedMontoPagado: false,
         diasDebe: 0,
         adelantoObservacion: '',
@@ -937,6 +1018,13 @@ function pagoWizard() {
             if (this.tipoPago === 'completo' || !this.userEditedMontoPagado) {
                 this.montoPagado = this.neto.toFixed(2);
                 this.diasDebe = 0;
+                this.montoAdelantoExtra = 0;
+            } else if (this.tipoPago === 'debe_dias') {
+                const tarifa = this.getTarifaReferencia();
+                const d = parseFloat(this.diasDebe) || 0;
+                if (tarifa > 0) {
+                    this.montoPagado = (parseFloat(this.neto) + (d * tarifa)).toFixed(2);
+                }
             } else if (this.tipoPago === 'adelanto') {
                 const mp = parseFloat(this.montoPagado) || 0;
                 const tarifa = this.getTarifaReferencia();
@@ -961,30 +1049,50 @@ function pagoWizard() {
                 this.userEditedMontoPagado = false;
                 this.montoPagado = this.neto.toFixed(2);
                 this.diasDebe = 0;
+                this.montoAdelantoExtra = 0;
             } else if (modo === 'parcial') {
                 this.userEditedMontoPagado = true;
                 this.montoPagado = (this.neto * 0.5).toFixed(2);
                 this.diasDebe = 0;
+                this.montoAdelantoExtra = 0;
             } else if (modo === 'adelanto') {
+                this.userEditedMontoPagado = true;
+                this.montoAdelantoExtra = 200;
+                this.montoPagado = (parseFloat(this.neto) + 200).toFixed(2);
+                this.diasDebe = tarifa > 0 ? (200 / tarifa).toFixed(1) : 0;
+                this.adelantoObservacion = 'Adelanto en efectivo solicitado por el trabajador';
+            } else if (modo === 'debe_dias') {
                 this.userEditedMontoPagado = true;
                 this.diasDebe = 2;
                 if (tarifa > 0) {
                     this.montoPagado = (parseFloat(this.neto) + (2 * tarifa)).toFixed(2);
+                    this.montoAdelantoExtra = (2 * tarifa).toFixed(2);
                 } else {
                     this.montoPagado = (parseFloat(this.neto) + 200).toFixed(2);
+                    this.montoAdelantoExtra = 200;
                 }
+                this.adelantoObservacion = 'Adelanto contra 2 días de trabajo que debe el trabajador';
             }
+        },
+
+        setDiasDebe(n) {
+            this.diasDebe = n;
+            this.onDiasDebeInput();
         },
 
         onMontoPagadoInput() {
             this.userEditedMontoPagado = true;
             const mp = parseFloat(this.montoPagado) || 0;
             const tarifa = this.getTarifaReferencia();
-            if (mp > this.neto && tarifa > 0) {
+            if (mp > this.neto) {
                 const extra = mp - this.neto;
-                this.diasDebe = (extra / tarifa).toFixed(1);
-            } else if (mp <= this.neto) {
+                this.montoAdelantoExtra = extra.toFixed(2);
+                if (tarifa > 0) {
+                    this.diasDebe = (extra / tarifa).toFixed(1);
+                }
+            } else {
                 this.diasDebe = 0;
+                this.montoAdelantoExtra = 0;
             }
         },
 
@@ -992,7 +1100,22 @@ function pagoWizard() {
             const tarifa = this.getTarifaReferencia();
             const d = parseFloat(this.diasDebe) || 0;
             if (tarifa > 0) {
-                this.montoPagado = (parseFloat(this.neto) + (d * tarifa)).toFixed(2);
+                const extra = d * tarifa;
+                this.montoAdelantoExtra = extra.toFixed(2);
+                this.montoPagado = (parseFloat(this.neto) + extra).toFixed(2);
+            }
+            this.userEditedMontoPagado = true;
+            this.adelantoObservacion = 'Adelanto contra ' + d + ' días de trabajo que debe el trabajador';
+        },
+
+        onMontoAdelantoExtraInput() {
+            const extra = parseFloat(this.montoAdelantoExtra) || 0;
+            this.montoPagado = (parseFloat(this.neto) + extra).toFixed(2);
+            const tarifa = this.getTarifaReferencia();
+            if (tarifa > 0 && extra > 0) {
+                this.diasDebe = (extra / tarifa).toFixed(1);
+            } else {
+                this.diasDebe = 0;
             }
             this.userEditedMontoPagado = true;
         },
@@ -1054,6 +1177,7 @@ function pagoWizard() {
             this.anticiposDescontados = 0;
             this.neto = 0;
             this.montoPagado = 0;
+            this.montoAdelantoExtra = 0;
             this.userEditedMontoPagado = false;
             this.tipoPago = 'completo';
             this.diasDebe = 0;
