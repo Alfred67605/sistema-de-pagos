@@ -6,11 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Anticipo extends Model
 {
-    protected $fillable = ['trabajador_id', 'fecha', 'monto', 'saldo', 'pagado'];
+    protected $fillable = ['trabajador_id', 'fecha', 'monto', 'saldo', 'pagado', 'observacion', 'dias_debe'];
 
     protected $casts = [
         'pagado' => 'boolean',
         'fecha' => 'date',
+        'dias_debe' => 'decimal:2',
     ];
 
     public function trabajador()

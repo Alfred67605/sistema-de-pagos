@@ -88,7 +88,19 @@
                                 {{ $anticipo->fecha->format('d/m/Y') }}
                                 <span class="text-[10px] text-slate-500 block">{{ $anticipo->created_at->format('H:i:s') }}</span>
                             </td>
-                            <td class="px-6 py-4 font-medium text-slate-100">{{ $anticipo->trabajador->nombre }}</td>
+                            <td class="px-6 py-4 font-medium text-slate-100">
+                                <div>{{ $anticipo->trabajador->nombre }}</div>
+                                @if($anticipo->dias_debe > 0)
+                                    <span class="text-[10px] text-cyan-400 font-semibold inline-flex items-center gap-1 mt-0.5">
+                                        <i class="fa-solid fa-calendar-day"></i> Debe {{ $anticipo->dias_debe }} día(s)
+                                    </span>
+                                @endif
+                                @if($anticipo->observacion)
+                                    <span class="text-[10px] text-slate-400 block italic truncate max-w-[200px]" title="{{ $anticipo->observacion }}">
+                                        {{ $anticipo->observacion }}
+                                    </span>
+                                @endif
+                            </td>
                             <td class="px-6 py-4 text-xs">{{ $anticipo->trabajador->bocamina ? $anticipo->trabajador->bocamina->nombre : 'Sin Bocamina' }}</td>
                             <td class="px-6 py-4 font-mono font-medium text-slate-200">Bs. {{ number_format($anticipo->monto, 2) }}</td>
                             <td class="px-6 py-4 font-mono font-bold {{ $anticipo->saldo > 0 ? 'text-rose-450' : 'text-slate-400' }}">Bs. {{ number_format($anticipo->saldo, 2) }}</td>
@@ -140,7 +152,7 @@
             
             <form action="{{ route('anticipos.store') }}" method="POST" class="p-6">
                 @csrf
-                <div class="space-y-5">
+                <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Trabajador <span class="text-rose-500">*</span></label>
                         <select name="trabajador_id" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-200 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors">
@@ -162,6 +174,14 @@
                                 <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500 font-bold">Bs.</span>
                                 <input type="number" step="0.01" min="1" name="monto" required placeholder="0.00" class="w-full pl-10 bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-200 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors font-mono">
                             </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Días de Trabajo que debe (Opcional)</label>
+                        <div class="relative">
+                            <input type="number" step="0.5" min="0" name="dias_debe" placeholder="Ej. 2 o 3 días" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-200 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors font-mono">
+                            <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 text-xs font-semibold">días</span>
                         </div>
                     </div>
                     

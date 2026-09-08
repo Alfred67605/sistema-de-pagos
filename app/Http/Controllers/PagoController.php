@@ -48,7 +48,9 @@ class PagoController extends Controller
             $saldo_caja = 0;
         }
 
-        return view('pagos.index', compact('pagos', 'total_recargado', 'total_gastado_pagos', 'total_gastado_anticipos', 'total_gastado', 'saldo_caja'));
+        $trabajadores = Trabajador::with('bocamina')->where('estado', 'activo')->orderBy('nombre')->get();
+
+        return view('pagos.index', compact('pagos', 'total_recargado', 'total_gastado_pagos', 'total_gastado_anticipos', 'total_gastado', 'saldo_caja', 'trabajadores'));
     }
 
     public function fondosIndex(Request $request)
@@ -248,9 +250,14 @@ class PagoController extends Controller
         $request->validate([
             'trabajador_id' => 'required|exists:trabajadores,id',
             'fecha' => 'required|date',
-            'tarifa_pago' => 'required|numeric|min:0',
-            'cantidad_trabajada' => 'required|numeric|min:0',
-            'tipo_contrato_nombre' => 'required|string|max:255',
+            'tarifa_pago' => 'nullable|numeric|min:0',
+            'cantidad_trabajada' => 'nullable|numeric|min:0',
+            'tipo_contrato_nombre' => 'nullable|string|max:255',
+            'items' => 'nullable|array',
+            'items.*.tipo_trabajo' => 'nullable|string',
+            'items.*.cantidad' => 'nullable|numeric|min:0',
+            'items.*.precio_unitario' => 'nullable|numeric|min:0',
+            'items.*.subtotal' => 'nullable|numeric|min:0',
             'bonos' => 'required|numeric|min:0',
             'descuentos' => 'required|numeric|min:0',
             'monto_pagado' => 'nullable|numeric|min:0',
@@ -260,14 +267,35 @@ class PagoController extends Controller
             'deducciones_anticipos.*' => 'nullable|numeric|min:0',
             'metodo_pago' => 'nullable|string|in:efectivo,cheque,transferencia',
             'entregado_por' => 'nullable|string|max:255',
+            'dias_debe' => 'nullable|numeric|min:0',
+            'adelanto_observacion' => 'nullable|string|max:255',
         ]);
 
         $trabajadorId = $request->trabajador_id;
-        $tarifaPago = (float) $request->tarifa_pago;
-        $cantidadTrabajada = (float) $request->cantidad_trabajada;
         
-        // Calculate subtotal = tarifa * cantidad
-        $subtotal = $tarifaPago * $cantidadTrabajada;
+        // Calculate subtotal from items if present, or from single inputs
+        if ($request->has('items') && is_array($request->items) && count($request->items) > 0) {
+            $subtotal = 0;
+            $totalCant = 0;
+            $firstTarifa = 0;
+            $firstTipo = 'Jornales';
+            foreach ($request->items as $it) {
+                $subtotal += (float)($it['subtotal'] ?? 0);
+                $totalCant += (float)($it['cantidad'] ?? 0);
+                if ($firstTarifa == 0 && !empty($it['precio_unitario'])) {
+                    $firstTarifa = (float)$it['precio_unitario'];
+                    $firstTipo = $it['tipo_trabajo'] ?? 'Jornales';
+                }
+            }
+            $tarifaPago = $request->filled('tarifa_pago') ? (float)$request->tarifa_pago : $firstTarifa;
+            $cantidadTrabajada = $request->filled('cantidad_trabajada') ? (float)$request->cantidad_trabajada : $totalCant;
+            $tipoContratoNombre = $request->filled('tipo_contrato_nombre') ? $request->tipo_contrato_nombre : $firstTipo;
+        } else {
+            $tarifaPago = (float) ($request->tarifa_pago ?? 0);
+            $cantidadTrabajada = (float) ($request->cantidad_trabajada ?? 0);
+            $tipoContratoNombre = $request->tipo_contrato_nombre ?? 'General';
+            $subtotal = $tarifaPago * $cantidadTrabajada;
+        }
         
         $bonos = (float) $request->bonos;
         $descuentos = (float) $request->descuentos;
@@ -279,7 +307,7 @@ class PagoController extends Controller
         }
 
         // Perform the entire payment process inside a transaction
-        $pago = DB::transaction(function() use ($trabajadorId, $subtotal, $tarifaPago, $cantidadTrabajada, $bonos, $descuentos, $montoPagado, $tipoCambio, $request) {
+        $pago = DB::transaction(function() use ($trabajadorId, $subtotal, $tarifaPago, $cantidadTrabajada, $tipoContratoNombre, $bonos, $descuentos, $montoPagado, $tipoCambio, $request) {
             
             // Load outstanding pending balances from previous payments
             $prevSaldos = Pago::where('trabajador_id', $trabajadorId)
@@ -352,14 +380,24 @@ class PagoController extends Controller
                 $saldoPendiente = $diferencia;
                 $saldoLiquidado = false;
             } elseif ($diferencia < -0.01) {
-                // Owner paid more: extra cash becomes a new advance (anticipo)
+                // Owner paid more / worker received an advance: extra cash becomes a new advance (anticipo)
                 $extra = abs($diferencia);
+                $diasDebe = $request->filled('dias_debe') && (float)$request->dias_debe > 0
+                    ? (float)$request->dias_debe
+                    : ($tarifaPago > 0 ? round($extra / $tarifaPago, 2) : 0);
+
+                $observacionAdelanto = $request->filled('adelanto_observacion')
+                    ? $request->adelanto_observacion
+                    : 'Adelanto / Excedente (' . ($request->numero_nota ?: 'Liquidación #' . date('Ymd')) . ($diasDebe > 0 ? ' - Debe ' . $diasDebe . ' días' : '') . ')';
+
                 Anticipo::create([
                     'trabajador_id' => $trabajadorId,
                     'fecha' => $request->fecha,
                     'monto' => $extra,
                     'saldo' => $extra,
                     'pagado' => false,
+                    'observacion' => $observacionAdelanto,
+                    'dias_debe' => $diasDebe,
                 ]);
             }
 
@@ -369,7 +407,7 @@ class PagoController extends Controller
                 'fecha' => $request->fecha,
                 'tarifa_pago' => $tarifaPago,
                 'cantidad_trabajada' => $cantidadTrabajada,
-                'tipo_contrato_nombre' => $request->tipo_contrato_nombre,
+                'tipo_contrato_nombre' => $tipoContratoNombre,
                 'subtotal' => $subtotal,
                 'bonos' => $bonos,
                 'descuentos' => $descuentos,
@@ -383,6 +421,22 @@ class PagoController extends Controller
                 'metodo_pago' => $request->input('metodo_pago', 'efectivo'),
                 'entregado_por' => $request->input('entregado_por') ?: (auth()->user()->name ?? 'Administración TORMAN'),
             ]);
+
+            // Save individual items if provided
+            if ($request->has('items') && is_array($request->items)) {
+                foreach ($request->items as $it) {
+                    if (!empty($it['tipo_trabajo']) || !empty($it['subtotal'])) {
+                        $pago->items()->create([
+                            'contrato_id' => !empty($it['contrato_id']) ? $it['contrato_id'] : null,
+                            'tipo_trabajo' => $it['tipo_trabajo'] ?? 'General',
+                            'descripcion' => $it['descripcion'] ?? null,
+                            'cantidad' => (float)($it['cantidad'] ?? 1),
+                            'precio_unitario' => (float)($it['precio_unitario'] ?? 0),
+                            'subtotal' => (float)($it['subtotal'] ?? 0),
+                        ]);
+                    }
+                }
+            }
 
             // Mark previous week pending balances as liquidated
             if ($totalSaldosPrev > 0) {
@@ -446,7 +500,40 @@ class PagoController extends Controller
 
     public function destroy(Pago $pago)
     {
-        $pago->delete();
-        return redirect()->route('pagos.index')->with('success', 'Registro de pago eliminado con éxito.');
+        DB::transaction(function() use ($pago) {
+            // 1. Restaurar anticipos que fueron descontados en este pago
+            foreach ($pago->anticipos as $anticipo) {
+                $montoDescontado = (float)($anticipo->pivot->monto_descontado ?? 0);
+                if ($montoDescontado > 0) {
+                    $anticipo->saldo = (float)$anticipo->saldo + $montoDescontado;
+                    $anticipo->pagado = false;
+                    $anticipo->save();
+                }
+            }
+
+            // 2. Si este pago generó un adelanto automático (cuando monto_pagado > neto)
+            if ($pago->monto_pagado > $pago->neto) {
+                $extra = $pago->monto_pagado - $pago->neto;
+                $autoAnticipo = Anticipo::where('trabajador_id', $pago->trabajador_id)
+                    ->whereDate('fecha', $pago->fecha)
+                    ->where('monto', $extra)
+                    ->where('saldo', $extra)
+                    ->first();
+                if ($autoAnticipo) {
+                    $autoAnticipo->delete();
+                }
+            }
+
+            // 3. Desvincular anticipos en tabla pivote
+            $pago->anticipos()->detach();
+
+            // 4. Eliminar ítems de detalle del pago
+            $pago->items()->delete();
+
+            // 5. Eliminar el registro del pago
+            $pago->delete();
+        });
+
+        return redirect()->route('pagos.index')->with('success', 'Registro de pago eliminado con éxito. Los anticipos descontados fueron restaurados en la cuenta del trabajador.');
     }
 }

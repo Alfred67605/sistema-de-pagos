@@ -45,17 +45,19 @@ class AnticipoController extends Controller
             'fecha' => 'required|date',
             'monto' => 'required|numeric|min:0.01',
             'observacion' => 'nullable|string|max:255',
+            'dias_debe' => 'nullable|numeric|min:0',
         ]);
 
-        Anticipo::create([
+        \App\Models\Anticipo::create([
             'trabajador_id' => $request->trabajador_id,
             'fecha' => $request->fecha,
             'monto' => $request->monto,
             'saldo' => $request->monto,
             'observacion' => $request->observacion,
+            'dias_debe' => $request->dias_debe ?? 0,
         ]);
 
-        return redirect()->route('anticipos.index')->with('success', 'Anticipo registrado con éxito.');
+        return redirect()->back()->with('success', 'Adelanto / Anticipo registrado con éxito.');
     }
 
     public function update(Request $request, Anticipo $anticipo)
@@ -64,6 +66,7 @@ class AnticipoController extends Controller
             'fecha' => 'required|date',
             'monto' => 'required|numeric|min:0.01',
             'observacion' => 'nullable|string|max:255',
+            'dias_debe' => 'nullable|numeric|min:0',
         ]);
 
         $diferencia = $request->monto - $anticipo->monto;
@@ -74,15 +77,19 @@ class AnticipoController extends Controller
             'monto' => $request->monto,
             'saldo' => $nuevoSaldo,
             'observacion' => $request->observacion,
+            'dias_debe' => $request->dias_debe ?? $anticipo->dias_debe,
         ]);
 
-        return redirect()->route('anticipos.index')->with('success', 'Anticipo actualizado con éxito.');
+        return redirect()->back()->with('success', 'Adelanto actualizado con éxito.');
     }
 
     public function destroy(Anticipo $anticipo)
     {
-        $anticipo->delete();
-        return redirect()->route('anticipos.index')->with('success', 'Anticipo eliminado con éxito.');
+        \Illuminate\Support\Facades\DB::transaction(function() use ($anticipo) {
+            $anticipo->pagos()->detach();
+            $anticipo->delete();
+        });
+        return redirect()->back()->with('success', 'Adelanto / Anticipo eliminado con éxito.');
     }
 
     public function recibo(Anticipo $anticipo)
