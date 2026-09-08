@@ -41,6 +41,11 @@ class Trabajador extends Model
         return $this->hasMany(Anticipo::class);
     }
 
+    public function contratos()
+    {
+        return $this->hasMany(Contrato::class)->with('tipoContrato')->orderByDesc('id');
+    }
+
     public function pagos()
     {
         return $this->hasMany(Pago::class);

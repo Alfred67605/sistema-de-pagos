@@ -9,6 +9,7 @@ class Pago extends Model
     protected $fillable = [
         'trabajador_id',
         'fecha',
+        'numero_nota',
         'tarifa_pago',
         'cantidad_trabajada',
         'tipo_contrato_nombre',
@@ -36,6 +37,11 @@ class Pago extends Model
     public function trabajador()
     {
         return $this->belongsTo(Trabajador::class);
+    }
+
+    public function items()
+    {
+        return $this->hasMany(PagoItem::class);
     }
 
     public function anticipos()

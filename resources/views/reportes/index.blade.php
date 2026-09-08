@@ -168,8 +168,45 @@ table.rpt-tbl tbody tr:hover td { background: var(--rpt-row-hover); }
 /* Print Styles */
 @media print {
     .no-print { display: none !important; }
-    .rpt-card, .rpt-section { box-shadow: none !important; border: 1px solid #000 !important; }
-    body { background: #fff !important; color: #000 !important; }
+    
+    /* Forzar que los fondos y colores se impriman (KPIs, botones) */
+    * { 
+        -webkit-print-color-adjust: exact !important; 
+        print-color-adjust: exact !important; 
+        color-adjust: exact !important; 
+    }
+
+    /* Fondo blanco para la página en papel */
+    body, html, .rpt-page { 
+        background-color: #ffffff !important; 
+        color: #000000 !important; 
+    }
+
+    /* Convertir tarjetas oscuras a modo claro para ahorrar tinta */
+    .rpt-card, .rpt-section { 
+        background: #ffffff !important; 
+        border: 2px solid #cbd5e1 !important; 
+        box-shadow: none !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    /* Forzar texto oscuro en todo excepto en los KPIs de colores */
+    .text-slate-100, .text-slate-400, .rpt-card h3, table.rpt-tbl th, table.rpt-tbl td {
+        color: #0f172a !important;
+    }
+
+    /* Mantener texto blanco dentro de las tarjetas de colores (KPIs) */
+    .bg-gradient-to-br * {
+        color: #ffffff !important;
+    }
+
+    /* Evitar que los gráficos se colapsen al imprimir */
+    canvas {
+        min-height: 260px !important;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
 }
 </style>
 
@@ -706,74 +743,189 @@ table.rpt-tbl tbody tr:hover td { background: var(--rpt-row-hover); }
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // Chart 1: Gastos por Semana
-    const ctxSemana = document.getElementById('chartGastosSemana');
-    if (ctxSemana) {
-        const dataSemana = @json($semanasChart);
-        new Chart(ctxSemana, {
-            type: 'bar',
-            data: {
-                labels: dataSemana.map(d => d.label),
-                datasets: [
-                    {
-                        label: 'Planillas (Pagos)',
-                        data: dataSemana.map(d => d.pagos),
-                        backgroundColor: '#6366f1',
-                        borderRadius: 6
-                    },
-                    {
-                        label: 'Anticipos',
-                        data: dataSemana.map(d => d.anticipos),
-                        backgroundColor: '#f43f5e',
-                        borderRadius: 6
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { labels: { color: '#94a3b8', font: { family: 'Outfit', weight: 'bold' } } }
+    // Delay initialization slightly so Alpine.js has time to render the tab container.
+    // This prevents Chart.js from rendering at 0x0 pixels due to display:none (x-cloak).
+    setTimeout(() => {
+        // Chart 1: Gastos por Semana
+        const ctxSemana = document.getElementById('chartGastosSemana');
+        if (ctxSemana) {
+            const dataSemana = @json($semanasChart);
+            new Chart(ctxSemana, {
+                type: 'bar',
+                data: {
+                    labels: dataSemana.map(d => d.label),
+                    datasets: [
+                        {
+                            label: 'Planillas (Pagos)',
+                            data: dataSemana.map(d => d.pagos),
+                            backgroundColor: '#6366f1',
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Anticipos',
+                            data: dataSemana.map(d => d.anticipos),
+                            backgroundColor: '#f43f5e',
+                            borderRadius: 6
+                        }
+                    ]
                 },
-                scales: {
-                    x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
-                    y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#94a3b8', font: { family: 'Outfit', weight: 'bold' } } }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
+                        y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                    }
                 }
-            }
-        });
-    }
+            });
+        }
 
-    // Chart 2: Gastos por Bocamina
-    const ctxBocamina = document.getElementById('chartGastosBocamina');
-    if (ctxBocamina) {
-        const dataBocamina = @json($bocaminasChart);
-        new Chart(ctxBocamina, {
-            type: 'doughnut',
-            data: {
-                labels: dataBocamina.map(d => d.nombre),
-                datasets: [{
-                    data: dataBocamina.map(d => d.total),
-                    backgroundColor: ['#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Outfit', weight: 'bold' } } }
+        // Chart 2: Gastos por Bocamina
+        const ctxBocamina = document.getElementById('chartGastosBocamina');
+        if (ctxBocamina) {
+            const dataBocamina = @json($bocaminasChart);
+            new Chart(ctxBocamina, {
+                type: 'doughnut',
+                data: {
+                    labels: dataBocamina.map(d => d.nombre),
+                    datasets: [{
+                        data: dataBocamina.map(d => d.total),
+                        backgroundColor: ['#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Outfit', weight: 'bold' } } }
+                    }
                 }
-            }
-        });
-    }
+            });
+        }
+    }, 300); // 300ms delay ensures the DOM is fully visible before Chart.js measures it
 });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-function doExportExcel() {
-    window.print();
+<script>
+function doExportPDF() {
+    const btn = event ? event.currentTarget : null;
+    const originalHtml = btn ? btn.innerHTML : '';
+    if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando...';
+
+    // Hide no-print elements temporarily
+    const noPrintElements = document.querySelectorAll('.no-print');
+    noPrintElements.forEach(el => el.style.display = 'none');
+
+    // Create a professional header for the PDF
+    const header = document.createElement('div');
+    header.id = 'pdf-temp-header';
+    header.innerHTML = `
+        <div style="border-bottom: 3px solid #0f172a; padding-bottom: 10px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: flex-end; font-family: sans-serif;">
+            <div>
+                <h1 style="font-size: 22px; font-weight: 900; color: #0f172a; margin: 0; text-transform: uppercase;">REPORTE ESTADÍSTICO Y FINANCIERO</h1>
+                <p style="font-size: 12px; color: #475569; margin: 4px 0 0 0; font-family: monospace;">EMPRESA MINERA — CONTROL OPERATIVO SCPM</p>
+            </div>
+            <div style="text-align: right;">
+                <p style="font-size: 12px; font-weight: bold; color: #0f172a; margin: 0;">Fecha: ${new Date().toLocaleDateString('es-BO')} ${new Date().toLocaleTimeString('es-BO')}</p>
+                <p style="font-size: 10px; color: #64748b; margin: 2px 0 0 0;">Generado automáticamente</p>
+            </div>
+        </div>
+    `;
+    
+    const page = document.querySelector('.rpt-page');
+    page.insertBefore(header, page.firstChild);
+
+    // Force white background for the PDF capture
+    const originalBg = page.style.background;
+    page.style.background = '#ffffff';
+    page.style.padding = '15px';
+
+    const opt = {
+        margin:       [0.3, 0.3, 0.4, 0.3],
+        filename:     'Reporte_SCPM_' + new Date().toISOString().slice(0,10) + '.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, windowWidth: 1100, backgroundColor: '#ffffff' },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(page).save().then(() => {
+        // Restore everything back to normal
+        if (btn) btn.innerHTML = originalHtml;
+        noPrintElements.forEach(el => el.style.display = '');
+        header.remove();
+        page.style.background = originalBg;
+        page.style.padding = '';
+    }).catch(err => {
+        console.error(err);
+        if (btn) btn.innerHTML = originalHtml;
+        noPrintElements.forEach(el => el.style.display = '');
+        header.remove();
+        window.print(); // Fallback
+    });
 }
 
-function doExportPDF() {
-    window.print();
+function doExportExcel() {
+    const activeTable = document.querySelector('.rpt-page table:not(.no-print)');
+    if (!activeTable) {
+        alert('No hay datos en la tabla para exportar.');
+        return;
+    }
+
+    let rowsHtml = '';
+    const rows = activeTable.querySelectorAll('tr');
+    rows.forEach((tr, index) => {
+        const isHeader = tr.parentElement.tagName === 'THEAD';
+        const cells = tr.querySelectorAll(isHeader ? 'th' : 'td');
+        let rowStr = '<tr>';
+        cells.forEach((td, cellIndex) => {
+            if (cellIndex === cells.length - 1 && td.classList.contains('no-print')) return;
+            
+            const txt = td.textContent.replace(/\s+/g, ' ').trim();
+            if (isHeader) {
+                rowStr += `<th style="background-color:#059669; color:#ffffff; font-weight:bold; padding:8px; border:1px solid #047857; text-align:center;">${txt}</th>`;
+            } else {
+                const isNum = txt.startsWith('Bs.') || !isNaN(parseFloat(txt));
+                rowStr += `<td style="border:1px solid #cbd5e1; padding:7px 10px; ${isNum ? 'text-align:right; font-family:Consolas,monospace;' : ''}">${txt}</td>`;
+            }
+        });
+        rowStr += '</tr>';
+        rowsHtml += rowStr;
+    });
+
+    const htmlContent = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+        <head>
+            <meta charset="utf-8">
+            <style>
+                body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 11px; color: #1e293b; }
+                .header-banner { background-color: #0f172a; color: #fbbf24; font-size: 16px; font-weight: bold; text-align: center; padding: 14px; }
+                .info-sub { background-color: #1e293b; color: #ffffff; font-size: 11px; font-weight: bold; padding: 8px 12px; }
+            </style>
+        </head>
+        <body>
+            <table style="width:100%; border-collapse:collapse;">
+                <tr><td colspan="8" class="header-banner">EMPRESA MINERA — REPORTE DE PERSONAL Y PAGOS</td></tr>
+                <tr><td colspan="8" class="info-sub">FECHA DE GENERACIÓN: ${new Date().toLocaleDateString('es-BO')} ${new Date().toLocaleTimeString('es-BO')}</td></tr>
+                <tr><td colspan="8">&nbsp;</td></tr>
+                ${rowsHtml}
+            </table>
+        </body>
+        </html>
+    `;
+
+    const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'Reporte_Personal_' + new Date().toISOString().slice(0,10) + '.xls';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 </script>
 @endpush

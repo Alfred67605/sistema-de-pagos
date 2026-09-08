@@ -143,6 +143,13 @@
                                     <a href="{{ route('pagos.edit', $pago->id) }}" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-amber-400 transition duration-150" title="Editar Pago">
                                         <i class="fa-solid fa-pen-to-square text-xs"></i>
                                     </a>
+                                    <form action="{{ route('pagos.destroy', $pago->id) }}" method="POST" class="inline" onsubmit="return confirm('¿Está seguro de eliminar este registro de pago? Al confirmar, el monto gastado se restaurará automáticamente en la Caja Personal.')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-900/50 text-slate-400 hover:text-rose-400 transition duration-150" title="Eliminar Pago">
+                                            <i class="fa-solid fa-trash text-xs"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>

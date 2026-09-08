@@ -11,9 +11,17 @@
             <h1 class="text-3xl font-bold tracking-tight text-slate-100">Reportes de Comercialización</h1>
             <p class="text-sm text-slate-400 mt-1">Consulta, filtra e imprime reportes de compra y venta de mineral por bocamina y período.</p>
         </div>
-        <button onclick="window.print()" class="btn-vibrant-warm inline-flex items-center justify-center px-4 py-2.5 rounded-lg text-sm font-bold shadow-lg no-print">
-            <i class="fa-solid fa-print mr-2"></i> Imprimir Reporte
-        </button>
+        <div class="flex flex-wrap gap-2.5 no-print">
+            <button onclick="doExportExcel()" class="inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md transition">
+                <i class="fa-solid fa-file-excel mr-2"></i> Excel
+            </button>
+            <button onclick="doExportPDF()" class="inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-md transition">
+                <i class="fa-solid fa-file-pdf mr-2"></i> PDF
+            </button>
+            <button onclick="window.print()" class="inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-500 text-white shadow-md transition">
+                <i class="fa-solid fa-print mr-2"></i> Imprimir
+            </button>
+        </div>
     </div>
 
     {{-- Print Header --}}
@@ -347,6 +355,72 @@ document.addEventListener('DOMContentLoaded', function () {
         chart.update();
     });
 });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<script>
+function doExportPDF() {
+    window.print();
+}
+
+function doExportExcel() {
+    const activeTable = document.querySelector('table:not(.no-print)');
+    if (!activeTable) {
+        alert('No hay datos en la tabla para exportar.');
+        return;
+    }
+
+    let rowsHtml = '';
+    const rows = activeTable.querySelectorAll('tr');
+    rows.forEach((tr, index) => {
+        const isHeader = tr.parentElement.tagName === 'THEAD';
+        const cells = tr.querySelectorAll(isHeader ? 'th' : 'td');
+        let rowStr = '<tr>';
+        cells.forEach((td, cellIndex) => {
+            if (cellIndex === cells.length - 1 && td.classList.contains('no-print')) return;
+            
+            const txt = td.textContent.replace(/\s+/g, ' ').trim();
+            if (isHeader) {
+                rowStr += `<th style="background-color:#d97706; color:#ffffff; font-weight:bold; padding:8px; border:1px solid #b45309; text-align:center;">${txt}</th>`;
+            } else {
+                const isNum = txt.startsWith('Bs.') || txt.includes('Kg') || !isNaN(parseFloat(txt));
+                rowStr += `<td style="border:1px solid #cbd5e1; padding:7px 10px; ${isNum ? 'text-align:right; font-family:Consolas,monospace;' : ''}">${txt}</td>`;
+            }
+        });
+        rowStr += '</tr>';
+        rowsHtml += rowStr;
+    });
+
+    const htmlContent = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+        <head>
+            <meta charset="utf-8">
+            <style>
+                body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 11px; color: #1e293b; }
+                .header-banner { background-color: #0f172a; color: #fbbf24; font-size: 16px; font-weight: bold; text-align: center; padding: 14px; }
+                .info-sub { background-color: #1e293b; color: #ffffff; font-size: 11px; font-weight: bold; padding: 8px 12px; }
+            </style>
+        </head>
+        <body>
+            <table style="width:100%; border-collapse:collapse;">
+                <tr><td colspan="8" class="header-banner">EMPRESA MINERA — REPORTE DE COMERCIALIZACIÓN DE MINERALES</td></tr>
+                <tr><td colspan="8" class="info-sub">FECHA DE GENERACIÓN: ${new Date().toLocaleDateString('es-BO')} ${new Date().toLocaleTimeString('es-BO')}</td></tr>
+                <tr><td colspan="8">&nbsp;</td></tr>
+                ${rowsHtml}
+            </table>
+        </body>
+        </html>
+    `;
+
+    const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'Reporte_Comercializacion_' + new Date().toISOString().slice(0,10) + '.xls';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
 </script>
 @endpush
 @endsection

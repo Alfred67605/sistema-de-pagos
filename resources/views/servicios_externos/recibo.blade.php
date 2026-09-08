@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Vale de Anticipo #' . str_pad($anticipo->id, 5, '0', STR_PAD_LEFT))
+@section('title', 'Comprobante de Servicio Externo #' . str_pad($servicio->id, 5, '0', STR_PAD_LEFT))
 
 @section('content')
 @php
-if (!function_exists('montoEnLetrasOficial')) {
-    function montoEnLetrasOficial($monto) {
+if (!function_exists('montoEnLetrasServicio')) {
+    function montoEnLetrasServicio($monto) {
         $monto = floatval($monto);
         $entero = floor($monto);
         $centavos = round(($monto - $entero) * 100);
@@ -22,7 +22,7 @@ if (!function_exists('montoEnLetrasOficial')) {
             if ($n < 100) {
                 $d = floor($n / 10);
                 $u = $n % 10;
-                return $decenas[$d] . ($u > 0 ? ' Y ' . $numALetras($u) : '');
+                return $decenas[$d] . ($u > 0 ? ' Y ' . $unidades[$u] : '');
             }
             if ($n == 100) return 'CIEN';
             if ($n < 1000) {
@@ -45,9 +45,8 @@ if (!function_exists('montoEnLetrasOficial')) {
 }
 @endphp
 
-<!-- Custom Styles for Premium Receipt and Print layout -->
+<!-- Custom Styles for Receipt -->
 <style>
-    /* Premium High-Contrast styling for printable receipt container */
     .receipt-card-wrapper {
         background: #ffffff !important;
         color: #0f172a !important;
@@ -57,7 +56,6 @@ if (!function_exists('montoEnLetrasOficial')) {
         position: relative !important;
         overflow: hidden !important;
     }
-
     .receipt-card-wrapper::before {
         content: '' !important;
         position: absolute !important;
@@ -65,10 +63,10 @@ if (!function_exists('montoEnLetrasOficial')) {
         left: 0 !important;
         right: 0 !important;
         height: 6px !important;
-        background: linear-gradient(90deg, #10b981, #0ea5e9, #6366f1) !important;
+        background: linear-gradient(90deg, #0284c7, #06b6d4, #10b981) !important;
         z-index: 10 !important;
     }
-
+    #thermal-ticket-80mm { display: none; }
     /* Print styles to guarantee exact copy on Postcard 100x148mm, 80mm Roll, A4 or Letter */
     #thermal-ticket-80mm {
         display: none;
@@ -149,8 +147,6 @@ if (!function_exists('montoEnLetrasOficial')) {
             display: none !important;
         }
     }
-
-    /* 3D button styling */
     .btn-3d-receipt {
         border-radius: 12px !important;
         font-weight: 800 !important;
@@ -159,67 +155,31 @@ if (!function_exists('montoEnLetrasOficial')) {
         transition: all 0.15s ease !important;
         cursor: pointer !important;
     }
-
-    .btn-3d-receipt-pdf {
-        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
-        color: #ffffff !important;
-        border: 1px solid #b91c1c !important;
-        border-bottom: 4.5px solid #991b1b !important;
-        box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25) !important;
-    }
-
-    .btn-3d-receipt-pdf:hover {
-        background: linear-gradient(135deg, #f87171 0%, #ef4444 100%) !important;
-        transform: translateY(-1px);
-    }
-
-    .btn-3d-receipt-excel {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-        color: #ffffff !important;
-        border: 1px solid #047857 !important;
-        border-bottom: 4.5px solid #065f46 !important;
-        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25) !important;
-    }
-
-    .btn-3d-receipt-excel:hover {
-        background: linear-gradient(135deg, #34d399 0%, #10b981 100%) !important;
-        transform: translateY(-1px);
-    }
-
-    .btn-3d-receipt-print {
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
-        color: #0f172a !important;
-        border: 1px solid #b45309 !important;
-        border-bottom: 4.5px solid #78350f !important;
-        box-shadow: 0 4px 10px rgba(245, 158, 11, 0.25) !important;
-    }
-
-    .btn-3d-receipt-print:hover {
-        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%) !important;
-        transform: translateY(-1px);
-    }
 </style>
 
 <div class="space-y-6">
-    <!-- Top Action Bar (no-print) -->
+    <!-- Top Action Bar -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 no-print">
         <div>
-            <a href="{{ route('anticipos.index') }}" class="text-xs text-slate-400 hover:text-indigo-400 flex items-center font-medium transition duration-150">
-                <i class="fa-solid fa-arrow-left mr-1.5"></i> Volver a Anticipos
+            <a href="{{ route('servicios-externos.index') }}" class="text-xs text-slate-400 hover:text-sky-400 flex items-center font-medium transition duration-150">
+                <i class="fa-solid fa-arrow-left mr-1.5"></i> Volver a Historial
             </a>
-            <h1 class="text-3xl font-bold tracking-tight text-slate-100 mt-1">Comprobante de Anticipo</h1>
+            <h1 class="text-3xl font-bold tracking-tight text-slate-100 mt-1">Comprobante de Servicio Externo</h1>
         </div>
         <div class="flex flex-wrap gap-3">
-            <button onclick="downloadPDF()" class="btn-3d-receipt btn-3d-receipt-pdf inline-flex items-center justify-center px-4 py-2.5 text-xs">
+            <a href="{{ route('servicios-externos.edit', $servicio->id) }}" class="btn-3d-receipt inline-flex items-center justify-center px-4 py-2.5 text-xs bg-slate-800 text-amber-400 border border-slate-700 hover:bg-slate-700 font-bold rounded-xl shadow-md transition">
+                <i class="fa-solid fa-pen-to-square mr-2 text-sm"></i> Editar
+            </a>
+            <button onclick="downloadPDF()" class="btn-3d-receipt inline-flex items-center justify-center px-4 py-2.5 text-xs bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl shadow-md transition">
                 <i class="fa-solid fa-file-pdf mr-2 text-sm"></i> PDF
             </button>
-            <button onclick="downloadExcel()" class="btn-3d-receipt btn-3d-receipt-excel inline-flex items-center justify-center px-4 py-2.5 text-xs">
+            <button onclick="downloadExcel()" class="btn-3d-receipt inline-flex items-center justify-center px-4 py-2.5 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-md transition">
                 <i class="fa-solid fa-file-excel mr-2 text-sm"></i> Excel
             </button>
-            <button onclick="printThermal80mm()" class="btn-3d-receipt inline-flex items-center justify-center px-4 py-2.5 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-md transition">
-                <i class="fa-solid fa-receipt mr-2 text-sm"></i> Ticket (80mm / 100x148)
+            <button onclick="printThermal80mm()" class="btn-3d-receipt inline-flex items-center justify-center px-4 py-2.5 text-xs bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-xl shadow-md transition">
+                <i class="fa-solid fa-receipt mr-2 text-sm"></i> Ticket (80mm)
             </button>
-            <button onclick="printStandardA4()" class="btn-3d-receipt btn-3d-receipt-print inline-flex items-center justify-center px-4 py-2.5 text-xs">
+            <button onclick="printStandardA4()" class="btn-3d-receipt inline-flex items-center justify-center px-4 py-2.5 text-xs bg-sky-600 text-white hover:bg-sky-500 font-bold rounded-xl shadow-md transition">
                 <i class="fa-solid fa-print mr-2 text-sm"></i> Hoja (Carta/A4)
             </button>
         </div>
@@ -263,7 +223,7 @@ if (!function_exists('montoEnLetrasOficial')) {
                             <h2 class="text-xl font-black uppercase tracking-widest leading-none" style="color: #ffffff !important; font-weight: 900;">EMPRESA MINERA</h2>
                             <div class="flex items-center gap-2 mt-1.5">
                                 <span class="text-[10.5px] font-mono font-bold tracking-wider uppercase px-3 py-0.5 rounded-full" style="background-color: rgba(255, 255, 255, 0.2) !important; color: #ffffff !important; border: 1px solid #7dd3fc !important;">
-                                    <i class="fa-solid fa-hand-holding-dollar mr-1"></i> VALE DE ANTICIPO EN EFECTIVO
+                                    <i class="fa-solid fa-truck-ramp-box mr-1"></i> SERVICIOS EXTERNOS Y FLETES
                                 </span>
                             </div>
                         </div>
@@ -272,11 +232,11 @@ if (!function_exists('montoEnLetrasOficial')) {
                     <!-- Document Title & Serial Badge -->
                     <div class="text-center md:text-right">
                         <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-lg shadow-sm" style="background-color: #ffffff !important; color: #0369a1 !important; border: 1.5px solid #7dd3fc !important;">
-                            <span class="text-xs font-black uppercase tracking-widest" style="color: #0369a1 !important;">VALE DE ANTICIPO Nº</span>
-                            <span class="text-lg font-black font-mono" style="color: #0284c7 !important;">{{ str_pad($anticipo->id, 5, '0', STR_PAD_LEFT) }}</span>
+                            <span class="text-xs font-black uppercase tracking-widest" style="color: #0369a1 !important;">COMPROBANTE DE SERVICIO Nº</span>
+                            <span class="text-lg font-black font-mono" style="color: #0284c7 !important;">{{ str_pad($servicio->id, 5, '0', STR_PAD_LEFT) }}</span>
                         </div>
                         <p class="text-[11px] font-mono mt-1.5 font-bold" style="color: #e0f2fe !important;">
-                            Fecha: <strong style="color: #ffffff !important;">{{ $anticipo->fecha->format('d/m/Y') }}</strong> • Hora: <strong style="color: #ffffff !important;">{{ $anticipo->created_at->format('H:i:s') }}</strong>
+                            Fecha: <strong style="color: #ffffff !important;">{{ $servicio->fecha->format('d/m/Y') }}</strong> • Hora: <strong style="color: #ffffff !important;">{{ $servicio->created_at->format('H:i:s') }}</strong>
                         </p>
                     </div>
                 </div>
@@ -288,29 +248,28 @@ if (!function_exists('montoEnLetrasOficial')) {
                 <!-- 2-Column Section: Metadata (Left) & Financial Card (Right) -->
                 <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: stretch;">
                     
-                    <!-- Left (7 Cols): Bocamina & Beneficiario Cards -->
+                    <!-- Left (7 Cols): Chofer & Placa Cards -->
                     <div style="flex: 1 1 55%; min-width: 280px;" class="space-y-3">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <!-- Bocamina Box -->
+                            <!-- Chofer Box -->
                             <div class="rounded-xl p-3 flex items-center space-x-3" style="background-color: #f0f9ff !important; border: 1.5px solid #7dd3fc !important;">
                                 <div class="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-base flex-shrink-0" style="background-color: #0284c7 !important; color: #ffffff !important;">
-                                    <i class="fa-solid fa-mountain"></i>
+                                    <i class="fa-solid fa-user-tie"></i>
                                 </div>
                                 <div>
-                                    <span class="text-[9.5px] font-black uppercase tracking-wider block" style="color: #0369a1 !important;">BOCAMINA DE ORIGEN</span>
-                                    <span class="font-black uppercase text-xs font-sans leading-tight block" style="color: #0f172a !important;">{{ $anticipo->trabajador->bocamina->nombre ?? 'N/A' }}</span>
+                                    <span class="text-[9.5px] font-black uppercase tracking-wider block" style="color: #0369a1 !important;">CHOFER / OPERADOR</span>
+                                    <span class="font-black uppercase text-xs font-sans leading-tight block" style="color: #0f172a !important;">{{ $servicio->chofer_operador }}</span>
                                 </div>
                             </div>
 
-                            <!-- Beneficiario Box -->
+                            <!-- Placa Box -->
                             <div class="rounded-xl p-3 flex items-center space-x-3" style="background-color: #f0f9ff !important; border: 1.5px solid #7dd3fc !important;">
                                 <div class="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-base flex-shrink-0" style="background-color: #0369a1 !important; color: #ffffff !important;">
-                                    <i class="fa-solid fa-user"></i>
+                                    <i class="fa-solid fa-truck-monster"></i>
                                 </div>
                                 <div>
-                                    <span class="text-[9.5px] font-black uppercase tracking-wider block" style="color: #0369a1 !important;">TRABAJADOR BENEFICIARIO</span>
-                                    <span class="font-black uppercase text-xs font-sans leading-tight block" style="color: #0f172a !important;">{{ $anticipo->trabajador->nombre }}</span>
-                                    <span class="text-[10px] font-mono font-bold block mt-0.5" style="color: #0284c7 !important;">C.I.: {{ $anticipo->trabajador->ci }}</span>
+                                    <span class="text-[9.5px] font-black uppercase tracking-wider block" style="color: #0369a1 !important;">PLACA / MAQUINARIA</span>
+                                    <span class="font-black uppercase text-xs font-mono px-2 py-0.5 rounded inline-block mt-0.5" style="background-color: #ffffff !important; border: 1px solid #38bdf8 !important; color: #0f172a !important;">{{ $servicio->placa_maquinaria }}</span>
                                 </div>
                             </div>
                         </div>
@@ -319,6 +278,7 @@ if (!function_exists('montoEnLetrasOficial')) {
                         <div class="rounded-lg p-2.5 text-xs" style="background-color: #f8fafc !important; border: 1px solid #e2e8f0 !important;">
                             <div class="flex items-center justify-between text-[11px] font-mono">
                                 <span style="color: #334155 !important;">Recibí de: <strong uppercase style="color: #0f172a !important; font-weight: 900;">ADMINISTRACIÓN CENTRAL / CAJA CHICA MINERA</strong></span>
+                                <span style="color: #0369a1 !important; font-weight: 700;">(por: {{ $servicio->entregado_por ?? 'Administración' }})</span>
                             </div>
                         </div>
                     </div>
@@ -327,17 +287,17 @@ if (!function_exists('montoEnLetrasOficial')) {
                     <div style="flex: 1 1 40%; min-width: 240px;">
                         <div class="h-full rounded-xl p-4 shadow-sm flex flex-col justify-between" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important; border: 2px solid #7dd3fc !important; color: #ffffff !important;">
                             <div class="flex justify-between items-center pb-2" style="border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;">
-                                <span class="text-[10.5px] font-black uppercase tracking-wider" style="color: #e0f2fe !important;">MONTO ANTICIPADO (Bs.)</span>
-                                <span class="text-[9.5px] font-mono px-2 py-0.5 rounded font-bold uppercase" style="background-color: #ffffff !important; color: #0284c7 !important;">Efectivo</span>
+                                <span class="text-[10.5px] font-black uppercase tracking-wider" style="color: #e0f2fe !important;">TOTAL MONTO PAGADO (Bs.)</span>
+                                <span class="text-[9.5px] font-mono px-2 py-0.5 rounded font-bold uppercase" style="background-color: #ffffff !important; color: #0284c7 !important;">Bolivianos</span>
                             </div>
                             <div class="text-right py-1">
                                 <div class="text-2xl md:text-3xl font-black font-mono tracking-tight" style="color: #ffffff !important; font-weight: 900;">
-                                    Bs. {{ number_format($anticipo->monto, 2, ',', '.') }}
+                                    Bs. {{ number_format($servicio->monto_total, 2, ',', '.') }}
                                 </div>
                             </div>
                             <div class="flex justify-between items-center text-[10.5px] font-mono pt-1.5" style="border-top: 1px solid rgba(255, 255, 255, 0.2) !important; color: #e0f2fe !important;">
-                                <span>Estado: <strong style="color: #ffffff !important;" class="uppercase">{{ $anticipo->saldo == 0 ? 'DESCONTADO' : 'PENDIENTE' }}</strong></span>
-                                <span>Saldo: <strong style="color: #ffffff !important;">Bs. {{ number_format($anticipo->saldo, 2, ',', '.') }}</strong></span>
+                                <span>Equiv $us: <strong style="color: #ffffff !important;">$us {{ number_format($servicio->monto_total / 6.96, 2, ',', '.') }}</strong></span>
+                                <span>T/C: <strong style="color: #ffffff !important;">Bs. 6,96</strong></span>
                             </div>
                         </div>
                     </div>
@@ -347,19 +307,27 @@ if (!function_exists('montoEnLetrasOficial')) {
                 <!-- Amount in Words & Concept Card -->
                 <div class="rounded-xl p-3.5 space-y-2 text-xs" style="background-color: #f0f9ff !important; border: 1.5px solid #7dd3fc !important;">
                     <div class="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-3">
-                        <span class="text-xs font-black uppercase tracking-wider w-28 flex-shrink-0" style="color: #0369a1 !important;">La cantidad de:</span>
+                        <span class="text-xs font-black uppercase tracking-wider w-28 flex-shrink-0" style="color: #0369a1 !important;">La suma de:</span>
                         <div class="flex-grow font-black font-mono px-3 py-1 rounded-lg uppercase text-xs" style="background-color: #ffffff !important; border: 1px solid #38bdf8 !important; color: #0f172a !important;">
-                            {{ montoEnLetrasOficial($anticipo->monto) }}
+                            {{ montoEnLetrasServicio($servicio->monto_total) }}
                         </div>
                     </div>
 
                     <div class="flex flex-col sm:flex-row sm:items-start space-y-1 sm:space-y-0 sm:space-x-3">
-                        <span class="text-xs font-black uppercase tracking-wider w-28 flex-shrink-0 pt-0.5" style="color: #0369a1 !important;">Por concepto de:</span>
+                        <span class="text-xs font-black uppercase tracking-wider w-28 flex-shrink-0 pt-0.5" style="color: #0369a1 !important;">Por servicio de:</span>
                         <div class="flex-grow font-bold uppercase leading-snug text-xs" style="color: #0f172a !important;">
-                            ANTICIPO DE DINERO A CUENTA DE PLANILLA DE TRABAJO
-                            @if($anticipo->observacion)
+                            <span class="font-sans font-black text-sm" style="color: #0284c7 !important;">{{ $servicio->tipo_servicio }}</span> — <span class="font-mono font-black" style="color: #0369a1 !important;">{{ number_format($servicio->cantidad, 2) }} {{ $servicio->unidad_medida }}</span>
+                            @if($servicio->precio_unitario > 0)
+                                a tarifa de <span class="font-mono font-black" style="color: #0369a1 !important;">Bs. {{ number_format($servicio->precio_unitario, 2) }} c/u</span>
+                            @endif
+                            @if($servicio->origen_destino)
+                                <span class="block text-[11px] font-mono mt-1 p-1.5 rounded" style="background-color: #ffffff !important; border: 1px solid #bae6fd !important; color: #0284c7 !important;">
+                                    <i class="fa-solid fa-route mr-1"></i> TRAMO / RUTA: {{ $servicio->origen_destino }}
+                                </span>
+                            @endif
+                            @if($servicio->observacion)
                                 <span class="font-medium normal-case font-mono block mt-1 p-1.5 rounded" style="background-color: #ffffff !important; border: 1px solid #cbd5e1 !important; color: #475569 !important;">
-                                    <i class="fa-solid fa-pen-nib mr-1 text-slate-400"></i> {{ $anticipo->observacion }}
+                                    <i class="fa-solid fa-pen-nib mr-1 text-slate-400"></i> {{ $servicio->observacion }}
                                 </span>
                             @endif
                         </div>
@@ -369,10 +337,18 @@ if (!function_exists('montoEnLetrasOficial')) {
                 <!-- Form of Payment Checkboxes (Light Celeste Strip) -->
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between py-2.5 px-4 rounded-xl text-white shadow-xs" style="background: linear-gradient(90deg, #0284c7 0%, #0369a1 100%) !important; border: 1.5px solid #7dd3fc !important; color: #ffffff !important;">
                     <div class="flex flex-wrap items-center gap-6">
-                        <span class="text-xs font-black uppercase tracking-widest" style="color: #ffffff !important;">Forma de Entrega:</span>
+                        <span class="text-xs font-black uppercase tracking-widest" style="color: #ffffff !important;">Forma de Pago:</span>
                         <div class="flex items-center space-x-2">
                             <span class="w-5 h-5 inline-flex items-center justify-center rounded text-xs font-black" style="background-color: #ffffff !important; color: #0284c7 !important;">✓</span>
-                            <span class="text-xs font-bold" style="color: #ffffff !important;">Efectivo (Caja Chica)</span>
+                            <span class="text-xs font-bold" style="color: {{ $servicio->metodo_pago === 'efectivo' ? '#ffffff' : '#e0f2fe' }} !important;">Efectivo</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="w-5 h-5 inline-flex items-center justify-center rounded text-xs font-black" style="background-color: #ffffff !important; color: #0284c7 !important;">✓</span>
+                            <span class="text-xs font-bold" style="color: {{ $servicio->metodo_pago === 'cheque' ? '#ffffff' : '#e0f2fe' }} !important;">Cheque</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="w-5 h-5 inline-flex items-center justify-center rounded text-xs font-black" style="background-color: #ffffff !important; color: #0284c7 !important;">✓</span>
+                            <span class="text-xs font-bold" style="color: {{ $servicio->metodo_pago === 'transferencia' ? '#ffffff' : '#e0f2fe' }} !important;">Transferencia Bancaria</span>
                         </div>
                     </div>
                     <div class="text-[10.5px] font-mono" style="color: #e0f2fe !important;">
@@ -383,12 +359,12 @@ if (!function_exists('montoEnLetrasOficial')) {
                 <!-- Grand Total Banner (Light Celeste Gradient) -->
                 <div class="p-4 rounded-xl flex justify-between items-center shadow-xs" style="background: linear-gradient(90deg, #0284c7 0%, #0369a1 100%) !important; border: 1.5px solid #7dd3fc !important; color: #ffffff !important;">
                     <div>
-                        <span class="text-[11px] font-black uppercase tracking-widest block" style="color: #ffffff !important;">TOTAL ANTICIPO ENTREGADO EN CAJA</span>
-                        <span class="text-[10px] font-mono" style="color: #e0f2fe !important;">Adelanto sujeto a descuento en liquidación de planilla</span>
+                        <span class="text-[11px] font-black uppercase tracking-widest block" style="color: #ffffff !important;">TOTAL MONTO CANCELADO POR SERVICIO</span>
+                        <span class="text-[10px] font-mono" style="color: #e0f2fe !important;">Pago efectuado por concepto de flete / servicio externo</span>
                     </div>
                     <div class="text-right">
                         <span class="text-2xl md:text-3xl font-black font-mono tracking-tight" style="color: #ffffff !important; font-weight: 900;">
-                            Bs. {{ number_format($anticipo->monto, 2, ',', '.') }}
+                            Bs. {{ number_format($servicio->monto_total, 2, ',', '.') }}
                         </span>
                     </div>
                 </div>
@@ -396,18 +372,18 @@ if (!function_exists('montoEnLetrasOficial')) {
                 <!-- Signatures & Audit Seal Block -->
                 <div class="pt-6" style="border-top: 2px dashed #cbd5e1 !important;">
                     <div class="grid grid-cols-2 gap-10 text-center text-xs mb-3">
-                        <!-- Beneficiary Signature -->
+                        <!-- Operator Signature -->
                         <div class="flex flex-col items-center">
                             <div class="w-52 mb-1.5" style="border-bottom: 2px solid #0284c7 !important;"></div>
-                            <span class="font-black uppercase text-xs leading-tight" style="color: #0f172a !important; font-weight: 900;">{{ $anticipo->trabajador->nombre }}</span>
-                            <span class="text-[9.5px] uppercase tracking-widest font-mono font-bold mt-0.5" style="color: #475569 !important;">FIRMA RECIBÍ CONFORME (BENEFICIARIO)</span>
-                            <span class="text-[9px] font-mono mt-0.5" style="color: #64748b !important;">C.I.: {{ $anticipo->trabajador->ci }}</span>
+                            <span class="font-black uppercase text-xs leading-tight" style="color: #0f172a !important; font-weight: 900;">{{ $servicio->chofer_operador }}</span>
+                            <span class="text-[9.5px] uppercase tracking-widest font-mono font-bold mt-0.5" style="color: #475569 !important;">FIRMA CHOFER / OPERADOR (RECIBÍ CONFORME)</span>
+                            <span class="text-[9px] font-mono mt-0.5" style="color: #64748b !important;">Placa: {{ $servicio->placa_maquinaria }}</span>
                         </div>
 
                         <!-- Cashier Signature -->
                         <div class="flex flex-col items-center">
                             <div class="w-52 mb-1.5" style="border-bottom: 2px solid #0284c7 !important;"></div>
-                            <span class="font-black uppercase text-xs leading-tight" style="color: #0f172a !important; font-weight: 900;">{{ Auth::user()->name ?? 'ADMINISTRADOR MINERO' }}</span>
+                            <span class="font-black uppercase text-xs leading-tight" style="color: #0f172a !important; font-weight: 900;">{{ $servicio->entregado_por ?? 'ADMINISTRADOR MINERO' }}</span>
                             <span class="text-[9.5px] uppercase tracking-widest font-mono font-bold mt-0.5" style="color: #475569 !important;">FIRMA ENTREGUÉ CONFORME (CAJA CHICA)</span>
                         </div>
                     </div>
@@ -415,7 +391,7 @@ if (!function_exists('montoEnLetrasOficial')) {
                     <!-- Official Verification Watermark Badge -->
                     <div class="text-center mt-3">
                         <span class="inline-flex items-center text-[9.5px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-xs" style="background-color: #e0f2fe !important; border: 1.5px solid #0284c7 !important; color: #0369a1 !important;">
-                            <i class="fa-solid fa-circle-check text-sky-600 mr-1.5 text-xs"></i> VALE OFICIAL REGISTRADO Y VERIFICADO — SCPM CONTROL MINERO
+                            <i class="fa-solid fa-circle-check text-sky-600 mr-1.5 text-xs"></i> COMPROBANTE OFICIAL REGISTRADO Y VERIFICADO — SCPM CONTROL MINERO
                         </span>
                     </div>
                 </div>
@@ -436,46 +412,53 @@ if (!function_exists('montoEnLetrasOficial')) {
 
     </div>
 
-    <!-- ══════════ VALE IMPRESIÓN TÉRMICA 80MM / 100x148MM ══════════ -->
+    <!-- ══════════ TICKET IMPRESIÓN TÉRMICA 80MM / 100x148MM ══════════ -->
     <div id="thermal-ticket-80mm">
         <div style="text-align: center; margin-bottom: 6px;">
             <div style="font-weight: 900; font-size: 13px; text-transform: uppercase;">EMPRESA MINERA</div>
-            <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; margin-top: 2px;">VALE DE ANTICIPO DE DINERO</div>
-            <div style="font-size: 10px; font-weight: bold; margin-top: 2px;">VALE N.º {{ str_pad($anticipo->id, 5, '0', STR_PAD_LEFT) }}</div>
-            <div style="font-size: 9.5px; margin-top: 1px;">Fecha: {{ $anticipo->fecha->format('d/m/Y') }}</div>
+            <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; margin-top: 2px;">RECIBO DE SERVICIO EXTERNO</div>
+            <div style="font-size: 10px; font-weight: bold; margin-top: 2px;">N.º {{ str_pad($servicio->id, 5, '0', STR_PAD_LEFT) }}</div>
+            <div style="font-size: 9.5px; margin-top: 1px;">Fecha: {{ $servicio->fecha->format('d/m/Y') }}</div>
         </div>
 
         <div style="border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 4px 0; margin-bottom: 6px; font-size: 10px;">
-            <div><strong>TRABAJADOR:</strong> {{ strtoupper($anticipo->trabajador->nombre) }}</div>
-            <div><strong>C.I.:</strong> {{ $anticipo->trabajador->ci }}</div>
-            <div><strong>BOCAMINA:</strong> {{ strtoupper($anticipo->trabajador->bocamina->nombre ?? 'N/A') }}</div>
+            <div><strong>CHOFER/OPERADOR:</strong> {{ strtoupper($servicio->chofer_operador) }}</div>
+            <div><strong>PLACA/MÁQUINA:</strong> {{ strtoupper($servicio->placa_maquinaria) }}</div>
+            @if($servicio->bocamina)
+                <div><strong>BOCAMINA:</strong> {{ strtoupper($servicio->bocamina->nombre) }}</div>
+            @endif
+        </div>
+
+        <div style="font-size: 10px; margin-bottom: 6px; line-height: 1.35;">
+            <div><strong>SERVICIO:</strong> {{ $servicio->tipo_servicio }}</div>
+            <div><strong>CANTIDAD:</strong> {{ number_format($servicio->cantidad, 2) }} {{ $servicio->unidad_medida }}</div>
+            @if($servicio->precio_unitario > 0)
+                <div><strong>PRECIO UNIT.:</strong> Bs. {{ number_format($servicio->precio_unitario, 2) }}</div>
+            @endif
+            @if($servicio->origen_destino)
+                <div><strong>TRAMO:</strong> {{ $servicio->origen_destino }}</div>
+            @endif
         </div>
 
         <div style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 4px 0; margin-bottom: 6px; font-size: 11px; font-weight: 900; display: flex; justify-content: space-between; padding-right: 4px;">
-            <span>MONTO ANTICIPO:</span>
-            <span>Bs. {{ number_format($anticipo->monto, 2) }}</span>
+            <span>TOTAL PAGADO:</span>
+            <span>Bs. {{ number_format($servicio->monto_total, 2) }}</span>
         </div>
 
         <div style="font-size: 8.5px; font-weight: bold; text-transform: uppercase; margin-bottom: 10px;">
-            {{ montoEnLetrasOficial($anticipo->monto) }}
-        </div>
-
-        @if($anticipo->observacion)
-            <div style="font-size: 9.5px; margin-bottom: 8px;">
-                <strong>CONCEPTO / MOTIVO:</strong> {{ $anticipo->observacion }}
-            </div>
-        @endif
-
-        <div style="margin-top: 20px; text-align: center;">
-            <div style="border-top: 1px solid #000; width: 75%; margin: 0 auto 2px auto;"></div>
-            <div style="font-size: 9.5px; font-weight: bold;">{{ strtoupper($anticipo->trabajador->nombre) }}</div>
-            <div style="font-size: 8.5px;">RECIBÍ CONFORME (TRABAJADOR)</div>
+            {{ montoEnLetrasServicio($servicio->monto_total) }}
         </div>
 
         <div style="margin-top: 20px; text-align: center;">
             <div style="border-top: 1px solid #000; width: 75%; margin: 0 auto 2px auto;"></div>
-            <div style="font-size: 9.5px; font-weight: bold;">{{ strtoupper(Auth::user()->name ?? 'Administración') }}</div>
-            <div style="font-size: 8.5px;">ENTREGUÉ CONFORME (CAJA)</div>
+            <div style="font-size: 9.5px; font-weight: bold;">{{ strtoupper($servicio->chofer_operador) }}</div>
+            <div style="font-size: 8.5px;">RECIBÍ CONFORME (CHOFER / OPERADOR)</div>
+        </div>
+
+        <div style="margin-top: 20px; text-align: center;">
+            <div style="border-top: 1px solid #000; width: 75%; margin: 0 auto 2px auto;"></div>
+            <div style="font-size: 9.5px; font-weight: bold;">{{ strtoupper($servicio->entregado_por ?? 'Administración') }}</div>
+            <div style="font-size: 8.5px;">ENTREGUÉ CONFORME (CAJA CHICA)</div>
         </div>
 
         <div style="text-align: center; margin-top: 12px; font-size: 8.5px; border-top: 1px dashed #000; padding-top: 4px;">
@@ -484,7 +467,8 @@ if (!function_exists('montoEnLetrasOficial')) {
     </div>
 
 </div>
-@endsection
+
+</div>
 
 @push('scripts')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -514,7 +498,7 @@ if (!function_exists('montoEnLetrasOficial')) {
 
         const opt = {
             margin:       [0.2, 0.2, 0.2, 0.2],
-            filename:     'Vale_Anticipo_Nro_' + '{{ str_pad($anticipo->id, 5, "0", STR_PAD_LEFT) }}' + '.pdf',
+            filename:     'Recibo_Servicio_Externo_Nro_' + '{{ str_pad($servicio->id, 5, "0", STR_PAD_LEFT) }}' + '.pdf',
             image:        { type: 'jpeg', quality: 0.98 },
             html2canvas:  { scale: 1.8, useCORS: true, letterRendering: true, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0 },
             jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
@@ -540,31 +524,36 @@ if (!function_exists('montoEnLetrasOficial')) {
                     .info-header { background-color: #1e293b; color: #ffffff; font-size: 11px; font-weight: bold; padding: 8px 12px; }
                     .td-cell { border: 1px solid #cbd5e1; padding: 7px 10px; }
                     .td-num { border: 1px solid #cbd5e1; padding: 7px 10px; text-align: right; font-family: Consolas, monospace; }
-                    .total-cell { background-color: #fef2f2; font-size: 12px; font-weight: bold; color: #991b1b; border: 1px solid #ef4444; }
+                    .total-cell { background-color: #f0fdf4; font-size: 12px; font-weight: bold; color: #166534; border: 1px solid #22c55e; }
                 </style>
             </head>
             <body>
                 <table style="width:100%; border-collapse:collapse;">
-                    <tr><td colspan="4" class="header-banner">EMPRESA MINERA — VALE DE ANTICIPO DE DINERO</td></tr>
+                    <tr><td colspan="4" class="header-banner">EMPRESA MINERA — COMPROBANTE DE SERVICIO EXTERNO / FLETE</td></tr>
                     <tr>
-                        <td class="info-header" colspan="2">VALE N.º: {{ str_pad($anticipo->id, 5, '0', STR_PAD_LEFT) }}</td>
-                        <td class="info-header" colspan="2" style="text-align:right;">FECHA: {{ $anticipo->fecha->format('d/m/Y') }}</td>
+                        <td class="info-header" colspan="2">N.º CORRELATIVO: {{ str_pad($servicio->id, 5, '0', STR_PAD_LEFT) }}</td>
+                        <td class="info-header" colspan="2" style="text-align:right;">FECHA: {{ $servicio->fecha->format('d/m/Y') }}</td>
                     </tr>
                     <tr><td colspan="4">&nbsp;</td></tr>
-                    <tr><td class="td-cell" style="font-weight:bold; background:#f8fafc;">Trabajador / Beneficiario:</td><td class="td-cell" colspan="3"><strong>{{ $anticipo->trabajador->nombre }}</strong></td></tr>
-                    <tr><td class="td-cell" style="font-weight:bold; background:#f8fafc;">Cédula de Identidad (C.I.):</td><td class="td-cell" colspan="3">{{ $anticipo->trabajador->ci }}</td></tr>
-                    <tr><td class="td-cell" style="font-weight:bold; background:#f8fafc;">Bocamina:</td><td class="td-cell" colspan="3">{{ $anticipo->trabajador->bocamina->nombre ?? 'N/A' }}</td></tr>
-                    @if($anticipo->observacion)
-                    <tr><td class="td-cell" style="font-weight:bold; background:#f8fafc;">Concepto / Motivo:</td><td class="td-cell" colspan="3">{{ $anticipo->observacion }}</td></tr>
+                    <tr><td class="td-cell" style="font-weight:bold; background:#f8fafc;">Chofer / Operador / Empresa:</td><td class="td-cell" colspan="3"><strong>{{ $servicio->chofer_operador }}</strong></td></tr>
+                    <tr><td class="td-cell" style="font-weight:bold; background:#f8fafc;">Placa / Maquinaria:</td><td class="td-cell" colspan="3">{{ $servicio->placa_maquinaria }}</td></tr>
+                    <tr><td class="td-cell" style="font-weight:bold; background:#f8fafc;">Bocamina / Origen:</td><td class="td-cell" colspan="3">{{ $servicio->bocamina->nombre ?? 'N/A' }}</td></tr>
+                    <tr><td class="td-cell" style="font-weight:bold; background:#f8fafc;">Categoría de Servicio:</td><td class="td-cell" colspan="3">{{ $servicio->tipo_servicio }}</td></tr>
+                    <tr><td class="td-cell" style="font-weight:bold; background:#f8fafc;">Cantidad:</td><td class="td-num" colspan="3" style="text-align:left;">{{ number_format($servicio->cantidad, 2) }} {{ $servicio->unidad_medida }}</td></tr>
+                    <tr><td class="td-cell" style="font-weight:bold; background:#f8fafc;">Precio Unitario (Bs.):</td><td class="td-num" colspan="3" style="text-align:left;">Bs. {{ number_format($servicio->precio_unitario, 2) }}</td></tr>
+                    @if($servicio->origen_destino)
+                    <tr><td class="td-cell" style="font-weight:bold; background:#f8fafc;">Tramo / Origen y Destino:</td><td class="td-cell" colspan="3">{{ $servicio->origen_destino }}</td></tr>
+                    @endif
+                    @if($servicio->observacion)
+                    <tr><td class="td-cell" style="font-weight:bold; background:#f8fafc;">Observación / Concepto:</td><td class="td-cell" colspan="3">{{ $servicio->observacion }}</td></tr>
                     @endif
                     <tr><td colspan="4">&nbsp;</td></tr>
-                    <tr><td colspan="4" class="info-header">LIQUIDACIÓN DE ANTICIPO</td></tr>
-                    <tr><td class="td-cell total-cell" colspan="3">MONTO ANTICIPADO ENTREGADO (Bs.):</td><td class="td-num total-cell">Bs. {{ number_format($anticipo->monto, 2) }}</td></tr>
-                    <tr><td class="td-cell" colspan="3" style="font-weight:bold;">Saldo Pendiente por Descontar (Bs.):</td><td class="td-num" style="font-weight:bold; color:#dc2626;">Bs. {{ number_format($anticipo->saldo, 2) }}</td></tr>
-                    <tr><td class="td-cell" colspan="3">Estado del Saldo:</td><td class="td-cell" style="text-align:center; font-weight:bold;">{{ $anticipo->saldo == 0 ? 'TOTALMENTE DESCONTADO' : 'PENDIENTE DE DESCUENTO' }}</td></tr>
+                    <tr><td colspan="4" class="info-header">LIQUIDACIÓN DE PAGO DEL SERVICIO</td></tr>
+                    <tr><td class="td-cell total-cell" colspan="3">MONTO TOTAL PAGADO (Bs.):</td><td class="td-num total-cell">Bs. {{ number_format($servicio->monto_total, 2) }}</td></tr>
+                    <tr><td class="td-cell" colspan="3" style="font-weight:bold;">EQUIVALENTE EN DÓLARES ($us):</td><td class="td-num" style="font-weight:bold;">$us {{ number_format($servicio->monto_total / 6.96, 2) }}</td></tr>
                     <tr><td colspan="4">&nbsp;</td></tr>
-                    <tr><td class="td-cell" style="font-weight:bold; background:#f8fafc;">Monto en Letras:</td><td class="td-cell" colspan="3"><strong>{{ montoEnLetrasOficial($anticipo->monto) }}</strong></td></tr>
-                    <tr><td class="td-cell" style="font-weight:bold; background:#f8fafc;">Entregado Por:</td><td class="td-cell" colspan="3">{{ Auth::user()->name ?? 'Administración General' }}</td></tr>
+                    <tr><td class="td-cell" style="font-weight:bold; background:#f8fafc;">Monto en Letras:</td><td class="td-cell" colspan="3"><strong>{{ montoEnLetrasServicio($servicio->monto_total) }}</strong></td></tr>
+                    <tr><td class="td-cell" style="font-weight:bold; background:#f8fafc;">Entregado Por (Caja Chica):</td><td class="td-cell" colspan="3">{{ $servicio->entregado_por ?? 'Administración General' }}</td></tr>
                 </table>
             </body>
             </html>
@@ -573,10 +562,11 @@ if (!function_exists('montoEnLetrasOficial')) {
         const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = 'Vale_Anticipo_Nro_' + '{{ str_pad($anticipo->id, 5, "0", STR_PAD_LEFT) }}' + '.xls';
+        link.download = 'Recibo_Servicio_Externo_Nro_' + '{{ str_pad($servicio->id, 5, "0", STR_PAD_LEFT) }}' + '.xls';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
     }
 </script>
 @endpush
+@endsection

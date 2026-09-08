@@ -264,12 +264,14 @@ class TransaccionMineralController extends Controller
                 $rules['lotes.*.peso_neto_seco'] = 'required|numeric|min:0';
                 $rules['lotes.*.precio_unidad'] = 'required|numeric|min:0';
                 $rules['lotes.*.monto_total'] = 'required|numeric|min:0';
+                $rules['lotes.*.humedad_porcentaje'] = 'required|numeric|min:0|max:100';
             } else {
                 $rules['lote_id'] = 'required|exists:transacciones_minerales,id';
                 $rules['cantidad'] = 'required|numeric|min:0';
                 $rules['peso_neto_seco'] = 'required|numeric|min:0';
                 $rules['precio_unidad'] = 'required|numeric|min:0';
                 $rules['monto_total'] = 'required|numeric|min:0';
+                $rules['humedad_porcentaje'] = 'required|numeric|min:0|max:100';
             }
         }
 
@@ -294,8 +296,8 @@ class TransaccionMineralController extends Controller
 
                 $pesoBruto = (float) $request->input('peso_bruto', 0);
                 $humedadPct = (float) $request->input('humedad_porcentaje', 0);
-                $descuentoPeso = $pesoBruto * ($humedadPct / 100);
-                $pesoNetoSeco = round(max(0, $pesoBruto - $descuentoPeso), 2);
+                // Humidity is deducted directly from total cost (money), not from weight
+                $pesoNetoSeco = $pesoBruto;
 
                 $data['peso_bruto'] = $pesoBruto;
                 $data['humedad_porcentaje'] = $humedadPct;
@@ -345,6 +347,7 @@ class TransaccionMineralController extends Controller
                             'peso_neto_seco' => $item['peso_neto_seco'],
                             'precio_unidad' => $item['precio_unidad'],
                             'monto_total' => $item['monto_total'],
+                            'humedad_porcentaje' => $item['humedad_porcentaje'] ?? 0,
                             'observacion' => $request->observacion,
                         ]);
                     }
@@ -419,6 +422,12 @@ class TransaccionMineralController extends Controller
         return response()->json($transaccion);
     }
 
+    public function ticket($id)
+    {
+        $transaccion = TransaccionMineral::with(['bocamina', 'lote', 'analisis', 'ventas'])->findOrFail($id);
+        return view('transacciones.ticket', compact('transaccion'));
+    }
+
     public function update(Request $request, TransaccionMineral $transacciones_minerale)
     {
         $rules = [
@@ -432,6 +441,7 @@ class TransaccionMineralController extends Controller
             'peso_neto_seco' => 'required|numeric|min:0',
             'precio_unidad' => 'required|numeric|min:0',
             'monto_total' => 'required|numeric|min:0',
+            'humedad_porcentaje' => 'required|numeric|min:0|max:100',
         ];
 
         if ($request->tipo === 'compra') {
@@ -494,8 +504,8 @@ class TransaccionMineralController extends Controller
 
                 $pesoBruto = (float) $request->input('peso_bruto', 0);
                 $humedadPct = (float) $request->input('humedad_porcentaje', 0);
-                $descuentoPeso = $pesoBruto * ($humedadPct / 100);
-                $pesoNetoSeco = round(max(0, $pesoBruto - $descuentoPeso), 2);
+                // Humidity is deducted directly from total cost (money), not from weight
+                $pesoNetoSeco = $pesoBruto;
 
                 $data['peso_bruto'] = $pesoBruto;
                 $data['humedad_porcentaje'] = $humedadPct;

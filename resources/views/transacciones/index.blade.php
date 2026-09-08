@@ -481,12 +481,11 @@
         },
 
         get calcDescuentoPeso() {
-            return this.calcPesoBruto * (this.calcHumedadPct / 100);
+            return 0;
         },
 
         get calcPesoNetoSeco() {
-            let net = this.calcPesoBruto - this.calcDescuentoPeso;
-            return net < 0 ? 0 : net;
+            return this.calcPesoBruto;
         },
 
         get calcSubtotalBruto() {
@@ -523,7 +522,8 @@
             this.ventaCliente = '';
             this.ventaDestino = '';
             this.ventaObservacion = '';
-            this.ventaLotes = [{ lote_id: '', cantidad: '', peso_neto_seco: '', precio_unidad: '', monto_total: 0, info: null, analisis: [] }];
+            this.ventaHumedadPorcentaje = 0;
+            this.ventaLotes = [{ lote_id: '', cantidad: '', peso_neto_seco: '', precio_unidad: '', humedad_porcentaje: 0, monto_total: 0, info: null, analisis: [] }];
             this.openVentaModal = true;
         },
 
@@ -538,6 +538,7 @@
             this.ventaCantidad = item.cantidad;
             this.ventaPeso = item.peso_neto_seco;
             this.ventaPrecio = item.precio_unidad;
+            this.ventaHumedadPorcentaje = item.humedad_porcentaje !== null ? item.humedad_porcentaje : 0;
             this.ventaTotal = item.monto_total;
             this.ventaObservacion = item.observacion || '';
             if (item.lote) {
@@ -553,7 +554,7 @@
         },
 
         addVentaLote() {
-            this.ventaLotes.push({ lote_id: '', cantidad: '', peso_neto_seco: '', precio_unidad: '', monto_total: 0, info: null, analisis: [] });
+            this.ventaLotes.push({ lote_id: '', cantidad: '', peso_neto_seco: '', precio_unidad: '', humedad_porcentaje: 0, monto_total: 0, info: null, analisis: [] });
         },
         removeVentaLote(index) { this.ventaLotes.splice(index, 1); },
 
@@ -588,6 +589,7 @@
                     // Auto-fill disponible values as defaults
                     this.ventaLotes[index].peso_neto_seco = parseFloat(data.peso_disponible).toFixed(2);
                     this.ventaLotes[index].cantidad = parseFloat(data.cantidad_disponible).toFixed(2);
+                    this.ventaLotes[index].humedad_porcentaje = data.humedad_porcentaje || 0;
                     if (data.precio_unidad) {
                         this.ventaLotes[index].precio_unidad = parseFloat(data.precio_unidad).toFixed(2);
                     }
@@ -614,22 +616,29 @@
 
         calcVentaItemTotal(index) {
             const item = this.ventaLotes[index];
+            let bruto = 0;
             if (item.info && item.info.presentacion === 'Volqueta') {
                 let t = parseFloat(item.pesoToneladas) || 0;
                 let prT = parseFloat(item.precioToneladas) || 0;
                 item.peso_neto_seco = (t * 1000).toFixed(2);
                 item.precio_unidad = (prT / 1000).toFixed(4);
-                item.monto_total = (t * prT).toFixed(2);
+                bruto = t * prT;
             } else {
                 let p = parseFloat(item.peso_neto_seco) || 0;
                 let pr = parseFloat(item.precio_unidad) || 0;
-                item.monto_total = (p * pr).toFixed(2);
+                bruto = p * pr;
             }
+            let h = parseFloat(item.humedad_porcentaje) || 0;
+            if (h < 0) h = 0; if (h > 100) h = 100;
+            item.monto_total = (bruto - (bruto * (h/100))).toFixed(2);
         },
         calcVentaTotal() {
             let p = parseFloat(this.ventaPeso) || 0;
             let pr = parseFloat(this.ventaPrecio) || 0;
-            this.ventaTotal = (p * pr).toFixed(2);
+            let h = parseFloat(this.ventaHumedadPorcentaje) || 0;
+            if (h < 0) h = 0; if (h > 100) h = 100;
+            let bruto = p * pr;
+            this.ventaTotal = (bruto - (bruto * (h/100))).toFixed(2);
         },
 
         showFicha(id) {
@@ -1003,6 +1012,9 @@
                                     <button @click="showFicha({{ $item->id }})" class="m-btn m-btn-ghost m-btn-icon cursor-pointer" title="Ficha Técnica">
                                         <i class="fa-solid fa-eye text-indigo-400 text-xs"></i>
                                     </button>
+                                    <a :href="'/transacciones-minerales/' + {{ $item->id }} + '/ticket'" target="_blank" onclick="window.open(this.href, 'Ticket80mm', 'width=420,height=700,scrollbars=yes'); return false;" class="m-btn m-btn-ghost m-btn-icon cursor-pointer text-emerald-400 hover:text-emerald-300" title="Imprimir Ticket Térmico (80mm / 100x148)">
+                                        <i class="fa-solid fa-print text-sm"></i>
+                                    </a>
                                     <button @click="editCompra({{ $item }})" class="m-btn m-btn-ghost m-btn-icon cursor-pointer" title="Editar">
                                         <i class="fa-solid fa-pen text-amber-400 text-xs"></i>
                                     </button>
@@ -1062,6 +1074,7 @@
                         <th>Destino</th>
                         <th class="text-center">Cantidad</th>
                         <th class="text-right">Peso (Kg)</th>
+                        <th class="text-center">Humedad</th>
                         <th class="text-right">Total Venta</th>
                         <th class="text-center">Acciones</th>
                     </tr></thead>
@@ -1087,9 +1100,19 @@
                             <td class="text-slate-400 text-xs">{{ $item->destino ?: '—' }}</td>
                             <td class="text-center font-mono text-slate-300 font-bold text-xs">{{ number_format($item->cantidad, 2) }}</td>
                             <td class="text-right font-mono font-bold text-slate-200 text-xs whitespace-nowrap">{{ number_format($item->peso_neto_seco, 2) }} Kg</td>
+                            <td class="text-center">
+                                @if($item->humedad_porcentaje > 0)
+                                    <span class="m-badge m-badge-cyan text-[10px] font-mono">{{ number_format($item->humedad_porcentaje, 2) }}%</span>
+                                @else
+                                    <span class="text-slate-600 text-xs">—</span>
+                                @endif
+                            </td>
                             <td class="text-right font-mono font-black text-emerald-400 text-xs whitespace-nowrap">Bs. {{ number_format($item->monto_total, 2) }}</td>
                             <td class="text-center">
                                 <div class="flex justify-center gap-1.5">
+                                    <a :href="'/transacciones-minerales/' + {{ $item->id }} + '/ticket'" target="_blank" onclick="window.open(this.href, 'Ticket80mm', 'width=420,height=700,scrollbars=yes'); return false;" class="m-btn m-btn-ghost m-btn-icon cursor-pointer text-emerald-400 hover:text-emerald-300" title="Imprimir Ticket Térmico (80mm / 100x148)">
+                                        <i class="fa-solid fa-print text-sm"></i>
+                                    </a>
                                     <button @click="editVenta({{ $item }})" class="m-btn m-btn-ghost m-btn-icon cursor-pointer" title="Editar">
                                         <i class="fa-solid fa-pen text-amber-400 text-xs"></i>
                                     </button>
@@ -1103,7 +1126,7 @@
                             </td>
                         </tr>
                         @empty
-                        <tr><td colspan="9" class="py-16 text-center">
+                        <tr><td colspan="10" class="py-16 text-center">
                             <i class="fa-solid fa-truck-loading text-4xl block mb-3 text-slate-700 opacity-30"></i>
                             <p class="text-slate-500">No se han registrado ventas aún</p>
                             <button @click="initVenta()" class="m-btn m-btn-emerald mt-4 cursor-pointer">
@@ -1247,9 +1270,14 @@
                                 <span class="m-badge {{ $badgeCls }}">{{ $dot }} {{ $estado }}</span>
                             </td>
                             <td class="text-center">
-                                <button @click="showFicha({{ $lote->id }})" class="m-btn m-btn-ghost m-btn-icon cursor-pointer" title="Ver Detalle">
-                                    <i class="fa-solid fa-eye text-cyan-400 text-xs"></i>
-                                </button>
+                                <div class="flex justify-center gap-1.5">
+                                    <button @click="showFicha({{ $lote->id }})" class="m-btn m-btn-ghost m-btn-icon cursor-pointer" title="Ver Detalle">
+                                        <i class="fa-solid fa-eye text-cyan-400 text-xs"></i>
+                                    </button>
+                                    <a :href="'/transacciones-minerales/' + {{ $lote->id }} + '/ticket'" target="_blank" onclick="window.open(this.href, 'Ticket80mm', 'width=420,height=700,scrollbars=yes'); return false;" class="m-btn m-btn-ghost m-btn-icon cursor-pointer text-emerald-400 hover:text-emerald-300" title="Imprimir Ticket Térmico (80mm / 100x148)">
+                                        <i class="fa-solid fa-print text-sm"></i>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                         @empty
@@ -1604,8 +1632,8 @@
                                     <span class="absolute right-3 top-2.5 text-xs text-sky-400 font-bold font-mono">%</span>
                                 </div>
                                 <p class="text-[10px] text-slate-400 mt-1 flex items-center justify-between font-mono" x-show="parseFloat(compraHumedadPorcentaje || 0) > 0">
-                                    <span>Descuento aplicado:</span>
-                                    <span class="text-sky-400 font-bold" x-text="'- ' + numberFormat(compraDescuentoHumedadPeso) + ' Kg'"></span>
+                                    <span>Descuento en costo total:</span>
+                                    <span class="text-rose-400 font-bold" x-text="'-Bs. ' + numberFormat(calcDescuentoDinero)"></span>
                                 </p>
                             </div>
 
@@ -1968,6 +1996,17 @@
                                                 </div>
 
                                                 <div>
+                                                    <label class="m-label text-[9px] font-bold text-sky-400">Humedad (%) <span class="text-rose-400">*</span></label>
+                                                    <div class="relative">
+                                                        <input type="number" step="0.01" min="0" max="100"
+                                                               :name="'lotes['+index+'][humedad_porcentaje]'"
+                                                               x-model="item.humedad_porcentaje" @input="calcVentaItemTotal(index)"
+                                                               class="m-input font-mono text-xs py-2 m-input-sky pr-8" required placeholder="0.00">
+                                                        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-sky-400 font-bold font-mono">%</span>
+                                                    </div>
+                                                </div>
+
+                                                <div>
                                                     <label class="m-label text-[9px] font-black" style="color:#10b981">Total (Bs.) — Auto</label>
                                                     <input type="number" step="0.01" :name="'lotes['+index+'][monto_total]'"
                                                            x-model="item.monto_total"
@@ -2072,6 +2111,13 @@
                                 <div>
                                     <label class="m-label">Precio Unitario Venta (Bs/Kg) <span class="text-rose-400">*</span></label>
                                     <input type="number" step="0.01" name="precio_unidad" required x-model="ventaPrecio" @input="calcVentaTotal()" class="m-input font-mono">
+                                </div>
+                                <div>
+                                    <label class="m-label font-bold text-sky-400">Humedad (%) <span class="text-rose-400">*</span></label>
+                                    <div class="relative">
+                                        <input type="number" step="0.01" min="0" max="100" name="humedad_porcentaje" required x-model="ventaHumedadPorcentaje" @input="calcVentaTotal()" class="m-input font-mono m-input-sky pr-8">
+                                        <span class="absolute right-3 top-2.5 text-xs text-sky-400 font-bold font-mono">%</span>
+                                    </div>
                                 </div>
                                 <div>
                                     <label class="m-label font-black" style="color:#10b981">💰 Total Cobrado (Bs.)</label>
@@ -2238,7 +2284,10 @@
                 </div>
             </div>
 
-            <div class="m-modal-footer">
+            <div class="m-modal-footer flex items-center justify-between">
+                <a :href="fichaLote ? '/transacciones-minerales/' + fichaLote.id + '/ticket' : '#'" target="_blank" onclick="window.open(this.href, 'Ticket80mm', 'width=420,height=700,scrollbars=yes'); return false;" class="m-btn inline-flex items-center gap-2 text-xs font-bold px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl shadow-md transition">
+                    <i class="fa-solid fa-print text-sm"></i> Ticket (80mm / 100x148)
+                </a>
                 <button type="button" @click="openDetailModal = false" class="m-btn m-btn-ghost cursor-pointer">
                     <i class="fa-solid fa-xmark text-xs"></i> Cerrar Ficha
                 </button>

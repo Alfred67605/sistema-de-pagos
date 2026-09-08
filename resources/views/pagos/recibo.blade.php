@@ -69,30 +69,84 @@ if (!function_exists('montoEnLetrasOficial')) {
         z-index: 10 !important;
     }
 
-    /* Print styles to guarantee exact copy on standard A4 paper */
+    /* Print styles to guarantee exact copy on Postcard 100x148mm, 80mm Roll, A4 or Letter */
+    #thermal-ticket-80mm {
+        display: none;
+    }
+
     @media print {
+        @page {
+            margin: 0mm !important;
+        }
         body {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        html, body.thermal-print-mode {
+            background: #ffffff !important;
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        body.thermal-print-mode * {
+            background: transparent !important;
+            background-color: transparent !important;
+            color: #000000 !important;
+            -webkit-print-color-adjust: economy !important;
+            print-color-adjust: economy !important;
+            color-adjust: economy !important;
+        }
+        body.thermal-print-mode .no-print,
+        body.thermal-print-mode #receipt-card {
+            display: none !important;
+        }
+        body.thermal-print-mode #thermal-ticket-80mm {
+            display: block !important;
+            width: 70mm !important;
+            max-width: 70mm !important;
+            margin: 0 auto !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            background-color: #ffffff !important;
+            font-family: 'Courier New', Courier, monospace !important;
+            font-size: 10.5px !important;
+            color: #000000 !important;
+            box-sizing: border-box !important;
+        }
+
+        body:not(.thermal-print-mode) {
             background: #ffffff !important;
             color: #000000 !important;
         }
-        .no-print {
+        body:not(.thermal-print-mode) .no-print {
             display: none !important;
         }
-        .receipt-card-wrapper {
+        body:not(.thermal-print-mode) .receipt-card-wrapper {
             border: none !important;
             box-shadow: none !important;
             border-radius: 0 !important;
             padding: 0 !important;
-            margin: 0 !important;
+            margin: 0 auto !important;
+            width: 100% !important;
+            max-width: 100% !important;
             background: #ffffff !important;
+            box-sizing: border-box !important;
         }
-        .receipt-card-wrapper::before {
+        body:not(.thermal-print-mode) .receipt-card-wrapper::before {
             display: none !important;
         }
-        .print-container {
+        body:not(.thermal-print-mode) .print-container {
             border: 2px solid #000000 !important;
-            border-radius: 8px !important;
-            padding: 1.5rem !important;
+            border-radius: 6px !important;
+            padding: 0.6rem 0.8rem !important;
+            margin: 0 auto !important;
+            box-sizing: border-box !important;
+            width: 100% !important;
+            overflow: hidden !important;
+        }
+        body:not(.thermal-print-mode) #thermal-ticket-80mm {
+            display: none !important;
         }
     }
 
@@ -160,225 +214,396 @@ if (!function_exists('montoEnLetrasOficial')) {
                 <i class="fa-solid fa-pen-to-square mr-2 text-sm"></i> Editar Pago
             </a>
             <button onclick="downloadPDF()" class="btn-3d-receipt btn-3d-receipt-pdf inline-flex items-center justify-center px-4 py-2.5 text-xs">
-                <i class="fa-solid fa-file-pdf mr-2 text-sm"></i> Descargar PDF
+                <i class="fa-solid fa-file-pdf mr-2 text-sm"></i> PDF
             </button>
             <button onclick="downloadExcel()" class="btn-3d-receipt btn-3d-receipt-excel inline-flex items-center justify-center px-4 py-2.5 text-xs">
-                <i class="fa-solid fa-file-excel mr-2 text-sm"></i> Exportar Excel
+                <i class="fa-solid fa-file-excel mr-2 text-sm"></i> Excel
             </button>
-            <button onclick="window.print()" class="btn-3d-receipt btn-3d-receipt-print inline-flex items-center justify-center px-5 py-2.5 text-xs">
-                <i class="fa-solid fa-print mr-2 text-sm"></i> Imprimir Recibo
+            <button onclick="printThermal80mm()" class="btn-3d-receipt inline-flex items-center justify-center px-4 py-2.5 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-md transition">
+                <i class="fa-solid fa-receipt mr-2 text-sm"></i> Ticket (80mm / 100x148)
+            </button>
+            <button onclick="printStandardA4()" class="btn-3d-receipt btn-3d-receipt-print inline-flex items-center justify-center px-4 py-2.5 text-xs">
+                <i class="fa-solid fa-print mr-2 text-sm"></i> Hoja (Carta/A4)
             </button>
         </div>
     </div>
 
-    <!-- Printable Area (White Paper Style Container) -->
-    <div id="receipt-card" class="mx-auto max-w-4xl receipt-card-wrapper p-8 md:p-10 font-sans text-sm relative">
-        
-        <!-- Inner Border for Professional Aesthetic -->
-        <div class="print-container border-2 border-slate-900 p-6 md:p-8 rounded-xl bg-white">
-            
-            <!-- Header Grid: Logo, Title/Date, Amounts -->
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center border-b-2 border-slate-900 pb-6 mb-6">
-                <!-- Column 1: Executive Mining Logo -->
-                <div class="md:col-span-5 flex items-center space-x-3">
-                    <div class="w-12 h-12 rounded-xl bg-slate-900 flex items-center justify-center text-white flex-shrink-0 shadow-md">
-                        <i class="fa-solid fa-gem text-xl text-emerald-400"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-base font-black uppercase tracking-widest text-slate-900 leading-none">EMPRESA MINERA</h2>
-                        <span class="text-[9.5px] text-slate-500 font-mono tracking-wider uppercase block mt-1">CONTROL OPERATIVO DE PAGOS</span>
-                    </div>
-                </div>
+    <!-- Mandatory CSS for Print-Proof Vibrant Colors & Zero Margins -->
+    <style>
+        @media print {
+            @page { size: auto; margin: 0mm; }
+            body { margin: 0 !important; padding: 0 !important; background-color: #ffffff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+            #receipt-card { width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; border: none !important; box-shadow: none !important; border-radius: 0 !important; }
+            .print-container { width: 100% !important; margin: 0 !important; padding: 0 !important; }
+            #receipt-card, #receipt-card *, .print-container, .print-container * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+        }
+        #receipt-card * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
+        }
+    </style>
 
-                <!-- Column 2: Centered Large Title & Date/Time -->
-                <div class="md:col-span-4 text-center">
-                    <h1 class="text-xl font-black tracking-widest text-slate-900 uppercase">Recibo de Pago</h1>
-                    <div class="mt-2 text-slate-700 font-mono text-xs flex flex-col items-center justify-center space-y-1">
+    <!-- Printable Area (Pure White Container with Light Celeste Palette) -->
+    <div id="receipt-card" class="mx-auto max-w-4xl receipt-card-wrapper font-sans text-sm relative bg-white shadow-xl rounded-2xl overflow-hidden" style="border: 2px solid #38bdf8 !important; background-color: #ffffff !important;">
+        
+        <!-- Inner Container -->
+        <div class="print-container bg-white" style="background-color: #ffffff !important;">
+            
+            <!-- Light Celeste & Sky Blue Header Banner -->
+            <div class="p-5 md:p-6 text-white relative" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important; color: #ffffff !important; border-bottom: 3px solid #7dd3fc !important;">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                    <!-- Mining Company Logo & Brand -->
+                    <div class="flex items-center space-x-4">
+                        <div class="w-13 h-13 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-md" style="background: #ffffff !important; color: #0284c7 !important; border: 2px solid #7dd3fc !important;">
+                            <i class="fa-solid fa-gem text-2xl" style="color: #0284c7 !important;"></i>
+                        </div>
                         <div>
-                            <span class="font-bold">Nº Correlativo:</span>
-                            <span class="text-sm font-extrabold text-red-600 ml-1 underline decoration-red-500 decoration-2">{{ str_pad($pago->id, 5, '0', STR_PAD_LEFT) }}</span>
+                            <h2 class="text-xl font-black uppercase tracking-widest leading-none" style="color: #ffffff !important; font-weight: 900;">EMPRESA MINERA</h2>
+                            <div class="flex items-center gap-2 mt-1.5">
+                                <span class="text-[10.5px] font-mono font-bold tracking-wider uppercase px-3 py-0.5 rounded-full" style="background-color: rgba(255, 255, 255, 0.2) !important; color: #ffffff !important; border: 1px solid #7dd3fc !important;">
+                                    <i class="fa-solid fa-shield-halved mr-1"></i> CONTROL OPERATIVO MINERO
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Document Title & Serial Badge -->
+                    <div class="text-center md:text-right">
+                        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-lg shadow-sm" style="background-color: #ffffff !important; color: #0369a1 !important; border: 1.5px solid #7dd3fc !important;">
+                            <span class="text-xs font-black uppercase tracking-widest" style="color: #0369a1 !important;">COMPROBANTE DE PAGO Nº</span>
+                            <span class="text-lg font-black font-mono" style="color: #0284c7 !important;">{{ str_pad($pago->id, 5, '0', STR_PAD_LEFT) }}</span>
                             @if($pago->es_editado)
-                                <span class="ml-1.5 px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-amber-100 text-amber-800 border border-amber-300 uppercase">Editado</span>
+                                <span class="px-1.5 py-0.2 rounded text-[9px] font-black uppercase" style="background-color: #0284c7 !important; color: #ffffff !important;">EDITADO</span>
                             @endif
                         </div>
-                        <div class="text-[9.5px] text-slate-500 mt-0.5 space-x-1">
-                            <span>Fecha: <strong class="text-slate-800">{{ $pago->fecha->format('d/m/Y') }}</strong></span>
-                            <span>|</span>
-                            <span>Hora: <strong class="text-slate-800">{{ $pago->created_at->format('H:i:s') }}</strong></span>
+                        <p class="text-[11px] font-mono mt-1.5 font-bold" style="color: #e0f2fe !important;">
+                            Fecha: <strong style="color: #ffffff !important;">{{ $pago->fecha->format('d/m/Y') }}</strong> • Hora: <strong style="color: #ffffff !important;">{{ $pago->created_at->format('H:i:s') }}</strong>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Receipt Content Body (Clean & Soft Light Celeste Tonal Grid) -->
+            <div class="p-5 md:p-6 space-y-4" style="background-color: #ffffff !important;">
+
+                <!-- 2-Column Section: Metadata (Left) & Financial Card (Right) -->
+                <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: stretch;">
+                    
+                    <!-- Left (7 Cols): Bocamina & Beneficiario Cards -->
+                    <div style="flex: 1 1 55%; min-width: 280px;" class="space-y-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <!-- Bocamina Box -->
+                            <div class="rounded-xl p-3 flex items-center space-x-3" style="background-color: #f0f9ff !important; border: 1.5px solid #7dd3fc !important;">
+                                <div class="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-base flex-shrink-0" style="background-color: #0284c7 !important; color: #ffffff !important;">
+                                    <i class="fa-solid fa-mountain"></i>
+                                </div>
+                                <div>
+                                    <span class="text-[9.5px] font-black uppercase tracking-wider block" style="color: #0369a1 !important;">BOCAMINA DE ORIGEN</span>
+                                    <span class="font-black uppercase text-xs font-sans leading-tight block" style="color: #0f172a !important;">{{ $pago->trabajador->bocamina->nombre ?? 'N/A' }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Beneficiario Box -->
+                            <div class="rounded-xl p-3 flex items-center space-x-3" style="background-color: #f0f9ff !important; border: 1.5px solid #7dd3fc !important;">
+                                <div class="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-base flex-shrink-0" style="background-color: #0369a1 !important; color: #ffffff !important;">
+                                    <i class="fa-solid fa-user-gear"></i>
+                                </div>
+                                <div>
+                                    <span class="text-[9.5px] font-black uppercase tracking-wider block" style="color: #0369a1 !important;">CONTRATISTA / BENEFICIARIO</span>
+                                    <span class="font-black uppercase text-xs font-sans leading-tight block" style="color: #0f172a !important;">{{ $pago->trabajador->nombre }}</span>
+                                    <span class="text-[10px] font-mono font-bold block mt-0.5" style="color: #0284c7 !important;">C.I.: {{ $pago->trabajador->ci }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recibí de Banner -->
+                        <div class="rounded-lg p-2.5 text-xs" style="background-color: #f8fafc !important; border: 1px solid #e2e8f0 !important;">
+                            <div class="flex items-center justify-between text-[11px] font-mono">
+                                <span style="color: #334155 !important;">Recibí de: <strong uppercase style="color: #0f172a !important; font-weight: 900;">ADMINISTRACIÓN CENTRAL / CAJA MINERA</strong></span>
+                                <span style="color: #0369a1 !important; font-weight: 700;">(por: {{ $pago->entregado_por ?? 'Administración' }})</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right (5 Cols): Financial Executive Card (Light Celeste Gradient) -->
+                    <div style="flex: 1 1 40%; min-width: 240px;">
+                        <div class="h-full rounded-xl p-4 shadow-sm flex flex-col justify-between" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important; border: 2px solid #7dd3fc !important; color: #ffffff !important;">
+                            <div class="flex justify-between items-center pb-2" style="border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;">
+                                <span class="text-[10.5px] font-black uppercase tracking-wider" style="color: #e0f2fe !important;">NETO A CANCELAR (Bs.)</span>
+                                <span class="text-[9.5px] font-mono px-2 py-0.5 rounded font-bold uppercase" style="background-color: #ffffff !important; color: #0284c7 !important;">Bolivianos</span>
+                            </div>
+                            <div class="text-right py-1">
+                                <div class="text-2xl md:text-3xl font-black font-mono tracking-tight" style="color: #ffffff !important; font-weight: 900;">
+                                    Bs. {{ number_format($pago->neto, 2, ',', '.') }}
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center text-[10.5px] font-mono pt-1.5" style="border-top: 1px solid rgba(255, 255, 255, 0.2) !important; color: #e0f2fe !important;">
+                                <span>Equiv $us: <strong style="color: #ffffff !important;">$us {{ number_format($pago->neto / ($pago->tipo_cambio > 0 ? $pago->tipo_cambio : 6.96), 2, ',', '.') }}</strong></span>
+                                <span>T/C: <strong style="color: #ffffff !important;">Bs. {{ number_format($pago->tipo_cambio > 0 ? $pago->tipo_cambio : 6.96, 2, ',', '.') }}</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Amount in Words & Concept Card -->
+                <div class="rounded-xl p-3.5 space-y-2 text-xs" style="background-color: #f0f9ff !important; border: 1.5px solid #7dd3fc !important;">
+                    <div class="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-3">
+                        <span class="text-xs font-black uppercase tracking-wider w-28 flex-shrink-0" style="color: #0369a1 !important;">La suma de:</span>
+                        <div class="flex-grow font-black font-mono px-3 py-1 rounded-lg uppercase text-xs" style="background-color: #ffffff !important; border: 1px solid #38bdf8 !important; color: #0f172a !important;">
+                            {{ montoEnLetrasOficial($pago->neto) }}
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row sm:items-start space-y-1 sm:space-y-0 sm:space-x-3">
+                        <span class="text-xs font-black uppercase tracking-wider w-28 flex-shrink-0 pt-0.5" style="color: #0369a1 !important;">Por concepto de:</span>
+                        <div class="flex-grow font-bold uppercase leading-snug text-xs" style="color: #0f172a !important;">
+                            PLANILLA DE PAGO: <span class="font-mono font-black" style="color: #0284c7 !important;">{{ number_format($pago->cantidad_trabajada, 2) }}</span> UNIDADES DE <span class="font-mono font-black" style="color: #0284c7 !important;">{{ $pago->tipo_contrato_nombre }}</span> A TARIFA DE <span class="font-mono font-black" style="color: #0284c7 !important;">Bs. {{ number_format($pago->tarifa_pago, 2) }}</span>
+                            @if($pago->observacion)
+                                <span class="font-medium normal-case font-mono block mt-1 p-1.5 rounded" style="background-color: #ffffff !important; border: 1px solid #cbd5e1 !important; color: #475569 !important;">
+                                    <i class="fa-solid fa-pen-nib mr-1 text-slate-400"></i> {{ $pago->observacion }}
+                                </span>
+                            @endif
                         </div>
                     </div>
                 </div>
 
-                <!-- Column 3: Amount Table -->
-                <div class="md:col-span-3 flex justify-center md:justify-end">
-                    <table class="text-xs border-2 border-slate-900 rounded overflow-hidden w-full max-w-[170px] shadow-sm">
-                        <tr class="border-b border-slate-900 bg-white">
-                            <td class="bg-slate-100 font-extrabold border-r border-slate-900 px-3 py-1.5 text-slate-900">Bs.</td>
-                            <td class="px-3 py-1.5 font-mono font-black text-slate-900 text-right">{{ number_format($pago->neto, 2, ',', '.') }}</td>
-                        </tr>
-                        <tr class="border-b border-slate-900 bg-white">
-                            <td class="bg-slate-50 font-bold border-r border-slate-900 px-3 py-1.5 text-slate-700">$us</td>
-                            <td class="px-3 py-1.5 font-mono text-slate-700 text-right">{{ number_format($pago->neto / $pago->tipo_cambio, 2, ',', '.') }}</td>
-                        </tr>
-                        <tr class="bg-white">
-                            <td class="bg-slate-50 font-bold border-r border-slate-900 px-3 py-1.5 text-slate-700">T/C</td>
-                            <td class="px-3 py-1.5 font-mono text-slate-700 text-right">{{ number_format($pago->tipo_cambio, 2, ',', '.') }}</td>
-                        </tr>
+                <!-- Form of Payment Checkboxes (Light Celeste Strip) -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between py-2.5 px-4 rounded-xl text-white shadow-xs" style="background: linear-gradient(90deg, #0284c7 0%, #0369a1 100%) !important; border: 1.5px solid #7dd3fc !important; color: #ffffff !important;">
+                    <div class="flex flex-wrap items-center gap-6">
+                        <span class="text-xs font-black uppercase tracking-widest" style="color: #ffffff !important;">Forma de Pago:</span>
+                        <div class="flex items-center space-x-2">
+                            <span class="w-5 h-5 inline-flex items-center justify-center rounded text-xs font-black" style="background-color: #ffffff !important; color: #0284c7 !important;">✓</span>
+                            <span class="text-xs font-bold" style="color: {{ $pago->metodo_pago === 'efectivo' ? '#ffffff' : '#e0f2fe' }} !important;">Efectivo</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="w-5 h-5 inline-flex items-center justify-center rounded text-xs font-black" style="background-color: #ffffff !important; color: #0284c7 !important;">✓</span>
+                            <span class="text-xs font-bold" style="color: {{ $pago->metodo_pago === 'cheque' ? '#ffffff' : '#e0f2fe' }} !important;">Cheque</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="w-5 h-5 inline-flex items-center justify-center rounded text-xs font-black" style="background-color: #ffffff !important; color: #0284c7 !important;">✓</span>
+                            <span class="text-xs font-bold" style="color: {{ $pago->metodo_pago === 'transferencia' ? '#ffffff' : '#e0f2fe' }} !important;">Transferencia Bancaria</span>
+                        </div>
+                    </div>
+                    <div class="text-[10.5px] font-mono" style="color: #e0f2fe !important;">
+                        <span>Moneda: Bolivianos (Bs.)</span>
+                    </div>
+                </div>
+
+                <!-- Detailed Pay Breakdown Table (Clean Light Celeste Style) -->
+                <div class="rounded-xl overflow-hidden" style="border: 1.5px solid #0284c7 !important;">
+                    <div class="px-4 py-2 font-extrabold uppercase tracking-wider text-xs flex justify-between items-center text-white" style="background: linear-gradient(90deg, #0284c7 0%, #0369a1 100%) !important;">
+                        <span class="flex items-center" style="color: #ffffff !important;"><i class="fa-solid fa-list-check mr-2" style="color: #ffffff !important;"></i> Desglose Detallado de Liquidación de Planilla</span>
+                        <span class="text-[9.5px] font-mono px-2 py-0.5 rounded uppercase font-bold" style="background-color: #ffffff !important; color: #0284c7 !important;">Valores Oficiales</span>
+                    </div>
+                    <table class="w-full text-xs text-left">
+                        <thead>
+                            <tr class="font-black uppercase text-white" style="background-color: #0369a1 !important; color: #ffffff !important;">
+                                <th class="px-4 py-2" style="color: #ffffff !important;">Concepto / Detalle de Trabajo</th>
+                                <th class="px-4 py-2 text-right w-48" style="color: #ffffff !important;">Monto (Bs.)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200 font-mono text-slate-900">
+                            <tr style="background-color: #ffffff !important;">
+                                <td class="px-4 py-2.5 font-sans">
+                                    <strong class="text-xs" style="color: #0f172a !important;">{{ $pago->tipo_contrato_nombre }}</strong>
+                                    <span class="block text-[11px] font-mono mt-0.5" style="color: #475569 !important;">
+                                        {{ number_format($pago->cantidad_trabajada, 2, ',', '.') }} unidades × Bs. {{ number_format($pago->tarifa_pago, 2, ',', '.') }} c/u
+                                    </span>
+                                </td>
+                                <td class="px-4 py-2.5 text-right font-black text-sm" style="color: #0f172a !important;">Bs. {{ number_format($pago->subtotal, 2, ',', '.') }}</td>
+                            </tr>
+                            @if($pago->bonos > 0)
+                            <tr style="background-color: #f0f9ff !important;">
+                                <td class="px-4 py-2 font-sans font-bold flex items-center" style="color: #0369a1 !important;">
+                                    <span class="px-2 py-0.5 rounded text-[9.5px] font-black mr-2" style="background-color: #e0f2fe !important; color: #0284c7 !important; border: 1px solid #7dd3fc !important;">(+) ADICIONAL</span>
+                                    Bonos y Reconocimientos
+                                </td>
+                                <td class="px-4 py-2 text-right font-black" style="color: #0284c7 !important;">Bs. {{ number_format($pago->bonos, 2, ',', '.') }}</td>
+                            </tr>
+                            @endif
+                            @if($pago->descuentos > 0)
+                            <tr style="background-color: #f8fafc !important;">
+                                <td class="px-4 py-2 font-sans font-bold flex items-center" style="color: #334155 !important;">
+                                    <span class="px-2 py-0.5 rounded text-[9.5px] font-black mr-2" style="background-color: #e2e8f0 !important; color: #475569 !important; border: 1px solid #cbd5e1 !important;">(-) DESCUENTO</span>
+                                    Descuentos Generales
+                                </td>
+                                <td class="px-4 py-2 text-right font-black" style="color: #475569 !important;">-Bs. {{ number_format($pago->descuentos, 2, ',', '.') }}</td>
+                            </tr>
+                            @endif
+                            @if($pago->anticipos_descontados > 0)
+                            <tr style="background-color: #f0f9ff !important;">
+                                <td class="px-4 py-2 font-sans font-bold flex items-center" style="color: #0369a1 !important;">
+                                    <span class="px-2 py-0.5 rounded text-[9.5px] font-black mr-2" style="background-color: #bae6fd !important; color: #0369a1 !important; border: 1px solid #38bdf8 !important;">(-) ANTICIPO</span>
+                                    Anticipos Previos Descontados
+                                </td>
+                                <td class="px-4 py-2 text-right font-black" style="color: #0369a1 !important;">-Bs. {{ number_format($pago->anticipos_descontados, 2, ',', '.') }}</td>
+                            </tr>
+                            @endif
+                        </tbody>
                     </table>
-                </div>
-            </div>
 
-            <!-- Metadata Banner (Bocamina & Contractor details) -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 border border-slate-900 rounded-xl px-5 py-3 mb-6 text-xs text-slate-800 font-mono">
-                <div>
-                    <span class="font-bold text-slate-500"><i class="fa-solid fa-mountain mr-1 text-slate-600"></i> BOCAMINA:</span>
-                    <span class="font-extrabold text-slate-900 uppercase ml-1">{{ $pago->trabajador->bocamina->nombre ?? 'N/A' }}</span>
-                </div>
-                <div class="sm:text-right">
-                    <span class="font-bold text-slate-500"><i class="fa-solid fa-user-check mr-1 text-slate-600"></i> CONTRATISTA:</span>
-                    <span class="font-extrabold text-slate-900 uppercase ml-1">{{ $pago->trabajador->nombre }} (C.I. {{ $pago->trabajador->ci }})</span>
-                </div>
-            </div>
-
-            <!-- Form Rows with Bottom Borders -->
-            <div class="space-y-5 mb-8">
-                <!-- Recibí de -->
-                <div class="flex flex-col sm:flex-row sm:items-end space-y-1 sm:space-y-0 sm:space-x-3">
-                    <span class="text-xs font-black text-slate-800 uppercase tracking-widest w-28 flex-shrink-0 pb-1">Recibí de:</span>
-                    <div class="flex-grow border-b-2 border-slate-200 pb-1 text-slate-900 font-extrabold text-sm uppercase px-2 font-mono">
-                        ADMINISTRACIÓN CENTRAL / CAJA (por: {{ $pago->entregado_por ?? 'Administrador' }})
+                    <!-- Grand Total Banner (Light Celeste Gradient) -->
+                    <div class="p-3.5 flex justify-between items-center" style="background: linear-gradient(90deg, #0284c7 0%, #0369a1 100%) !important; color: #ffffff !important;">
+                        <div>
+                            <span class="text-[10.5px] font-black uppercase tracking-widest block" style="color: #ffffff !important;">TOTAL NETO LIQUIDADO Y ENTREGADO</span>
+                            <span class="text-[9.5px] font-mono" style="color: #e0f2fe !important;">Monto final cancelado en caja al contratista</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-2xl md:text-3xl font-black font-mono tracking-tight" style="color: #ffffff !important; font-weight: 900;">
+                                Bs. {{ number_format($pago->neto, 2, ',', '.') }}
+                            </span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- La suma de con formato 00/100 BOLIVIANOS -->
-                <div class="flex flex-col sm:flex-row sm:items-end space-y-1 sm:space-y-0 sm:space-x-3">
-                    <span class="text-xs font-black text-slate-800 uppercase tracking-widest w-28 flex-shrink-0 pb-1">La suma de:</span>
-                    <div class="flex-grow border-b-2 border-slate-200 pb-1 text-slate-900 font-extrabold text-xs uppercase px-2 font-mono leading-relaxed">
-                        {{ montoEnLetrasOficial($pago->neto) }}
+                <!-- Signatures & Audit Seal Block -->
+                <div class="pt-6" style="border-top: 2px dashed #cbd5e1 !important;">
+                    <div class="grid grid-cols-2 gap-10 text-center text-xs mb-3">
+                        <!-- Beneficiary Signature -->
+                        <div class="flex flex-col items-center">
+                            <div class="w-52 mb-1.5" style="border-bottom: 2px solid #0284c7 !important;"></div>
+                            <span class="font-black uppercase text-xs leading-tight" style="color: #0f172a !important; font-weight: 900;">{{ $pago->trabajador->nombre }}</span>
+                            <span class="text-[9.5px] uppercase tracking-widest font-mono font-bold mt-0.5" style="color: #475569 !important;">FIRMA RECIBÍ CONFORME (CONTRATISTA)</span>
+                            <span class="text-[9px] font-mono mt-0.5" style="color: #64748b !important;">C.I.: {{ $pago->trabajador->ci }}</span>
+                        </div>
+
+                        <!-- Cashier Signature -->
+                        <div class="flex flex-col items-center">
+                            <div class="w-52 mb-1.5" style="border-bottom: 2px solid #0284c7 !important;"></div>
+                            <span class="font-black uppercase text-xs leading-tight" style="color: #0f172a !important; font-weight: 900;">{{ $pago->entregado_por ?? 'ADMINISTRADOR MINERO' }}</span>
+                            <span class="text-[9.5px] uppercase tracking-widest font-mono font-bold mt-0.5" style="color: #475569 !important;">FIRMA ENTREGUÉ CONFORME (CAJA MINERA)</span>
+                        </div>
+                    </div>
+
+                    <!-- Official Verification Watermark Badge -->
+                    <div class="text-center mt-3">
+                        <span class="inline-flex items-center text-[9.5px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-xs" style="background-color: #e0f2fe !important; border: 1.5px solid #0284c7 !important; color: #0369a1 !important;">
+                            <i class="fa-solid fa-circle-check text-sky-600 mr-1.5 text-xs"></i> COMPROBANTE OFICIAL REGISTRADO Y VERIFICADO — SCPM CONTROL MINERO
+                        </span>
                     </div>
                 </div>
 
-                <!-- Por concepto de -->
-                <div class="flex flex-col sm:flex-row sm:items-end space-y-1 sm:space-y-0 sm:space-x-3">
-                    <span class="text-xs font-black text-slate-800 uppercase tracking-widest w-28 flex-shrink-0 pb-1">Concepto:</span>
-                    <div class="flex-grow border-b-2 border-slate-200 pb-1 text-slate-800 text-xs font-semibold uppercase px-2 leading-relaxed">
-                        PLANILLA DE PAGO: {{ number_format($pago->cantidad_trabajada, 2) }} ({{ $pago->tipo_contrato_nombre }}) A TARIFA DE Bs. {{ number_format($pago->tarifa_pago, 2) }}
-                        @if($pago->observacion)
-                            <span class="text-slate-500 font-normal normal-case font-mono"> - {{ $pago->observacion }}</span>
-                        @endif
+                <!-- Branding Footer -->
+                <div class="flex justify-between items-center text-[9px] border-t pt-2 font-mono" style="border-top: 1px solid #e2e8f0 !important; color: #64748b !important;">
+                    <div class="flex items-center font-bold" style="color: #334155 !important;">
+                        <i class="fa-solid fa-building-columns mr-1.5 text-slate-600"></i> CONTROL OPERATIVO MINERO
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[8.5px] font-bold" style="color: #64748b !important;">SCPM v2.5 — Sistema de Control de Pagos Mineros</span>
                     </div>
                 </div>
-            </div>
 
-            <!-- Form of Payment Checkboxes -->
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between border-t border-b border-slate-900 py-4 mb-8 space-y-4 sm:space-y-0">
-                <div class="flex flex-wrap items-center gap-6">
-                    <span class="text-xs font-black text-slate-800 uppercase tracking-widest">Forma de Pago:</span>
-                    <div class="flex items-center space-x-2 {{ $pago->metodo_pago !== 'efectivo' ? 'opacity-45' : '' }}">
-                        <span class="w-5 h-5 inline-flex items-center justify-center border border-slate-900 rounded bg-white font-mono text-xs font-bold">{{ $pago->metodo_pago === 'efectivo' ? '✓' : '' }}</span>
-                        <span class="text-xs text-slate-900 font-bold">Efectivo</span>
-                    </div>
-                    <div class="flex items-center space-x-2 {{ $pago->metodo_pago !== 'cheque' ? 'opacity-45' : '' }}">
-                        <span class="w-5 h-5 inline-flex items-center justify-center border border-slate-900 rounded bg-white font-mono text-xs font-bold">{{ $pago->metodo_pago === 'cheque' ? '✓' : '' }}</span>
-                        <span class="text-xs text-slate-900 font-bold">Cheque</span>
-                    </div>
-                    <div class="flex items-center space-x-2 {{ $pago->metodo_pago !== 'transferencia' ? 'opacity-45' : '' }}">
-                        <span class="w-5 h-5 inline-flex items-center justify-center border border-slate-900 rounded bg-white font-mono text-xs font-bold">{{ $pago->metodo_pago === 'transferencia' ? '✓' : '' }}</span>
-                        <span class="text-xs text-slate-900 font-bold">Transferencia</span>
-                    </div>
-                </div>
-                <div class="text-[10px] text-slate-500 font-mono">
-                    <span>Moneda de Pago: Bolivianos (Bs.)</span>
-                </div>
-            </div>
-
-            <!-- Detailed Pay Breakdown Table -->
-            <div class="border border-slate-900 rounded-xl overflow-hidden mb-8">
-                <div class="bg-slate-900 text-white px-4 py-2.5 font-bold uppercase tracking-wider text-xs flex justify-between items-center">
-                    <span>Detalle de Liquidación de Planilla</span>
-                    <i class="fa-solid fa-receipt text-xs text-slate-400"></i>
-                </div>
-                <table class="w-full text-xs text-left">
-                    <thead>
-                        <tr class="bg-slate-100 font-extrabold text-slate-800 border-b border-slate-900">
-                            <th class="px-4 py-2.5">Detalle / Concepto de Pago</th>
-                            <th class="px-4 py-2.5 text-right w-44">Monto (Bs.)</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-200 font-mono text-slate-800">
-                        <tr class="bg-white">
-                            <td class="px-4 py-2.5 font-sans">
-                                <strong>{{ $pago->tipo_contrato_nombre }}</strong> ({{ number_format($pago->cantidad_trabajada, 2, ',', '.') }} unidades a Bs. {{ number_format($pago->tarifa_pago, 2, ',', '.') }} c/u)
-                            </td>
-                            <td class="px-4 py-2.5 text-right font-extrabold text-slate-900">Bs. {{ number_format($pago->subtotal, 2, ',', '.') }}</td>
-                        </tr>
-                        @if($pago->bonos > 0)
-                        <tr class="bg-white">
-                            <td class="px-4 py-2.5 font-sans text-emerald-800 font-semibold">(+) Bonos y Adicionales</td>
-                            <td class="px-4 py-2.5 text-right font-extrabold text-emerald-700">Bs. {{ number_format($pago->bonos, 2, ',', '.') }}</td>
-                        </tr>
-                        @endif
-                        @if($pago->descuentos > 0)
-                        <tr class="bg-white">
-                            <td class="px-4 py-2.5 font-sans text-red-800 font-semibold">(-) Descuentos Extra</td>
-                            <td class="px-4 py-2.5 text-right font-extrabold text-red-650">Bs. {{ number_format($pago->descuentos, 2, ',', '.') }}</td>
-                        </tr>
-                        @endif
-                        @if($pago->anticipos_descontados > 0)
-                        <tr class="bg-white">
-                            <td class="px-4 py-2.5 font-sans text-red-800 font-semibold">(-) Anticipos Descontados</td>
-                            <td class="px-4 py-2.5 text-right font-extrabold text-red-650">Bs. {{ number_format($pago->anticipos_descontados, 2, ',', '.') }}</td>
-                        </tr>
-                        @endif
-                        <tr class="bg-slate-50 font-black text-slate-900">
-                            <td class="px-4 py-2.5 font-sans uppercase">Total Neto Liquidado</td>
-                            <td class="px-4 py-2.5 text-right text-slate-900 text-sm">Bs. {{ number_format($pago->neto, 2, ',', '.') }}</td>
-                        </tr>
-                        <tr class="bg-slate-100 font-black text-slate-900">
-                            <td class="px-4 py-2.5 font-sans uppercase">Efectivo Pagado / Entregado</td>
-                            <td class="px-4 py-2.5 text-right text-emerald-700 text-sm">Bs. {{ number_format($pago->monto_pagado, 2, ',', '.') }}</td>
-                        </tr>
-                        @if($pago->saldo_pendiente > 0)
-                        <tr class="bg-amber-50">
-                            <td class="px-4 py-2.5 font-sans uppercase">(-) Saldo Restante Adeudado</td>
-                            <td class="px-4 py-2.5 text-right text-amber-700 font-bold text-xs">Bs. {{ number_format($pago->saldo_pendiente, 2, ',', '.') }}</td>
-                        </tr>
-                        @endif
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Signature block -->
-            <div class="grid grid-cols-2 gap-12 mt-12 pt-8 border-t border-dashed border-slate-350 text-center text-xs">
-                <div class="flex flex-col items-center">
-                    <div class="w-48 border-b border-slate-400 mb-1.5"></div>
-                    <span class="font-bold text-slate-900 uppercase text-[10px]">{{ $pago->trabajador->nombre }}</span>
-                    <span class="text-[9px] text-slate-500 uppercase tracking-widest mt-0.5 font-mono font-bold">Recibí Conforme (Contratista)</span>
-                    <span class="text-[9px] text-slate-600 font-mono mt-0.5">C.I.: {{ $pago->trabajador->ci }}</span>
-                    @if($pago->trabajador->telefono)
-                        <span class="text-[8px] text-slate-400 font-mono mt-0.5">Telf: {{ $pago->trabajador->telefono }}</span>
-                    @endif
-                </div>
-                <div class="flex flex-col items-center">
-                    <div class="w-48 border-b border-slate-400 mb-1.5"></div>
-                    <span class="font-bold text-slate-900 uppercase text-[10px]">{{ $pago->entregado_por ?? 'Administración General' }}</span>
-                    <span class="text-[9px] text-slate-500 uppercase tracking-widest mt-0.5 font-mono font-bold">Entregué Conforme</span>
-                </div>
-            </div>
-
-            <!-- Branding Footer contacts -->
-            <div class="mt-8 flex justify-between items-center text-[9px] text-slate-400 border-t border-slate-200 pt-3 font-mono">
-                <div class="flex space-x-6">
-                    <span class="flex items-center"><i class="fa-solid fa-building-columns mr-1.5 text-slate-600"></i> CONTROL OPERATIVO MINERO</span>
-                </div>
-                <div>
-                    <span class="text-[8px] text-slate-450">SCPM - Sistema de Control de Pagos Mineros</span>
-                </div>
             </div>
 
         </div>
 
     </div>
+
+    <!-- ══════════ TICKET IMPRESIÓN TÉRMICA 80MM / 100x148MM ══════════ -->
+    <div id="thermal-ticket-80mm">
+        <div style="text-align: center; margin-bottom: 6px;">
+            <div style="font-weight: 900; font-size: 13px; text-transform: uppercase;">EMPRESA MINERA</div>
+            <div style="font-size: 10px; font-weight: 700; text-transform: uppercase;">RECIBO DE PAGO DE PERSONAL</div>
+            <div style="font-size: 10px; font-weight: bold; margin-top: 2px;">N.º {{ str_pad($pago->id, 5, '0', STR_PAD_LEFT) }}</div>
+            <div style="font-size: 9.5px;">Fecha: {{ $pago->fecha->format('d/m/Y') }}</div>
+        </div>
+
+        <div style="border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 4px 0; margin-bottom: 6px; font-size: 10px;">
+            <div><strong>TRABAJADOR:</strong> {{ strtoupper($pago->trabajador->nombre) }}</div>
+            <div><strong>C.I.:</strong> {{ $pago->trabajador->ci }}</div>
+            <div><strong>BOCAMINA:</strong> {{ strtoupper($pago->trabajador->bocamina->nombre ?? 'N/A') }}</div>
+        </div>
+
+        <div style="font-weight: bold; font-size: 9.5px; margin-bottom: 3px;">DETALLE DE TRABAJO:</div>
+        <table style="width: 100%; font-size: 9.5px; border-collapse: collapse; margin-bottom: 6px;">
+            <thead>
+                <tr style="border-bottom: 1px solid #000; text-align: left;">
+                    <th style="padding: 2px 0;">Concepto</th>
+                    <th style="padding: 2px 0; text-align: center;">Cant</th>
+                    <th style="padding: 2px 0; text-align: right;">P.U.</th>
+                    <th style="padding: 2px 0; text-align: right; padding-right: 4px;">Subt.</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($pago->items as $item)
+                <tr>
+                    <td style="padding: 2px 0;">{{ $item->tipo_trabajo }}</td>
+                    <td style="padding: 2px 0; text-align: center;">{{ number_format($item->cantidad, 2) }}</td>
+                    <td style="padding: 2px 0; text-align: right;">{{ number_format($item->precio_unitario, 2) }}</td>
+                    <td style="padding: 2px 0; text-align: right; font-weight: bold; padding-right: 4px;">Bs. {{ number_format($item->subtotal, 2) }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+
+        <div style="border-top: 1px solid #000; padding-top: 4px; margin-bottom: 6px; font-size: 10px; line-height: 1.3; padding-right: 4px;">
+            <div style="display: flex; justify-content: space-between;">
+                <span>Subtotal Bruto:</span>
+                <span>Bs. {{ number_format($pago->subtotal_items, 2) }}</span>
+            </div>
+            @if($pago->bonos > 0)
+            <div style="display: flex; justify-content: space-between;">
+                <span>Bonos / Adic.:</span>
+                <span>Bs. {{ number_format($pago->bonos, 2) }}</span>
+            </div>
+            @endif
+            @if($pago->descuentos > 0)
+            <div style="display: flex; justify-content: space-between;">
+                <span>Descuentos:</span>
+                <span>-Bs. {{ number_format($pago->descuentos, 2) }}</span>
+            </div>
+            @endif
+            @if($pago->anticipos_descontados > 0)
+            <div style="display: flex; justify-content: space-between;">
+                <span>Anticipos Desc.:</span>
+                <span>-Bs. {{ number_format($pago->anticipos_descontados, 2) }}</span>
+            </div>
+            @endif
+            <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 11.5px; margin-top: 3px; border-top: 1px solid #000; padding-top: 2px;">
+                <span>NETO A PAGAR:</span>
+                <span>Bs. {{ number_format($pago->neto, 2) }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 10.5px;">
+                <span>DÓLARES ($us):</span>
+                <span>$us {{ number_format($pago->neto / ($pago->tipo_cambio > 0 ? $pago->tipo_cambio : 6.96), 2) }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 9.5px; color: #333;">
+                <span>Tipo Cambio (T/C):</span>
+                <span>Bs. {{ number_format($pago->tipo_cambio > 0 ? $pago->tipo_cambio : 6.96, 2) }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 9.5px; font-weight: bold; margin-top: 2px;">
+                <span>Efectivo Entregado:</span>
+                <span>Bs. {{ number_format($pago->monto_pagado, 2) }}</span>
+            </div>
+        </div>
+
+        <div style="font-size: 8.5px; font-weight: bold; text-transform: uppercase; border-top: 1px dashed #000; padding: 3px 0; margin-bottom: 12px;">
+            {{ montoEnLetrasOficial($pago->neto) }}
+        </div>
+
+        <div style="margin-top: 20px; text-align: center;">
+            <div style="border-top: 1px solid #000; width: 75%; margin: 0 auto 2px auto;"></div>
+            <div style="font-size: 9.5px; font-weight: bold;">{{ strtoupper($pago->trabajador->nombre) }}</div>
+            <div style="font-size: 8.5px;">RECIBÍ CONFORME (CONTRATISTA)</div>
+        </div>
+
+        <div style="margin-top: 20px; text-align: center;">
+            <div style="border-top: 1px solid #000; width: 75%; margin: 0 auto 2px auto;"></div>
+            <div style="font-size: 9.5px; font-weight: bold;">{{ strtoupper($pago->entregado_por ?? 'Administración') }}</div>
+            <div style="font-size: 8.5px;">ENTREGUÉ CONFORME (CAJA)</div>
+        </div>
+
+        <div style="text-align: center; margin-top: 12px; font-size: 8.5px; border-top: 1px dashed #000; padding-top: 4px;">
+            *** Impreso desde Sistema de Pagos ***
+        </div>
+    </div>
+
 </div>
 @endsection
 
@@ -388,40 +613,118 @@ if (!function_exists('montoEnLetrasOficial')) {
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <script>
+    function printThermal80mm() {
+        document.body.classList.add('thermal-print-mode');
+        window.print();
+        setTimeout(function() {
+            document.body.classList.remove('thermal-print-mode');
+        }, 1000);
+    }
+
+    function printStandardA4() {
+        document.body.classList.remove('thermal-print-mode');
+        window.print();
+    }
+
     function downloadPDF() {
         const element = document.getElementById('receipt-card');
+        if (!element) return;
+        
+        const btn = event ? event.currentTarget : null;
+        const originalText = btn ? btn.innerHTML : '';
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Generando PDF...';
+
         const opt = {
-            margin:       0.3,
+            margin:       [0.2, 0.2, 0.2, 0.2],
             filename:     'Recibo_Pago_Nro_' + '{{ str_pad($pago->id, 5, "0", STR_PAD_LEFT) }}' + '.pdf',
             image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2.2, useCORS: true, letterRendering: true },
+            html2canvas:  { scale: 1.8, useCORS: true, letterRendering: true, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0 },
             jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
         };
-        
-        html2pdf().set(opt).from(element).save();
+
+        html2pdf().set(opt).from(element).save().then(() => {
+            if (btn) btn.innerHTML = originalText;
+        }).catch(err => {
+            console.error(err);
+            if (btn) btn.innerHTML = originalText;
+            window.print();
+        });
     }
 
     function downloadExcel() {
-        const wb = XLSX.utils.book_new();
-        
-        const data = [
-            ["COMPROBANTE DE PAGO MINERO"],
-            ["Nro. Correlativo", '{{ str_pad($pago->id, 5, "0", STR_PAD_LEFT) }}'],
-            ["Fecha", '{{ $pago->fecha->format("d/m/Y") }}'],
-            ["Hora", '{{ $pago->created_at->format("H:i:s") }}'],
-            [],
-            ["Trabajador", '{{ $pago->trabajador->nombre }}'],
-            ["CI", '{{ $pago->trabajador->ci }}'],
-            ["Bocamina", '{{ $pago->trabajador->bocamina->nombre ?? "N/A" }}'],
-            ["Monto en Letras", '{{ montoEnLetrasOficial($pago->monto_pagado) }}'],
-            ["Monto Pagado (Bs.)", {{ $pago->monto_pagado }}],
-            ["Método de Pago", '{{ strtoupper($pago->metodo_pago) }}'],
-            ["Entregado Por", '{{ $pago->entregado_por ?? "Administración General" }}']
-        ];
+        const htmlContent = `
+            <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+            <head>
+                <meta charset="utf-8">
+                <style>
+                    body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 11px; color: #1e293b; }
+                    .header-banner { background-color: #0f172a; color: #fbbf24; font-size: 15px; font-weight: bold; text-align: center; padding: 12px; }
+                    .info-header { background-color: #1e293b; color: #ffffff; font-size: 11px; font-weight: bold; padding: 8px 12px; }
+                    .th-head { background-color: #059669; color: #ffffff; font-size: 11px; font-weight: bold; padding: 8px; text-align: center; border: 1px solid #047857; }
+                    .td-cell { border: 1px solid #cbd5e1; padding: 7px 10px; }
+                    .td-num { border: 1px solid #cbd5e1; padding: 7px 10px; text-align: right; font-family: Consolas, monospace; }
+                    .total-cell { background-color: #ecfdf5; font-size: 12px; font-weight: bold; color: #065f46; border: 1px solid #059669; }
+                </style>
+            </head>
+            <body>
+                <table style="width:100%; border-collapse:collapse;">
+                    <tr><td colspan="4" class="header-banner">EMPRESA MINERA — COMPROBANTE DE PAGO DE PERSONAL</td></tr>
+                    <tr>
+                        <td class="info-header" colspan="2">RECIBO N.º: {{ str_pad($pago->id, 5, '0', STR_PAD_LEFT) }}</td>
+                        <td class="info-header" colspan="2" style="text-align:right;">FECHA: {{ $pago->fecha->format('d/m/Y') }}</td>
+                    </tr>
+                    <tr><td colspan="4">&nbsp;</td></tr>
+                    <tr><td class="td-cell" style="font-weight:bold; background:#f8fafc;">Trabajador / Contratista:</td><td class="td-cell" colspan="3"><strong>{{ $pago->trabajador->nombre }}</strong></td></tr>
+                    <tr><td class="td-cell" style="font-weight:bold; background:#f8fafc;">Cédula de Identidad (C.I.):</td><td class="td-cell" colspan="3">{{ $pago->trabajador->ci }}</td></tr>
+                    <tr><td class="td-cell" style="font-weight:bold; background:#f8fafc;">Bocamina:</td><td class="td-cell" colspan="3">{{ $pago->trabajador->bocamina->nombre ?? 'N/A' }}</td></tr>
+                    <tr><td class="td-cell" style="font-weight:bold; background:#f8fafc;">Método de Pago:</td><td class="td-cell" colspan="3">{{ strtoupper($pago->metodo_pago) }}</td></tr>
+                    <tr><td class="td-cell" style="font-weight:bold; background:#f8fafc;">Entregado Por:</td><td class="td-cell" colspan="3">{{ $pago->entregado_por ?? 'Administración General' }}</td></tr>
+                    <tr><td colspan="4">&nbsp;</td></tr>
+                    <tr><td colspan="4" class="info-header">DETALLE DE TRABAJOS REALIZADOS</td></tr>
+                    <tr>
+                        <th class="th-head" style="width:40%;">Concepto / Tipo de Trabajo</th>
+                        <th class="th-head" style="width:20%;">Cantidad</th>
+                        <th class="th-head" style="width:20%;">Precio Unit. (Bs.)</th>
+                        <th class="th-head" style="width:20%;">Subtotal (Bs.)</th>
+                    </tr>
+                    @foreach($pago->items as $item)
+                    <tr>
+                        <td class="td-cell">{{ $item->tipo_trabajo }}</td>
+                        <td class="td-num">{{ number_format($item->cantidad, 2) }}</td>
+                        <td class="td-num">Bs. {{ number_format($item->precio_unitario, 2) }}</td>
+                        <td class="td-num" style="font-weight:bold;">Bs. {{ number_format($item->subtotal, 2) }}</td>
+                    </tr>
+                    @endforeach
+                    <tr><td colspan="4">&nbsp;</td></tr>
+                    <tr><td colspan="4" class="info-header">RESUMEN Y LIQUIDACIÓN FINANCIERA</td></tr>
+                    <tr><td class="td-cell" colspan="3">Subtotal Bruto de Ítems:</td><td class="td-num">Bs. {{ number_format($pago->subtotal_items, 2) }}</td></tr>
+                    @if($pago->bonos > 0)
+                    <tr><td class="td-cell" colspan="3" style="color:#059669;">Bonos / Adicionales (+):</td><td class="td-num" style="color:#059669;">Bs. {{ number_format($pago->bonos, 2) }}</td></tr>
+                    @endif
+                    @if($pago->descuentos > 0)
+                    <tr><td class="td-cell" colspan="3" style="color:#dc2626;">Descuentos General (-):</td><td class="td-num" style="color:#dc2626;">-Bs. {{ number_format($pago->descuentos, 2) }}</td></tr>
+                    @endif
+                    @if($pago->anticipos_descontados > 0)
+                    <tr><td class="td-cell" colspan="3" style="color:#dc2626;">Anticipos Descontados (-):</td><td class="td-num" style="color:#dc2626;">-Bs. {{ number_format($pago->anticipos_descontados, 2) }}</td></tr>
+                    @endif
+                    <tr><td class="td-cell total-cell" colspan="3">NETO LIQUIDADO A PAGAR (Bs.):</td><td class="td-num total-cell">Bs. {{ number_format($pago->neto, 2) }}</td></tr>
+                    <tr><td class="td-cell" colspan="3" style="font-weight:bold;">EQUIVALENTE EN DÓLARES ($us):</td><td class="td-num" style="font-weight:bold;">$us {{ number_format($pago->neto / ($pago->tipo_cambio > 0 ? $pago->tipo_cambio : 6.96), 2) }}</td></tr>
+                    <tr><td class="td-cell" colspan="3" style="font-size:10px; color:#64748b;">Tipo de Cambio Aplicado (T/C):</td><td class="td-num" style="font-size:10px;">Bs. {{ number_format($pago->tipo_cambio > 0 ? $pago->tipo_cambio : 6.96, 2) }}</td></tr>
+                    <tr><td class="td-cell" colspan="3" style="font-weight:bold; background:#f8fafc;">Efectivo Real Entregado:</td><td class="td-num" style="font-weight:bold;">Bs. {{ number_format($pago->monto_pagado, 2) }}</td></tr>
+                    <tr><td colspan="4">&nbsp;</td></tr>
+                    <tr><td class="td-cell" style="font-weight:bold; background:#f8fafc;">Monto en Letras:</td><td class="td-cell" colspan="3"><strong>{{ montoEnLetrasOficial($pago->neto) }}</strong></td></tr>
+                </table>
+            </body>
+            </html>
+        `;
 
-        const ws = XLSX.utils.aoa_to_sheet(data);
-        XLSX.utils.book_append_sheet(wb, ws, "Comprobante");
-        XLSX.writeFile(wb, 'Recibo_Pago_Nro_' + '{{ str_pad($pago->id, 5, "0", STR_PAD_LEFT) }}' + '.xlsx');
+        const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'Recibo_Pago_Nro_' + '{{ str_pad($pago->id, 5, "0", STR_PAD_LEFT) }}' + '.xls';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 </script>
 @endpush

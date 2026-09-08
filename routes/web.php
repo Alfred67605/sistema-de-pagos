@@ -10,6 +10,8 @@ use App\Http\Controllers\AnticipoController;
 use App\Http\Controllers\PagoController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\TransaccionMineralController;
+use App\Http\Controllers\TipoTrabajoController;
+use App\Http\Controllers\ServicioExternoController;
 
 // Public routes / Authentication
 Route::middleware('guest')->group(function () {
@@ -34,6 +36,13 @@ Route::middleware('auth')->group(function () {
 
     // Trabajadores
     Route::resource('trabajadores', TrabajadorController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['trabajadores' => 'trabajador']);
+
+    // Tipos de Trabajo
+    Route::resource('tipos-trabajo', TipoTrabajoController::class);
+
+    // Servicios Externos
+    Route::get('/servicios-externos/{servicio}/recibo', [ServicioExternoController::class, 'recibo'])->name('servicios-externos.recibo');
+    Route::resource('servicios-externos', ServicioExternoController::class);
 
 
 
@@ -60,6 +69,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/fondos-caja/limpiar-anteriores', [PagoController::class, 'limpiarAnteriores'])->name('fondos-caja.limpiar-anteriores');
 
     // Compra y Venta de Concentrados/Sacos & Caja del Módulo 2
+    Route::get('/transacciones-minerales/{id}/ticket', [TransaccionMineralController::class, 'ticket'])->name('transacciones-minerales.ticket');
     Route::post('/caja-minerales/recarga', [TransaccionMineralController::class, 'storeRecarga'])->name('caja-minerales.store-recarga');
     Route::delete('/caja-minerales/recarga/{id}', [TransaccionMineralController::class, 'destroyRecarga'])->name('caja-minerales.destroy-recarga');
     Route::resource('transacciones-minerales', TransaccionMineralController::class);

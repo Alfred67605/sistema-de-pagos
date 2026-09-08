@@ -51,6 +51,13 @@
             </div>
 
             <div>
+                <label for="tipo_cambio" class="block text-xs font-bold uppercase tracking-wider text-slate-400">Tipo de Cambio Dólar (Bs./USD)</label>
+                <input type="number" step="0.01" min="0.01" id="tipo_cambio" name="tipo_cambio" value="{{ old('tipo_cambio', $pago->tipo_cambio ?? 6.96) }}" required
+                       class="mt-1 block w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-emerald-400 text-sm font-mono font-bold focus:outline-none focus:border-amber-500">
+                <p class="text-[10px] text-slate-500 mt-1">Valor para la conversión a $US en el recibo de pago.</p>
+            </div>
+
+            <div>
                 <label for="observacion" class="block text-xs font-bold uppercase tracking-wider text-slate-400">Motivo / Observación de la Edición</label>
                 <textarea id="observacion" name="observacion" rows="3" placeholder="Explica brevemente el motivo del ajuste..."
                           class="mt-1 block w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 text-xs focus:outline-none focus:border-amber-500">{{ old('observacion', $pago->observacion) }}</textarea>

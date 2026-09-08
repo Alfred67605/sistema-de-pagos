@@ -1063,9 +1063,9 @@
                      }
                  }"
                  x-init="
-                     if ({{ request()->routeIs('bocaminas.*', 'trabajadores.*', 'fondos-caja.*', 'anticipos.*', 'pagos.*', 'reportes.*') ? 'true' : 'false' }}) { openPagos = true; }
-                     if ({{ request()->routeIs('bocaminas.*', 'trabajadores.*') ? 'true' : 'false' }}) { openPersonal = true; }
-                     if ({{ request()->routeIs('fondos-caja.*', 'anticipos.*', 'pagos.*', 'reportes.*') ? 'true' : 'false' }}) { openMovimientos = true; }
+                     if ({{ request()->routeIs('bocaminas.*', 'trabajadores.*', 'fondos-caja.*', 'anticipos.*', 'pagos.*', 'servicios-externos.*', 'reportes.*') ? 'true' : 'false' }}) { openPagos = true; }
+                     if ({{ request()->routeIs('bocaminas.*', 'trabajadores.*', 'tipos-trabajo.*') ? 'true' : 'false' }}) { openPersonal = true; }
+                     if ({{ request()->routeIs('fondos-caja.*', 'anticipos.*', 'pagos.*', 'servicios-externos.*', 'reportes.*') ? 'true' : 'false' }}) { openMovimientos = true; }
                      if ({{ request()->routeIs('transacciones-minerales.*') ? 'true' : 'false' }}) { openAlmacen = true; }
                      if ({{ request()->routeIs('backups.*') ? 'true' : 'false' }}) { openSistema = true; }
                  ">
@@ -1104,9 +1104,13 @@
                                     <i class="fa-solid fa-mountain-sun w-5 text-center mr-3 text-xs text-emerald-500"></i>
                                     Bocaminas
                                 </a>
-                                <a href="{{ route('trabajadores.index') }}" data-theme-color="sky" class="nav-item flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg relative z-10 transition-colors duration-200 {{ request()->routeIs('trabajadores.*') ? 'active-nav-item' : 'text-slate-450 hover:text-slate-200' }}">
+                                 <a href="{{ route('trabajadores.index') }}" data-theme-color="sky" class="nav-item flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg relative z-10 transition-colors duration-200 {{ request()->routeIs('trabajadores.*') ? 'active-nav-item' : 'text-slate-450 hover:text-slate-200' }}">
                                     <i class="fa-solid fa-user-gear w-5 text-center mr-3 text-xs text-sky-500"></i>
                                     Personal y Contratos
+                                </a>
+                                <a href="{{ route('tipos-trabajo.index') }}" data-theme-color="amber" class="nav-item flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg relative z-10 transition-colors duration-200 {{ request()->routeIs('tipos-trabajo.*') ? 'active-nav-item' : 'text-slate-450 hover:text-slate-200' }}">
+                                    <i class="fa-solid fa-hammer w-5 text-center mr-3 text-xs text-amber-500"></i>
+                                    Tipos de Trabajo
                                 </a>
                             </div>
                         </div>
@@ -1131,9 +1135,13 @@
                                     <i class="fa-solid fa-hand-holding-dollar w-5 text-center mr-3 text-xs text-rose-500"></i>
                                     Anticipos
                                 </a>
-                                <a href="{{ route('pagos.index') }}" data-theme-color="teal" class="nav-item flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg relative z-10 transition-colors duration-200 {{ request()->routeIs('pagos.*') ? 'active-nav-item' : 'text-slate-450 hover:text-slate-200' }}">
+                                 <a href="{{ route('pagos.index') }}" data-theme-color="teal" class="nav-item flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg relative z-10 transition-colors duration-200 {{ request()->routeIs('pagos.*') ? 'active-nav-item' : 'text-slate-450 hover:text-slate-200' }}">
                                     <i class="fa-solid fa-credit-card w-5 text-center mr-3 text-xs text-teal-500"></i>
                                     Pagos
+                                </a>
+                                <a href="{{ route('servicios-externos.index') }}" data-theme-color="sky" class="nav-item flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg relative z-10 transition-colors duration-200 {{ request()->routeIs('servicios-externos.*') ? 'active-nav-item' : 'text-slate-450 hover:text-slate-200' }}">
+                                    <i class="fa-solid fa-truck-front w-5 text-center mr-3 text-xs text-sky-500"></i>
+                                    Servicios Externos
                                 </a>
                                 <a href="{{ route('reportes.index') }}" data-theme-color="violet" class="nav-item flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg relative z-10 transition-colors duration-200 {{ request()->routeIs('reportes.*') ? 'active-nav-item' : 'text-slate-450 hover:text-slate-200' }}">
                                     <i class="fa-solid fa-chart-simple w-5 text-center mr-3 text-xs text-violet-500"></i>
