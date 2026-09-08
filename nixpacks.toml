@@ -1,3 +1,6 @@
-# Configuración de Nixpacks para Dokploy con PHP 8.4, Node.js 22 y PostgreSQL
+# Configuración de Nixpacks para Dokploy con PHP 8.4, Node.js 20 y PostgreSQL
+[variables]
+NIXPACKS_NODE_VERSION = "20"
+
 [phases.setup]
-nixPkgs = ["...", "php84", "php84Extensions.pdo_pgsql", "php84Extensions.pgsql", "nodejs_22"]
+nixPkgs = ["...", "php84", "php84Extensions.pdo_pgsql", "php84Extensions.pgsql"]
