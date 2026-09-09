@@ -15,9 +15,6 @@
             <a href="{{ route('fondos-caja.index') }}" class="inline-flex items-center justify-center px-4 py-2.5 rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-750 text-sm font-bold text-slate-200 transition duration-150">
                 <i class="fa-solid fa-money-bill-trend-up mr-2 text-cyan-500"></i> Gestionar Fondos / Recargas
             </a>
-            <button type="button" onclick="openModalAdelanto()" class="inline-flex items-center justify-center px-4 py-2.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-sm font-bold text-white transition duration-150 shadow-lg shadow-cyan-500/20 cursor-pointer">
-                <i class="fa-solid fa-hand-holding-dollar mr-2"></i> Registrar Adelanto
-            </button>
             <a href="{{ route('pagos.create') }}" class="inline-flex items-center justify-center px-4 py-2.5 rounded-lg bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-sm font-bold text-slate-950 transition duration-150 shadow-lg shadow-teal-500/10">
                 <i class="fa-solid fa-receipt mr-2"></i> Procesar Nuevo Pago
             </a>
@@ -176,86 +173,5 @@
         </div>
     </div>
 
-    <!-- Modal Registrar Adelanto Rápido -->
-    <div id="modalAdelantoRapido" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-950/80 backdrop-blur-sm transition-opacity duration-300">
-        <div class="glass-card w-full max-w-lg rounded-2xl border border-slate-700/60 shadow-2xl overflow-hidden m-4">
-            <div class="bg-gradient-to-r from-cyan-600 to-blue-600 px-6 py-4 flex items-center justify-between">
-                <h3 class="text-lg font-bold text-white flex items-center">
-                    <i class="fa-solid fa-hand-holding-dollar mr-2"></i> Registrar Adelanto / Anticipo
-                </h3>
-                <button type="button" onclick="closeModalAdelanto()" class="text-white/70 hover:text-white transition-colors">
-                    <i class="fa-solid fa-xmark text-xl"></i>
-                </button>
-            </div>
-            
-            <form action="{{ route('anticipos.store') }}" method="POST" class="p-6">
-                @csrf
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Trabajador / Contratista <span class="text-rose-500">*</span></label>
-                        <select name="trabajador_id" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-200 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors">
-                            <option value="">Seleccione un trabajador...</option>
-                            @foreach($trabajadores ?? [] as $t)
-                                <option value="{{ $t->id }}">{{ $t->nombre }} {{ $t->bocamina ? '('.$t->bocamina->nombre.')' : '' }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Fecha <span class="text-rose-500">*</span></label>
-                            <input type="date" name="fecha" required value="{{ date('Y-m-d') }}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-200 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Monto (Bs.) <span class="text-rose-500">*</span></label>
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500 font-bold">Bs.</span>
-                                <input type="number" step="0.01" min="1" name="monto" required placeholder="0.00" class="w-full pl-10 bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-200 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors font-mono">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Días de trabajo que debe (Opcional)</label>
-                        <div class="relative">
-                            <input type="number" step="0.5" min="0" name="dias_debe" placeholder="Ej. 2 días" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-200 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors font-mono">
-                            <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 text-xs font-semibold">días</span>
-                        </div>
-                        <p class="text-[10px] text-slate-400 mt-1">Indica cuántos días de trabajo queda debiendo el trabajador a cambio de este adelanto.</p>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Observación / Motivo (Opcional)</label>
-                        <textarea name="observacion" rows="2" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-200 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors" placeholder="Motivo o detalle del adelanto..."></textarea>
-                    </div>
-                </div>
-                
-                <div class="mt-6 pt-5 border-t border-slate-800 flex justify-end space-x-3">
-                    <button type="button" onclick="closeModalAdelanto()" class="px-5 py-2.5 rounded-xl font-bold text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="px-6 py-2.5 rounded-xl font-bold text-sm flex items-center bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-lg shadow-cyan-500/20">
-                        <i class="fa-solid fa-save mr-2"></i> Guardar Adelanto
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
 </div>
 @endsection
-
-@push('scripts')
-<script>
-    function openModalAdelanto() {
-        const modal = document.getElementById('modalAdelantoRapido');
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-    }
-    function closeModalAdelanto() {
-        const modal = document.getElementById('modalAdelantoRapido');
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-    }
-</script>
-@endpush

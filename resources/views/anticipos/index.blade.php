@@ -12,7 +12,7 @@
             <p class="text-sm text-slate-400 mt-1">Historial de adelantos de dinero registrados. Se descuentan automáticamente en las liquidaciones semanales.</p>
         </div>
         <div class="no-print">
-            <button onclick="document.getElementById('modalAnticipo').classList.remove('hidden'); setTimeout(() => { document.getElementById('modalAnticipo').classList.remove('modal-hide'); }, 10);" class="btn-vibrant-success px-5 py-2.5 rounded-xl font-bold text-sm flex items-center shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all">
+            <button type="button" onclick="openModalAnticipo()" class="btn-vibrant-success px-5 py-2.5 rounded-xl font-bold text-sm flex items-center shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all cursor-pointer">
                 <i class="fa-solid fa-hand-holding-dollar mr-2"></i> Registrar Anticipo
             </button>
         </div>
@@ -139,8 +139,8 @@
     </div>
 
     <!-- Modal Nuevo Anticipo -->
-    <div id="modalAnticipo" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-950/80 backdrop-blur-sm modal-hide transition-opacity duration-300">
-        <div class="glass-card w-full max-w-lg rounded-2xl border border-slate-700/60 shadow-2xl overflow-hidden transform transition-transform duration-300 m-4">
+    <div id="modalAnticipo" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm modal-hide transition-all duration-300" style="display: none; align-items: center; justify-content: center;">
+        <div class="glass-card w-full max-w-lg rounded-2xl border border-slate-700/60 shadow-2xl overflow-hidden transform transition-all duration-300 mx-auto my-auto">
             <div class="bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-4 flex items-center justify-between">
                 <h3 class="text-lg font-bold text-white flex items-center">
                     <i class="fa-solid fa-hand-holding-dollar mr-2"></i> Registrar Nuevo Anticipo
@@ -239,13 +239,45 @@
         submitFilterRealTime(form);
     }
 
+    function openModalAnticipo() {
+        const modal = document.getElementById('modalAnticipo');
+        if (!modal) return;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            modal.classList.remove('modal-hide');
+        }, 10);
+    }
+
     function closeModalAnticipo() {
         const modal = document.getElementById('modalAnticipo');
+        if (!modal) return;
         modal.classList.add('modal-hide');
         setTimeout(() => {
             modal.classList.add('hidden');
             modal.classList.remove('flex');
+            modal.style.display = 'none';
         }, 250);
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const modal = document.getElementById('modalAnticipo');
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModalAnticipo();
+                }
+            });
+        }
+    });
 </script>
+
+<style>
+    #modalAnticipo:not(.hidden) {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+</style>
 @endpush
