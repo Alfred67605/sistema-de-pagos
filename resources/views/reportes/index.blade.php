@@ -1715,69 +1715,14 @@ function getActiveTab() {
     return 'general';
 }
 
-async function doExportPDF(btnEl) {
-    const btn = btnEl || (window.event ? window.event.currentTarget : document.querySelector('.btn-pdf'));
-    const originalHtml = btn ? btn.innerHTML : '';
-    if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando PDF...';
-
-    // 1. Detect active tab
+function doExportPDF(btnEl) {
     const currentTab = getActiveTab();
-
-    // 2. Locate target executive report view
     const sourceEl = document.getElementById('exec-report-' + currentTab);
     if (!sourceEl) {
-        if (btn) btn.innerHTML = originalHtml;
-        window.doPrintReport();
+        preparePrintLayout();
+        window.print();
         return;
     }
-
-    // 3. Show sleek corporate loading overlay
-    const overlay = document.createElement('div');
-    overlay.id = 'pdf-export-loading-overlay';
-    overlay.style.cssText = 'position:fixed; inset:0; background:rgba(15,23,42,0.88); backdrop-filter:blur(8px); z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#ffffff; font-family:"Outfit",sans-serif; text-align:center; padding:24px;';
-    overlay.innerHTML = `
-        <div style="width:52px; height:52px; border:4px solid rgba(245,158,11,0.25); border-top-color:#f59e0b; border-radius:50%; animation:pdfSpin 0.7s linear infinite; margin-bottom:18px;"></div>
-        <div style="font-size:18px; font-weight:800; letter-spacing:0.02em;">Compilando Reporte Oficial en PDF...</div>
-        <div style="font-size:12px; color:#94a3b8; margin-top:6px; max-width:440px;">Renderizando balances financieros, nóminas y certificaciones ejecutivas en alta resolución.</div>
-        <style>@keyframes pdfSpin { to { transform: rotate(360deg); } }</style>
-    `;
-    document.body.appendChild(overlay);
-
-    // 4. Create on-screen container at (0,0) underneath the overlay
-    const wrapper = document.createElement('div');
-    wrapper.id = 'pdf-export-render-wrapper';
-    wrapper.style.cssText = 'position:fixed; top:0; left:0; width:1120px; max-width:1120px; background:#ffffff; color:#0f172a; z-index:999990; padding:18px 24px; box-sizing:border-box; overflow:visible; display:block;';
-
-    const clone = sourceEl.cloneNode(true);
-    clone.style.display = 'block';
-    clone.style.visibility = 'visible';
-    clone.style.width = '100%';
-    clone.classList.remove('exec-tab-pane');
-    clone.classList.add('exec-active-print');
-
-    // Remove any display:none inline styles inside the clone
-    clone.querySelectorAll('[style*="display: none"], [style*="display:none"]').forEach(el => {
-        el.style.display = '';
-    });
-
-    wrapper.appendChild(clone);
-    document.body.appendChild(wrapper);
-
-    // Copy canvas pixel data from original to clone (needed for Chart.js in Tab 1)
-    const origCanvases = sourceEl.querySelectorAll('canvas');
-    const clonedCanvases = clone.querySelectorAll('canvas');
-    origCanvases.forEach((orig, idx) => {
-        const dest = clonedCanvases[idx];
-        if (dest && orig) {
-            dest.width = orig.width;
-            dest.height = orig.height;
-            const ctx = dest.getContext('2d');
-            if (ctx) ctx.drawImage(orig, 0, 0);
-        }
-    });
-
-    // Wait 250ms for the browser to complete layout and font rendering
-    await new Promise(resolve => setTimeout(resolve, 250));
 
     const tabNames = {
         'bocamina': 'Bocaminas',
@@ -1786,40 +1731,147 @@ async function doExportPDF(btnEl) {
         'general': 'General'
     };
     const tabName = tabNames[currentTab] || 'Personal';
+    const reportTitle = 'Reporte_Ejecutivo_SCPM_' + tabName + '_' + new Date().toISOString().slice(0,10);
 
-    const opt = {
-        margin:       [8, 8, 8, 8],
-        filename:     'Reporte_Ejecutivo_SCPM_' + tabName + '_' + new Date().toISOString().slice(0,10) + '.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { 
-            scale: 2, 
-            useCORS: true, 
-            letterRendering: true,
-            backgroundColor: '#ffffff',
-            width: 1120,
-            windowWidth: 1120,
-            scrollX: 0,
-            scrollY: 0,
-            x: 0,
-            y: 0
-        },
-        jsPDF:        { unit: 'mm', format: 'letter', orientation: 'landscape' },
-        pagebreak:    { 
-            mode: ['avoid-all', 'css', 'legacy'],
-            avoid: ['tr', '.exec-signatures', '.exec-kpi-bar', '.exec-header', '.exec-section-header']
+    const docHtml = `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${reportTitle}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @page {
+            size: letter landscape;
+            margin: 7mm 8mm;
         }
-    };
+        *, *::before, *::after {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
+        }
+        body {
+            margin: 0;
+            padding: 14px 18px;
+            background: #ffffff !important;
+            color: #0f172a !important;
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            font-size: 11px;
+            line-height: 1.35;
+        }
+        .no-screen-bar {
+            background: #0f172a;
+            color: #ffffff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .no-screen-btn {
+            background: #f59e0b;
+            color: #000000;
+            border: none;
+            padding: 9px 20px;
+            font-size: 12px;
+            font-weight: 800;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Outfit', sans-serif;
+            box-shadow: 0 2px 6px rgba(245,158,11,0.3);
+        }
+        .no-screen-btn:hover {
+            background: #d97706;
+            color: #ffffff;
+        }
+        @media print {
+            .no-screen-bar { display: none !important; }
+            body { padding: 0 !important; margin: 0 !important; }
+        }
 
-    try {
-        await html2pdf().set(opt).from(wrapper).save();
-    } catch(err) {
-        console.error('Error generating PDF with html2pdf:', err);
-        // Fallback to browser print dialog if html2canvas encounters an issue
-        window.doPrintReport();
-    } finally {
-        if (wrapper && wrapper.parentNode) wrapper.remove();
-        if (overlay && overlay.parentNode) overlay.remove();
-        if (btn) btn.innerHTML = originalHtml;
+        /* Executive Master Styles */
+        .exec-doc { width: 100%; background: #ffffff !important; color: #0f172a !important; }
+        .exec-header { border-bottom: 3px solid #0f172a; padding-bottom: 12px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .exec-header-left { display: flex; align-items: center; gap: 14px; }
+        .exec-logo-icon { width: 46px; height: 46px; background: #0f172a; color: #f59e0b; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+        .exec-company-name { font-size: 18px; font-weight: 900; color: #0f172a; text-transform: uppercase; letter-spacing: 0.04em; margin: 0; line-height: 1.1; }
+        .exec-report-title { font-size: 12.5px; font-weight: 800; color: #d97706; text-transform: uppercase; letter-spacing: 0.03em; margin: 3px 0 0 0; }
+        .exec-report-subtitle { font-size: 9px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin: 2px 0 0 0; }
+        .exec-meta-box { border: 1.5px solid #cbd5e1; border-radius: 8px; background: #f8fafc; padding: 6px 12px; font-size: 9.5px; min-width: 250px; }
+        .exec-meta-row { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 2px; align-items: center; }
+        .exec-meta-row:last-child { margin-bottom: 0; }
+        .exec-meta-lbl { font-weight: 800; color: #475569; text-transform: uppercase; font-size: 9px; }
+        .exec-meta-val { font-weight: 700; color: #0f172a; font-family: monospace; font-size: 9.5px; }
+        .exec-badge-audited { background: #047857; color: #ffffff; font-size: 8px; font-weight: 800; padding: 1px 6px; border-radius: 4px; letter-spacing: 0.05em; }
+        .exec-kpi-bar { display: flex; gap: 10px; margin-bottom: 14px; }
+        .exec-kpi-card { flex: 1; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 8px 12px; }
+        .exec-kpi-title { font-size: 8.5px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; }
+        .exec-kpi-val { font-size: 14px; font-weight: 900; color: #0f172a; font-family: Consolas, monospace; margin-top: 2px; }
+        .exec-table { width: 100%; border-collapse: collapse; border: 1.5px solid #cbd5e1; font-size: 9.5px; margin-bottom: 14px; background: #ffffff; page-break-inside: auto; }
+        .exec-table thead { display: table-header-group; }
+        .exec-table tr { page-break-inside: avoid; page-break-after: auto; }
+        .exec-table th { background: #1e293b; color: #ffffff; border: 1px solid #cbd5e1; padding: 6px 8px; font-weight: 800; font-size: 9px; text-transform: uppercase; letter-spacing: 0.03em; }
+        .exec-table td { border: 1px solid #cbd5e1; padding: 5.5px 8px; color: #1e293b; font-size: 9.5px; }
+        .exec-table tr:nth-child(even) td { background: #f8fafc; }
+        .exec-subtotal-row td { background: #f1f5f9 !important; color: #0f172a !important; font-weight: 800 !important; border-top: 2px solid #94a3b8 !important; }
+        .exec-grandtotal-row td { background: #0f172a !important; color: #ffffff !important; font-weight: 900 !important; font-size: 10px !important; }
+        .exec-badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 8.5px; font-weight: 700; text-transform: uppercase; background: #e2e8f0; color: #334155; }
+        .exec-sig-cell { width: 90px; height: 14px; border-bottom: 1px dashed #94a3b8; margin: 4px auto 0 auto; }
+        .exec-section { margin-bottom: 16px; page-break-inside: avoid; }
+        .exec-section-header { background: #0f172a; color: #ffffff; padding: 6px 12px; border-radius: 6px 6px 0 0; display: flex; justify-content: space-between; align-items: center; }
+        .exec-signatures { margin-top: 24px; display: flex; justify-content: space-between; gap: 30px; page-break-inside: avoid; }
+        .exec-sig-box { flex: 1; text-align: center; border-top: 1.5px solid #0f172a; padding-top: 6px; }
+        .exec-sig-name { font-size: 10.5px; font-weight: 800; color: #0f172a; margin: 0; }
+        .exec-sig-title { font-size: 8.5px; font-weight: 800; color: #d97706; text-transform: uppercase; letter-spacing: 0.05em; margin: 2px 0 0 0; }
+        .exec-sig-sub { font-size: 8px; color: #64748b; margin: 2px 0 0 0; }
+        .exec-footer { margin-top: 16px; padding-top: 6px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 8px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em; }
+    </style>
+</head>
+<body>
+    <div class="no-screen-bar">
+        <div style="font-weight:700; font-size:13px; display:flex; align-items:center; gap:8px;">
+            <i class="fa-solid fa-file-pdf" style="color:#f59e0b; font-size:16px;"></i>
+            <span>Vista Oficial de Reporte Ejecutivo &middot; Empresa Minera SCPM</span>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <button class="no-screen-btn" onclick="window.print()">
+                <i class="fa-solid fa-print"></i> Guardar como PDF / Imprimir
+            </button>
+            <button onclick="window.close()" style="background:#334155; color:#ffffff; border:none; padding:8px 14px; border-radius:6px; font-weight:700; cursor:pointer; font-family:'Outfit',sans-serif;">
+                <i class="fa-solid fa-xmark"></i> Cerrar
+            </button>
+        </div>
+    </div>
+    ${sourceEl.innerHTML}
+    <script>
+        window.onload = function() {
+            setTimeout(function() {
+                window.print();
+            }, 450);
+        };
+    <\/script>
+</body>
+</html>`;
+
+    const printWin = window.open('', '_blank', 'width=1180,height=880');
+    if (printWin) {
+        printWin.document.open();
+        printWin.document.write(docHtml);
+        printWin.document.close();
+        printWin.focus();
+    } else {
+        // Fallback if popup is blocked
+        preparePrintLayout();
+        window.print();
     }
 }
 
@@ -1909,8 +1961,7 @@ function doExportExcel(btnEl) {
 }
 
 function doPrintReport() {
-    preparePrintLayout();
-    window.print();
+    doExportPDF();
 }
 
 function preparePrintLayout() {
