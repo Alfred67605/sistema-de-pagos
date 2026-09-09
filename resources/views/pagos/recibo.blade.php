@@ -220,16 +220,16 @@ if (!function_exists('montoEnLetrasOficial')) {
                     <i class="fa-solid fa-trash mr-2 text-sm"></i> Eliminar
                 </button>
             </form>
-            <button onclick="downloadPDF()" class="btn-3d-receipt btn-3d-receipt-pdf inline-flex items-center justify-center px-4 py-2.5 text-xs">
+            <button type="button" onclick="downloadPDF(this)" class="btn-3d-receipt btn-3d-receipt-pdf inline-flex items-center justify-center px-4 py-2.5 text-xs cursor-pointer">
                 <i class="fa-solid fa-file-pdf mr-2 text-sm"></i> PDF
             </button>
-            <button onclick="downloadExcel()" class="btn-3d-receipt btn-3d-receipt-excel inline-flex items-center justify-center px-4 py-2.5 text-xs">
+            <button type="button" onclick="downloadExcel(this)" class="btn-3d-receipt btn-3d-receipt-excel inline-flex items-center justify-center px-4 py-2.5 text-xs cursor-pointer">
                 <i class="fa-solid fa-file-excel mr-2 text-sm"></i> Excel
             </button>
-            <button onclick="printThermal80mm()" class="btn-3d-receipt inline-flex items-center justify-center px-4 py-2.5 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-md transition">
+            <button type="button" onclick="printThermal80mm(this)" class="btn-3d-receipt inline-flex items-center justify-center px-4 py-2.5 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-md transition cursor-pointer">
                 <i class="fa-solid fa-receipt mr-2 text-sm"></i> Ticket (80mm / 100x148)
             </button>
-            <button onclick="printStandardA4()" class="btn-3d-receipt btn-3d-receipt-print inline-flex items-center justify-center px-4 py-2.5 text-xs">
+            <button type="button" onclick="printStandardA4(this)" class="btn-3d-receipt btn-3d-receipt-print inline-flex items-center justify-center px-4 py-2.5 text-xs cursor-pointer">
                 <i class="fa-solid fa-print mr-2 text-sm"></i> Hoja (Carta/A4)
             </button>
         </div>
@@ -620,26 +620,45 @@ if (!function_exists('montoEnLetrasOficial')) {
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <script>
-    function printThermal80mm() {
+    function cleanupPrintModes() {
+        document.body.classList.remove('thermal-print-mode');
+        if (typeof window.hideProcessingOverlay === 'function') {
+            window.hideProcessingOverlay();
+        }
+    }
+
+    window.addEventListener('afterprint', cleanupPrintModes);
+    window.addEventListener('focus', cleanupPrintModes);
+
+    function printThermal80mm(btn) {
         document.body.classList.add('thermal-print-mode');
         window.print();
-        setTimeout(function() {
-            document.body.classList.remove('thermal-print-mode');
-        }, 1000);
+        setTimeout(cleanupPrintModes, 1200);
     }
 
-    function printStandardA4() {
+    function printStandardA4(btn) {
         document.body.classList.remove('thermal-print-mode');
         window.print();
+        setTimeout(cleanupPrintModes, 500);
     }
 
-    function downloadPDF() {
+    function downloadPDF(btn) {
         const element = document.getElementById('receipt-card');
         if (!element) return;
         
-        const btn = event ? event.currentTarget : null;
         const originalText = btn ? btn.innerHTML : '';
-        if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Generando PDF...';
+        if (btn) {
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Generando PDF...';
+            btn.disabled = true;
+        }
+
+        const restoreBtn = () => {
+            if (btn) {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+            cleanupPrintModes();
+        };
 
         const opt = {
             margin:       [0.2, 0.2, 0.2, 0.2],
@@ -649,13 +668,31 @@ if (!function_exists('montoEnLetrasOficial')) {
             jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
         };
 
-        html2pdf().set(opt).from(element).save().then(() => {
-            if (btn) btn.innerHTML = originalText;
-        }).catch(err => {
-            console.error(err);
-            if (btn) btn.innerHTML = originalText;
-            window.print();
-        });
+        const safetyTimer = setTimeout(() => {
+            restoreBtn();
+        }, 5000);
+
+        try {
+            if (typeof html2pdf !== 'undefined') {
+                html2pdf().set(opt).from(element).save().then(() => {
+                    clearTimeout(safetyTimer);
+                    restoreBtn();
+                }).catch(err => {
+                    console.error('html2pdf error:', err);
+                    clearTimeout(safetyTimer);
+                    restoreBtn();
+                    printStandardA4();
+                });
+            } else {
+                clearTimeout(safetyTimer);
+                restoreBtn();
+                printStandardA4();
+            }
+        } catch (e) {
+            clearTimeout(safetyTimer);
+            restoreBtn();
+            printStandardA4();
+        }
     }
 
     function downloadExcel() {
@@ -731,7 +768,10 @@ if (!function_exists('montoEnLetrasOficial')) {
         link.download = 'Recibo_Pago_Nro_' + '{{ str_pad($pago->id, 5, "0", STR_PAD_LEFT) }}' + '.xls';
         document.body.appendChild(link);
         link.click();
-        document.body.removeChild(link);
+        setTimeout(() => {
+            if (link.parentNode) link.parentNode.removeChild(link);
+            cleanupPrintModes();
+        }, 200);
     }
 </script>
 @endpush

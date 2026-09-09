@@ -12,7 +12,7 @@
             </a>
             <h1 class="text-3xl font-bold tracking-tight text-slate-100 mt-1">Detalle de Contrato: {{ $contrato->codigo }}</h1>
         </div>
-        <button onclick="window.print()" class="inline-flex items-center justify-center px-4 py-2.5 rounded-lg bg-slate-800 border border-slate-700/80 hover:bg-slate-700 text-sm font-medium text-slate-200 transition duration-150">
+        <button type="button" onclick="window.print()" class="inline-flex items-center justify-center px-4 py-2.5 rounded-lg bg-slate-800 border border-slate-700/80 hover:bg-slate-700 text-sm font-medium text-slate-200 transition duration-150 cursor-pointer">
             <i class="fa-solid fa-print mr-2 text-amber-500"></i> Imprimir Reporte de Contrato
         </button>
     </div>

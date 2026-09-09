@@ -69,11 +69,11 @@
         }
     </style>
 </head>
-<body onload="window.print()">
+<body>
 
     <div class="no-print">
-        <button onclick="window.print()" class="btn-print">🖨️ IMPRIMIR TICKET (80mm / 100x148)</button>
-        <button onclick="window.close()" class="btn-close">Cerrar</button>
+        <button type="button" onclick="window.print()" class="btn-print">🖨️ IMPRIMIR TICKET (80mm / 100x148)</button>
+        <button type="button" onclick="window.close()" class="btn-close">Cerrar</button>
     </div>
 
     <!-- ══════════ TICKET DE COMPRA / VENTA DE MINERAL ══════════ -->
@@ -213,5 +213,12 @@
         *** Impreso desde Sistema de Pagos ***
     </div>
 
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                window.print();
+            }, 300);
+        });
+    </script>
 </body>
 </html>

@@ -12,13 +12,13 @@
             <p class="text-sm text-slate-400 mt-1">Consulta, filtra e imprime reportes de compra y venta de mineral por bocamina y período.</p>
         </div>
         <div class="flex flex-wrap gap-2.5 no-print">
-            <button onclick="doExportExcel()" class="inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md transition">
+            <button type="button" onclick="doExportExcel(this)" class="inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md transition cursor-pointer">
                 <i class="fa-solid fa-file-excel mr-2"></i> Excel
             </button>
-            <button onclick="doExportPDF()" class="inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-md transition">
+            <button type="button" onclick="doExportPDF(this)" class="inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-md transition cursor-pointer">
                 <i class="fa-solid fa-file-pdf mr-2"></i> PDF
             </button>
-            <button onclick="window.print()" class="inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-500 text-white shadow-md transition">
+            <button type="button" onclick="window.print()" class="inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-500 text-white shadow-md transition cursor-pointer">
                 <i class="fa-solid fa-print mr-2"></i> Imprimir
             </button>
         </div>
@@ -419,7 +419,10 @@ function doExportExcel() {
     link.download = 'Reporte_Comercializacion_' + new Date().toISOString().slice(0,10) + '.xls';
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    setTimeout(() => {
+        if (link.parentNode) document.body.removeChild(link);
+        if (typeof window.hideProcessingOverlay === 'function') window.hideProcessingOverlay();
+    }, 200);
 }
 </script>
 @endpush

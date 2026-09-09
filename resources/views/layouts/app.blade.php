@@ -1626,8 +1626,36 @@
         });
 
         // 4. Form submit glass processing overlay & Global confirm modal handler
+        window.hideProcessingOverlay = function() {
+            document.querySelectorAll('.processing-overlay').forEach(el => {
+                el.style.opacity = '0';
+                setTimeout(() => { if (el.parentNode) el.remove(); }, 200);
+            });
+        };
+
+        // Ensure print dialog closing or window regaining focus clears any stuck overlay or print state
+        window.addEventListener('afterprint', () => {
+            if (typeof window.hideProcessingOverlay === 'function') window.hideProcessingOverlay();
+            document.body.classList.remove('thermal-print-mode');
+        });
+        window.addEventListener('focus', () => {
+            if (typeof window.hideProcessingOverlay === 'function') window.hideProcessingOverlay();
+            document.body.classList.remove('thermal-print-mode');
+        });
+
         function showProcessingOverlay(form) {
+            if (!form || !(form instanceof HTMLFormElement)) return;
             if (form.action && form.action.includes('logout')) return;
+            if (form.target === '_blank') return;
+            if (form.hasAttribute('data-no-overlay')) return;
+            if ((form.method || '').toUpperCase() === 'GET') return;
+            if (form.action && (
+                form.action.includes('export') || 
+                form.action.includes('excel') || 
+                form.action.includes('ticket') || 
+                form.action.includes('pdf') ||
+                form.action.includes('download')
+            )) return;
             if (form.checkValidity && !form.checkValidity()) return;
             
             const card = form.closest('.glass-card') || form.closest('main') || document.body;
@@ -1650,26 +1678,33 @@
             overlay.style.justifyContent = 'center';
             overlay.style.opacity = '0';
             overlay.style.transition = 'opacity 0.25s ease';
+            overlay.style.cursor = 'pointer';
+            overlay.title = 'Haga click para cerrar si tarda demasiado';
             
+            // Click to dismiss in case of slow or blocked server response
+            overlay.addEventListener('click', () => {
+                window.hideProcessingOverlay();
+            });
+
             overlay.innerHTML = `
-                <div style="position: relative; display: flex; align-items: center; justify-content: center;">
+                <div style="position: relative; display: flex; align-items: center; justify-content: center; pointer-events: none;">
                     <div class="w-14 h-14 rounded-full border-2 border-amber-500/20 border-t-amber-500 animate-spin"></div>
                     <i class="fa-solid fa-gem text-amber-500 absolute text-base animate-pulse"></i>
                 </div>
-                <span class="text-xs text-amber-500 font-mono tracking-widest uppercase mt-4 animate-pulse">Procesando...</span>
+                <span class="text-xs text-amber-500 font-mono tracking-widest uppercase mt-4 animate-pulse pointer-events-none">Procesando...</span>
             `;
             
             card.appendChild(overlay);
             overlay.offsetHeight; // force reflow
             overlay.style.opacity = '1';
 
-            // Safety cleanup if form submission is interrupted
+            // Safety cleanup: dismiss automatically so page NEVER stays stuck/frozen
             setTimeout(() => {
                 if (overlay && overlay.parentNode) {
                     overlay.style.opacity = '0';
-                    setTimeout(() => overlay.remove(), 250);
+                    setTimeout(() => { if (overlay.parentNode) overlay.remove(); }, 250);
                 }
-            }, 6000);
+            }, 3500);
         }
 
         // Global Custom Confirmation Modal
@@ -1809,6 +1844,7 @@
         // Intercept all submit events in the capturing phase
         document.addEventListener('submit', (e) => {
             const form = e.target;
+            if (!form || !(form instanceof HTMLFormElement)) return;
             
             // Check if this form uses confirm() inline
             const onsubmitAttr = form.getAttribute('onsubmit');
@@ -1844,7 +1880,19 @@
                     form.submit();
                 });
             } else {
-                // Standard submission, just show overlay
+                // Don't show overlay on export, blank target, GET filter or cancelled events
+                if (e.defaultPrevented) return;
+                if (form.target === '_blank') return;
+                if ((form.method || '').toUpperCase() === 'GET') return;
+                if (form.action && (
+                    form.action.includes('export') || 
+                    form.action.includes('excel') || 
+                    form.action.includes('ticket') || 
+                    form.action.includes('pdf') ||
+                    form.action.includes('download')
+                )) return;
+                
+                // Standard submission, show overlay
                 showProcessingOverlay(form);
             }
         }, true);

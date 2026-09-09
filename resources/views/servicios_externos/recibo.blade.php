@@ -170,16 +170,16 @@ if (!function_exists('montoEnLetrasServicio')) {
             <a href="{{ route('servicios-externos.edit', $servicio->id) }}" class="btn-3d-receipt inline-flex items-center justify-center px-4 py-2.5 text-xs bg-slate-800 text-amber-400 border border-slate-700 hover:bg-slate-700 font-bold rounded-xl shadow-md transition">
                 <i class="fa-solid fa-pen-to-square mr-2 text-sm"></i> Editar
             </a>
-            <button onclick="downloadPDF()" class="btn-3d-receipt inline-flex items-center justify-center px-4 py-2.5 text-xs bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl shadow-md transition">
+            <button type="button" onclick="downloadPDF(this)" class="btn-3d-receipt inline-flex items-center justify-center px-4 py-2.5 text-xs bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl shadow-md transition cursor-pointer">
                 <i class="fa-solid fa-file-pdf mr-2 text-sm"></i> PDF
             </button>
-            <button onclick="downloadExcel()" class="btn-3d-receipt inline-flex items-center justify-center px-4 py-2.5 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-md transition">
+            <button type="button" onclick="downloadExcel(this)" class="btn-3d-receipt inline-flex items-center justify-center px-4 py-2.5 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-md transition cursor-pointer">
                 <i class="fa-solid fa-file-excel mr-2 text-sm"></i> Excel
             </button>
-            <button onclick="printThermal80mm()" class="btn-3d-receipt inline-flex items-center justify-center px-4 py-2.5 text-xs bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-xl shadow-md transition">
+            <button type="button" onclick="printThermal80mm(this)" class="btn-3d-receipt inline-flex items-center justify-center px-4 py-2.5 text-xs bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-xl shadow-md transition cursor-pointer">
                 <i class="fa-solid fa-receipt mr-2 text-sm"></i> Ticket (80mm)
             </button>
-            <button onclick="printStandardA4()" class="btn-3d-receipt inline-flex items-center justify-center px-4 py-2.5 text-xs bg-sky-600 text-white hover:bg-sky-500 font-bold rounded-xl shadow-md transition">
+            <button type="button" onclick="printStandardA4(this)" class="btn-3d-receipt inline-flex items-center justify-center px-4 py-2.5 text-xs bg-sky-600 text-white hover:bg-sky-500 font-bold rounded-xl shadow-md transition cursor-pointer">
                 <i class="fa-solid fa-print mr-2 text-sm"></i> Hoja (Carta/A4)
             </button>
         </div>
@@ -472,29 +472,46 @@ if (!function_exists('montoEnLetrasServicio')) {
 
 @push('scripts')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
 <script>
-    function printThermal80mm() {
+    function cleanupPrintModes() {
+        document.body.classList.remove('thermal-print-mode');
+        if (typeof window.hideProcessingOverlay === 'function') {
+            window.hideProcessingOverlay();
+        }
+    }
+
+    window.addEventListener('afterprint', cleanupPrintModes);
+    window.addEventListener('focus', cleanupPrintModes);
+
+    function printThermal80mm(btn) {
         document.body.classList.add('thermal-print-mode');
         window.print();
-        setTimeout(function() {
-            document.body.classList.remove('thermal-print-mode');
-        }, 1000);
+        setTimeout(cleanupPrintModes, 1200);
     }
 
-    function printStandardA4() {
+    function printStandardA4(btn) {
         document.body.classList.remove('thermal-print-mode');
         window.print();
+        setTimeout(cleanupPrintModes, 500);
     }
 
-    function downloadPDF() {
+    function downloadPDF(btn) {
         const element = document.getElementById('receipt-card');
         if (!element) return;
         
-        const btn = event ? event.currentTarget : null;
         const originalText = btn ? btn.innerHTML : '';
-        if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Generando PDF...';
+        if (btn) {
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Generando PDF...';
+            btn.disabled = true;
+        }
+
+        const restoreBtn = () => {
+            if (btn) {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+            cleanupPrintModes();
+        };
 
         const opt = {
             margin:       [0.2, 0.2, 0.2, 0.2],
@@ -504,16 +521,34 @@ if (!function_exists('montoEnLetrasServicio')) {
             jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
         };
 
-        html2pdf().set(opt).from(element).save().then(() => {
-            if (btn) btn.innerHTML = originalText;
-        }).catch(err => {
-            console.error(err);
-            if (btn) btn.innerHTML = originalText;
-            window.print();
-        });
+        const safetyTimer = setTimeout(() => {
+            restoreBtn();
+        }, 5000);
+
+        try {
+            if (typeof html2pdf !== 'undefined') {
+                html2pdf().set(opt).from(element).save().then(() => {
+                    clearTimeout(safetyTimer);
+                    restoreBtn();
+                }).catch(err => {
+                    console.error('html2pdf error:', err);
+                    clearTimeout(safetyTimer);
+                    restoreBtn();
+                    printStandardA4();
+                });
+            } else {
+                clearTimeout(safetyTimer);
+                restoreBtn();
+                printStandardA4();
+            }
+        } catch (e) {
+            clearTimeout(safetyTimer);
+            restoreBtn();
+            printStandardA4();
+        }
     }
 
-    function downloadExcel() {
+    function downloadExcel(btn) {
         const htmlContent = `
             <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
             <head>
@@ -550,7 +585,7 @@ if (!function_exists('montoEnLetrasServicio')) {
                     <tr><td colspan="4">&nbsp;</td></tr>
                     <tr><td colspan="4" class="info-header">LIQUIDACIÓN DE PAGO DEL SERVICIO</td></tr>
                     <tr><td class="td-cell total-cell" colspan="3">MONTO TOTAL PAGADO (Bs.):</td><td class="td-num total-cell">Bs. {{ number_format($servicio->monto_total, 2) }}</td></tr>
-                    <tr><td class="td-cell" colspan="3" style="font-weight:bold;">EQUIVALENTE EN DÓLARES ($us):</td><td class="td-num" style="font-weight:bold;">$us {{ number_format($servicio->monto_total / 6.96, 2) }}</td></tr>
+                    <tr><td class="td-cell" style="font-weight:bold;">EQUIVALENTE EN DÓLARES ($us):</td><td class="td-num" style="font-weight:bold;">$us {{ number_format($servicio->monto_total / 6.96, 2) }}</td></tr>
                     <tr><td colspan="4">&nbsp;</td></tr>
                     <tr><td class="td-cell" style="font-weight:bold; background:#f8fafc;">Monto en Letras:</td><td class="td-cell" colspan="3"><strong>{{ montoEnLetrasServicio($servicio->monto_total) }}</strong></td></tr>
                     <tr><td class="td-cell" style="font-weight:bold; background:#f8fafc;">Entregado Por (Caja Chica):</td><td class="td-cell" colspan="3">{{ $servicio->entregado_por ?? 'Administración General' }}</td></tr>
@@ -565,7 +600,10 @@ if (!function_exists('montoEnLetrasServicio')) {
         link.download = 'Recibo_Servicio_Externo_Nro_' + '{{ str_pad($servicio->id, 5, "0", STR_PAD_LEFT) }}' + '.xls';
         document.body.appendChild(link);
         link.click();
-        document.body.removeChild(link);
+        setTimeout(() => {
+            if (link.parentNode) link.parentNode.removeChild(link);
+            cleanupPrintModes();
+        }, 200);
     }
 </script>
 @endpush

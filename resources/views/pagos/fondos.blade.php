@@ -472,20 +472,39 @@ window.doExportPDFCaja = function() {
     <div class="footer">
         Página 1 / 1 · Reporte Oficial de Fondo de Caja del Personal
     </div>
-    <script>
-        window.onload = function() {
-            setTimeout(function() { window.print(); }, 300);
-        };
-    <\/script>
 </body>
 </html>`;
 
-    const printWin = window.open('', '_blank', 'width=1100,height=850');
-    if (printWin) {
-        printWin.document.write(pdfHtml);
-        printWin.document.close();
-        printWin.focus();
-    }
+    const oldIframe = document.getElementById('fondos-print-iframe');
+    if (oldIframe) oldIframe.remove();
+
+    const iframe = document.createElement('iframe');
+    iframe.id = 'fondos-print-iframe';
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
+    iframe.style.visibility = 'hidden';
+    document.body.appendChild(iframe);
+
+    iframe.contentDocument.open();
+    iframe.contentDocument.write(pdfHtml);
+    iframe.contentDocument.close();
+
+    setTimeout(() => {
+        try {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+        } catch (e) {
+            window.print();
+        }
+        setTimeout(() => {
+            if (iframe.parentNode) iframe.remove();
+            if (typeof window.hideProcessingOverlay === 'function') window.hideProcessingOverlay();
+        }, 2500);
+    }, 350);
 };
 
 // ─── Excel Export Caja Chica ─────────────────────────────────────────────────
@@ -520,7 +539,10 @@ window.doExportExcelCaja = function() {
     link.setAttribute("download", filename);
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    setTimeout(() => {
+        if (link.parentNode) document.body.removeChild(link);
+        if (typeof window.hideProcessingOverlay === 'function') window.hideProcessingOverlay();
+    }, 200);
 };
 </script>
 @endpush

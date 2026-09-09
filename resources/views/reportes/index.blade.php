@@ -496,13 +496,13 @@ table.rpt-tbl tbody tr:hover td { background: var(--rpt-row-hover); }
             <p class="text-xs text-slate-400 mt-1 ml-13">Monitoreo de planillas, desglose de anticipos, balance de bocaminas e historial de contratistas.</p>
         </div>
         <div class="flex flex-wrap gap-2.5">
-            <button class="rpt-export-btn btn-excel" onclick="window.doExportExcel(this)">
+            <button type="button" class="rpt-export-btn btn-excel cursor-pointer" onclick="window.doExportExcel(this)">
                 <i class="fa-solid fa-file-excel"></i> Excel
             </button>
-            <button class="rpt-export-btn btn-pdf" onclick="window.doExportPDF(this)">
+            <button type="button" class="rpt-export-btn btn-pdf cursor-pointer" onclick="window.doExportPDF(this)">
                 <i class="fa-solid fa-file-pdf"></i> PDF
             </button>
-            <button class="rpt-export-btn btn-print" onclick="window.doPrintReport()">
+            <button type="button" class="rpt-export-btn btn-print cursor-pointer" onclick="window.doPrintReport()">
                 <i class="fa-solid fa-print"></i> Imprimir
             </button>
         </div>
@@ -1837,42 +1837,43 @@ function doExportPDF(btnEl) {
     </style>
 </head>
 <body>
-    <div class="no-screen-bar">
-        <div style="font-weight:700; font-size:13px; display:flex; align-items:center; gap:8px;">
-            <i class="fa-solid fa-file-pdf" style="color:#f59e0b; font-size:16px;"></i>
-            <span>Vista Oficial de Reporte Ejecutivo &middot; Empresa Minera SCPM</span>
-        </div>
-        <div style="display:flex; gap:10px;">
-            <button class="no-screen-btn" onclick="window.print()">
-                <i class="fa-solid fa-print"></i> Guardar como PDF / Imprimir
-            </button>
-            <button onclick="window.close()" style="background:#334155; color:#ffffff; border:none; padding:8px 14px; border-radius:6px; font-weight:700; cursor:pointer; font-family:'Outfit',sans-serif;">
-                <i class="fa-solid fa-xmark"></i> Cerrar
-            </button>
-        </div>
-    </div>
     ${sourceEl.innerHTML}
-    <script>
-        window.onload = function() {
-            setTimeout(function() {
-                window.print();
-            }, 450);
-        };
-    <\/script>
 </body>
 </html>`;
 
-    const printWin = window.open('', '_blank', 'width=1180,height=880');
-    if (printWin) {
-        printWin.document.open();
-        printWin.document.write(docHtml);
-        printWin.document.close();
-        printWin.focus();
-    } else {
-        // Fallback if popup is blocked
-        preparePrintLayout();
-        window.print();
-    }
+    // Remove any previous print iframe
+    const oldIframe = document.getElementById('scpm-print-iframe');
+    if (oldIframe) oldIframe.remove();
+
+    const iframe = document.createElement('iframe');
+    iframe.id = 'scpm-print-iframe';
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
+    iframe.style.visibility = 'hidden';
+    document.body.appendChild(iframe);
+
+    iframe.contentDocument.open();
+    iframe.contentDocument.write(docHtml);
+    iframe.contentDocument.close();
+
+    setTimeout(() => {
+        try {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+        } catch (err) {
+            console.warn('Iframe print error, fallback to direct print', err);
+            preparePrintLayout();
+            window.print();
+        }
+        setTimeout(() => {
+            if (iframe.parentNode) iframe.remove();
+            if (typeof window.hideProcessingOverlay === 'function') window.hideProcessingOverlay();
+        }, 2500);
+    }, 350);
 }
 
 function doExportExcel(btnEl) {
@@ -1957,7 +1958,10 @@ function doExportExcel(btnEl) {
     link.download = 'Reporte_SCPM_' + tabName + '_' + new Date().toISOString().slice(0,10) + '.xls';
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    setTimeout(() => {
+        if (link.parentNode) document.body.removeChild(link);
+        if (typeof window.hideProcessingOverlay === 'function') window.hideProcessingOverlay();
+    }, 200);
 }
 
 function doPrintReport() {
@@ -1979,12 +1983,18 @@ function preparePrintLayout() {
     }
 }
 
-window.addEventListener('beforeprint', preparePrintLayout);
-
-window.addEventListener('afterprint', () => {
+function restoreScreenLayout() {
     document.querySelectorAll('.exec-tab-pane').forEach(el => {
         el.style.display = '';
+        el.classList.remove('exec-active-print');
     });
-});
+    if (typeof window.hideProcessingOverlay === 'function') {
+        window.hideProcessingOverlay();
+    }
+}
+
+window.addEventListener('beforeprint', preparePrintLayout);
+window.addEventListener('afterprint', restoreScreenLayout);
+window.addEventListener('focus', restoreScreenLayout);
 </script>
 @endpush

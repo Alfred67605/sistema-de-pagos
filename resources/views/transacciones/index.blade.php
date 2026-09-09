@@ -1012,7 +1012,7 @@
                                     <button @click="showFicha({{ $item->id }})" class="m-btn m-btn-ghost m-btn-icon cursor-pointer" title="Ficha Técnica">
                                         <i class="fa-solid fa-eye text-indigo-400 text-xs"></i>
                                     </button>
-                                    <a :href="'/transacciones-minerales/' + {{ $item->id }} + '/ticket'" target="_blank" onclick="window.open(this.href, 'Ticket80mm', 'width=420,height=700,scrollbars=yes'); return false;" class="m-btn m-btn-ghost m-btn-icon cursor-pointer text-emerald-400 hover:text-emerald-300" title="Imprimir Ticket Térmico (80mm / 100x148)">
+                                    <a :href="'/transacciones-minerales/' + {{ $item->id }} + '/ticket'" target="_blank" onclick="window.open(this.href, 'Ticket80mm', 'width=450,height=720,scrollbars=yes,noopener'); return false;" class="m-btn m-btn-ghost m-btn-icon cursor-pointer text-emerald-400 hover:text-emerald-300" title="Imprimir Ticket Térmico (80mm / 100x148)">
                                         <i class="fa-solid fa-print text-sm"></i>
                                     </a>
                                     <button @click="editCompra({{ $item }})" class="m-btn m-btn-ghost m-btn-icon cursor-pointer" title="Editar">
@@ -1110,7 +1110,7 @@
                             <td class="text-right font-mono font-black text-emerald-400 text-xs whitespace-nowrap">Bs. {{ number_format($item->monto_total, 2) }}</td>
                             <td class="text-center">
                                 <div class="flex justify-center gap-1.5">
-                                    <a :href="'/transacciones-minerales/' + {{ $item->id }} + '/ticket'" target="_blank" onclick="window.open(this.href, 'Ticket80mm', 'width=420,height=700,scrollbars=yes'); return false;" class="m-btn m-btn-ghost m-btn-icon cursor-pointer text-emerald-400 hover:text-emerald-300" title="Imprimir Ticket Térmico (80mm / 100x148)">
+                                    <a :href="'/transacciones-minerales/' + {{ $item->id }} + '/ticket'" target="_blank" onclick="window.open(this.href, 'Ticket80mm', 'width=450,height=720,scrollbars=yes,noopener'); return false;" class="m-btn m-btn-ghost m-btn-icon cursor-pointer text-emerald-400 hover:text-emerald-300" title="Imprimir Ticket Térmico (80mm / 100x148)">
                                         <i class="fa-solid fa-print text-sm"></i>
                                     </a>
                                     <button @click="editVenta({{ $item }})" class="m-btn m-btn-ghost m-btn-icon cursor-pointer" title="Editar">
@@ -1274,7 +1274,7 @@
                                     <button @click="showFicha({{ $lote->id }})" class="m-btn m-btn-ghost m-btn-icon cursor-pointer" title="Ver Detalle">
                                         <i class="fa-solid fa-eye text-cyan-400 text-xs"></i>
                                     </button>
-                                    <a :href="'/transacciones-minerales/' + {{ $lote->id }} + '/ticket'" target="_blank" onclick="window.open(this.href, 'Ticket80mm', 'width=420,height=700,scrollbars=yes'); return false;" class="m-btn m-btn-ghost m-btn-icon cursor-pointer text-emerald-400 hover:text-emerald-300" title="Imprimir Ticket Térmico (80mm / 100x148)">
+                                    <a :href="'/transacciones-minerales/' + {{ $lote->id }} + '/ticket'" target="_blank" onclick="window.open(this.href, 'Ticket80mm', 'width=450,height=720,scrollbars=yes,noopener'); return false;" class="m-btn m-btn-ghost m-btn-icon cursor-pointer text-emerald-400 hover:text-emerald-300" title="Imprimir Ticket Térmico (80mm / 100x148)">
                                         <i class="fa-solid fa-print text-sm"></i>
                                     </a>
                                 </div>
