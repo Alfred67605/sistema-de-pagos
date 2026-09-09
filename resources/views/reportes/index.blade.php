@@ -496,10 +496,10 @@ table.rpt-tbl tbody tr:hover td { background: var(--rpt-row-hover); }
             <p class="text-xs text-slate-400 mt-1 ml-13">Monitoreo de planillas, desglose de anticipos, balance de bocaminas e historial de contratistas.</p>
         </div>
         <div class="flex flex-wrap gap-2.5">
-            <button class="rpt-export-btn btn-excel" onclick="window.doExportExcel()">
+            <button class="rpt-export-btn btn-excel" onclick="window.doExportExcel(this)">
                 <i class="fa-solid fa-file-excel"></i> Excel
             </button>
-            <button class="rpt-export-btn btn-pdf" onclick="window.doExportPDF()">
+            <button class="rpt-export-btn btn-pdf" onclick="window.doExportPDF(this)">
                 <i class="fa-solid fa-file-pdf"></i> PDF
             </button>
             <button class="rpt-export-btn btn-print" onclick="window.doPrintReport()">
@@ -1663,7 +1663,6 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
 
-        // Chart 2: Gastos por Bocamina
         const ctxBocamina = document.getElementById('chartGastosBocamina');
         if (ctxBocamina) {
             const dataBocamina = @json($bocaminasChart);
@@ -1686,52 +1685,99 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
         }
-    }, 300); // 300ms delay ensures the DOM is fully visible before Chart.js measures it
+    }, 300);
 });
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <script>
-function doExportPDF() {
-    const btn = event ? event.currentTarget : null;
+// Helper to reliably retrieve current active tab in Alpine 3 or fallback
+function getActiveTab() {
+    const alpineEl = document.querySelector('.rpt-page');
+    if (window.Alpine && alpineEl) {
+        try {
+            const data = Alpine.$data(alpineEl);
+            if (data && data.tab) return data.tab;
+        } catch(e) {}
+    }
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('tab')) return urlParams.get('tab');
+
+    const activeBtn = document.querySelector('.rpt-tab-btn.rpt-active');
+    if (activeBtn) {
+        const text = activeBtn.textContent.toLowerCase();
+        if (text.includes('trabajador')) return 'trabajador';
+        if (text.includes('bocamina')) return 'bocamina';
+        if (text.includes('anticipo')) return 'anticipos';
+        if (text.includes('resumen')) return 'general';
+    }
+    return 'general';
+}
+
+async function doExportPDF(btnEl) {
+    const btn = btnEl || (window.event ? window.event.currentTarget : document.querySelector('.btn-pdf'));
     const originalHtml = btn ? btn.innerHTML : '';
     if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando PDF...';
 
     // 1. Detect active tab
-    const alpineEl = document.querySelector('.rpt-page');
-    let currentTab = 'bocamina';
-    if (alpineEl && alpineEl.__x && alpineEl.__x.$data) {
-        currentTab = alpineEl.__x.$data.tab;
-    } else {
-        const urlParams = new URLSearchParams(window.location.search);
-        currentTab = urlParams.get('tab') || 'general';
-    }
+    const currentTab = getActiveTab();
 
-    // 2. Locate target element inside executive report view
+    // 2. Locate target executive report view
     const sourceEl = document.getElementById('exec-report-' + currentTab);
     if (!sourceEl) {
-        window.print();
         if (btn) btn.innerHTML = originalHtml;
+        window.doPrintReport();
         return;
     }
 
-    // 3. Clone and wrap in a clean 1140px landscape rendering container
+    // 3. Show sleek corporate loading overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'pdf-export-loading-overlay';
+    overlay.style.cssText = 'position:fixed; inset:0; background:rgba(15,23,42,0.88); backdrop-filter:blur(8px); z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#ffffff; font-family:"Outfit",sans-serif; text-align:center; padding:24px;';
+    overlay.innerHTML = `
+        <div style="width:52px; height:52px; border:4px solid rgba(245,158,11,0.25); border-top-color:#f59e0b; border-radius:50%; animation:pdfSpin 0.7s linear infinite; margin-bottom:18px;"></div>
+        <div style="font-size:18px; font-weight:800; letter-spacing:0.02em;">Compilando Reporte Oficial en PDF...</div>
+        <div style="font-size:12px; color:#94a3b8; margin-top:6px; max-width:440px;">Renderizando balances financieros, nóminas y certificaciones ejecutivas en alta resolución.</div>
+        <style>@keyframes pdfSpin { to { transform: rotate(360deg); } }</style>
+    `;
+    document.body.appendChild(overlay);
+
+    // 4. Create on-screen container at (0,0) underneath the overlay
     const wrapper = document.createElement('div');
-    wrapper.style.position = 'fixed';
-    wrapper.style.left = '-9999px';
-    wrapper.style.top = '0';
-    wrapper.style.width = '1140px';
-    wrapper.style.maxWidth = '1140px';
-    wrapper.style.background = '#ffffff';
-    wrapper.style.color = '#0f172a';
-    wrapper.style.zIndex = '-1000';
-    wrapper.style.padding = '12px 18px';
+    wrapper.id = 'pdf-export-render-wrapper';
+    wrapper.style.cssText = 'position:fixed; top:0; left:0; width:1120px; max-width:1120px; background:#ffffff; color:#0f172a; z-index:999990; padding:18px 24px; box-sizing:border-box; overflow:visible; display:block;';
 
     const clone = sourceEl.cloneNode(true);
     clone.style.display = 'block';
+    clone.style.visibility = 'visible';
+    clone.style.width = '100%';
+    clone.classList.remove('exec-tab-pane');
+    clone.classList.add('exec-active-print');
+
+    // Remove any display:none inline styles inside the clone
+    clone.querySelectorAll('[style*="display: none"], [style*="display:none"]').forEach(el => {
+        el.style.display = '';
+    });
+
     wrapper.appendChild(clone);
     document.body.appendChild(wrapper);
+
+    // Copy canvas pixel data from original to clone (needed for Chart.js in Tab 1)
+    const origCanvases = sourceEl.querySelectorAll('canvas');
+    const clonedCanvases = clone.querySelectorAll('canvas');
+    origCanvases.forEach((orig, idx) => {
+        const dest = clonedCanvases[idx];
+        if (dest && orig) {
+            dest.width = orig.width;
+            dest.height = orig.height;
+            const ctx = dest.getContext('2d');
+            if (ctx) ctx.drawImage(orig, 0, 0);
+        }
+    });
+
+    // Wait 250ms for the browser to complete layout and font rendering
+    await new Promise(resolve => setTimeout(resolve, 250));
 
     const tabNames = {
         'bocamina': 'Bocaminas',
@@ -1742,41 +1788,43 @@ function doExportPDF() {
     const tabName = tabNames[currentTab] || 'Personal';
 
     const opt = {
-        margin:       [6, 6, 6, 6],
+        margin:       [8, 8, 8, 8],
         filename:     'Reporte_Ejecutivo_SCPM_' + tabName + '_' + new Date().toISOString().slice(0,10) + '.pdf',
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { 
             scale: 2, 
             useCORS: true, 
+            letterRendering: true,
             backgroundColor: '#ffffff',
-            windowWidth: 1160,
+            width: 1120,
+            windowWidth: 1120,
             scrollX: 0,
-            scrollY: 0
+            scrollY: 0,
+            x: 0,
+            y: 0
         },
         jsPDF:        { unit: 'mm', format: 'letter', orientation: 'landscape' },
-        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+        pagebreak:    { 
+            mode: ['avoid-all', 'css', 'legacy'],
+            avoid: ['tr', '.exec-signatures', '.exec-kpi-bar', '.exec-header', '.exec-section-header']
+        }
     };
 
-    html2pdf().set(opt).from(wrapper).save().then(() => {
-        wrapper.remove();
+    try {
+        await html2pdf().set(opt).from(wrapper).save();
+    } catch(err) {
+        console.error('Error generating PDF with html2pdf:', err);
+        // Fallback to browser print dialog if html2canvas encounters an issue
+        window.doPrintReport();
+    } finally {
+        if (wrapper && wrapper.parentNode) wrapper.remove();
+        if (overlay && overlay.parentNode) overlay.remove();
         if (btn) btn.innerHTML = originalHtml;
-    }).catch(err => {
-        console.error('Error generating PDF:', err);
-        wrapper.remove();
-        if (btn) btn.innerHTML = originalHtml;
-        window.print();
-    });
+    }
 }
 
-function doExportExcel() {
-    const alpineEl = document.querySelector('.rpt-page');
-    let currentTab = 'bocamina';
-    if (alpineEl && alpineEl.__x && alpineEl.__x.$data) {
-        currentTab = alpineEl.__x.$data.tab;
-    } else {
-        const urlParams = new URLSearchParams(window.location.search);
-        currentTab = urlParams.get('tab') || 'general';
-    }
+function doExportExcel(btnEl) {
+    const currentTab = getActiveTab();
 
     const execContainer = document.getElementById('exec-report-' + currentTab);
     const tables = execContainer ? execContainer.querySelectorAll('table.exec-table') : [];
@@ -1866,14 +1914,7 @@ function doPrintReport() {
 }
 
 function preparePrintLayout() {
-    const alpineEl = document.querySelector('.rpt-page');
-    let currentTab = 'general';
-    if (alpineEl && alpineEl.__x && alpineEl.__x.$data) {
-        currentTab = alpineEl.__x.$data.tab;
-    } else {
-        const urlParams = new URLSearchParams(window.location.search);
-        currentTab = urlParams.get('tab') || 'general';
-    }
+    const currentTab = getActiveTab();
 
     document.querySelectorAll('.exec-tab-pane').forEach(el => {
         el.classList.remove('exec-active-print');
