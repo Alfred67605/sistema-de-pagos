@@ -360,8 +360,109 @@ document.addEventListener('DOMContentLoaded', function () {
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <script>
-function doExportPDF() {
-    window.print();
+function doExportPDF(btn) {
+    const activeTable = document.querySelector('table:not(.no-print)');
+    if (!activeTable) {
+        window.print();
+        return;
+    }
+
+    let rowsHtml = '';
+    const rows = activeTable.querySelectorAll('tr');
+    rows.forEach((tr, index) => {
+        const isHeader = tr.parentElement.tagName === 'THEAD';
+        const cells = tr.querySelectorAll(isHeader ? 'th' : 'td');
+        let rowStr = '<tr>';
+        cells.forEach((td, cellIndex) => {
+            if (cellIndex === cells.length - 1 && td.classList.contains('no-print')) return;
+            
+            const txt = td.textContent.replace(/\s+/g, ' ').trim();
+            if (isHeader) {
+                rowStr += `<th>${txt}</th>`;
+            } else {
+                const isNum = txt.startsWith('Bs.') || txt.includes('Kg') || !isNaN(parseFloat(txt));
+                rowStr += `<td class="${isNum ? 'text-right font-mono' : ''}">${txt}</td>`;
+            }
+        });
+        rowStr += '</tr>';
+        rowsHtml += rowStr;
+    });
+
+    const oldIframe = document.getElementById('scpm-comercializacion-iframe');
+    if (oldIframe) oldIframe.remove();
+
+    const iframe = document.createElement('iframe');
+    iframe.id = 'scpm-comercializacion-iframe';
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
+    iframe.style.visibility = 'hidden';
+    document.body.appendChild(iframe);
+
+    const docHtml = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Reporte_Comercializacion_${new Date().toISOString().slice(0,10)}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @page { size: letter landscape; margin: 6mm 8mm; }
+        * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+        body { font-family: 'Outfit', sans-serif; background: #ffffff !important; color: #0f172a !important; margin: 0; padding: 10px; }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0f172a; padding-bottom: 8px; margin-bottom: 12px; }
+        .title { font-size: 16px; font-weight: 900; color: #0f172a; text-transform: uppercase; margin: 0; }
+        .subtitle { font-size: 9.5px; color: #64748b; margin: 3px 0 0 0; font-family: 'JetBrains Mono', monospace; }
+        .badge { font-size: 8.5px; font-weight: 800; background: #0f172a; color: #ffffff; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; }
+        table { width: 100%; border-collapse: collapse; font-size: 9.5px; margin-top: 8px; }
+        th { background: #0f172a; color: #ffffff; padding: 6px 8px; text-align: left; font-size: 8.5px; text-transform: uppercase; font-weight: 800; border: 1px solid #1e293b; }
+        td { padding: 5px 8px; border: 1px solid #e2e8f0; color: #1e293b; }
+        tr:nth-child(even) td { background: #f8fafc; }
+        .text-right { text-align: right; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+        .footer { margin-top: 16px; padding-top: 6px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 8px; color: #94a3b8; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1 class="title">EMPRESA MINERA — REPORTE DE COMERCIALIZACIÓN DE MINERALES</h1>
+            <p class="subtitle">Generado el ${new Date().toLocaleDateString('es-BO')} a las ${new Date().toLocaleTimeString('es-BO')}</p>
+        </div>
+        <div style="text-align:right;">
+            <span class="badge">Documento Oficial</span>
+            <div style="font-size:10px; font-weight:800; color:#0f172a; margin-top:3px;">CONTROL OPERATIVO MINERO</div>
+        </div>
+    </div>
+    <table>
+        ${rowsHtml}
+    </table>
+    <div class="footer">
+        <span>Sistema de Pagos y Control Minero SCPM</span>
+        <span>Página 1 / 1</span>
+    </div>
+</body>
+</html>`;
+
+    iframe.contentDocument.open();
+    iframe.contentDocument.write(docHtml);
+    iframe.contentDocument.close();
+
+    setTimeout(() => {
+        try {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+        } catch (e) {
+            window.print();
+        }
+        setTimeout(() => {
+            if (iframe.parentNode) iframe.remove();
+            if (typeof window.hideProcessingOverlay === 'function') window.hideProcessingOverlay();
+        }, 2500);
+    }, 350);
 }
 
 function doExportExcel() {

@@ -496,56 +496,65 @@ if (!function_exists('montoEnLetrasServicio')) {
     }
 
     function downloadPDF(btn) {
-        const element = document.getElementById('receipt-card');
-        if (!element) return;
-        
-        const originalText = btn ? btn.innerHTML : '';
-        if (btn) {
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Generando PDF...';
-            btn.disabled = true;
+        const sourceEl = document.getElementById('receipt-card');
+        if (!sourceEl) {
+            printStandardA4(btn);
+            return;
         }
 
-        const restoreBtn = () => {
-            if (btn) {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
+        const oldIframe = document.getElementById('scpm-servicio-iframe');
+        if (oldIframe) oldIframe.remove();
+
+        const iframe = document.createElement('iframe');
+        iframe.id = 'scpm-servicio-iframe';
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = 'none';
+        iframe.style.visibility = 'hidden';
+        document.body.appendChild(iframe);
+
+        const docHtml = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Recibo_Servicio_Externo_Nro_{{ str_pad($servicio->id, 5, '0', STR_PAD_LEFT) }}</title>
+    <script src="https://cdn.tailwindcss.com"><\/script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @page { size: letter portrait; margin: 4mm 6mm; }
+        * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+        body { font-family: 'Outfit', sans-serif; background: #ffffff !important; color: #0f172a !important; margin: 0; padding: 2px; }
+        .no-print { display: none !important; }
+        #receipt-card { width: 100% !important; max-width: 100% !important; margin: 0 !important; box-shadow: none !important; border: 1.5px solid #0284c7 !important; border-radius: 10px !important; overflow: hidden !important; }
+        .print-container { width: 100% !important; margin: 0 !important; padding: 0 !important; }
+    </style>
+</head>
+<body class="bg-white">
+    ${sourceEl.outerHTML}
+</body>
+</html>`;
+
+        iframe.contentDocument.open();
+        iframe.contentDocument.write(docHtml);
+        iframe.contentDocument.close();
+
+        setTimeout(() => {
+            try {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+            } catch (err) {
+                console.warn('Iframe print error, fallback to direct print', err);
+                printStandardA4(btn);
             }
-            cleanupPrintModes();
-        };
-
-        const opt = {
-            margin:       [0.2, 0.2, 0.2, 0.2],
-            filename:     'Recibo_Servicio_Externo_Nro_' + '{{ str_pad($servicio->id, 5, "0", STR_PAD_LEFT) }}' + '.pdf',
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 1.8, useCORS: true, letterRendering: true, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0 },
-            jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-        };
-
-        const safetyTimer = setTimeout(() => {
-            restoreBtn();
-        }, 5000);
-
-        try {
-            if (typeof html2pdf !== 'undefined') {
-                html2pdf().set(opt).from(element).save().then(() => {
-                    clearTimeout(safetyTimer);
-                    restoreBtn();
-                }).catch(err => {
-                    console.error('html2pdf error:', err);
-                    clearTimeout(safetyTimer);
-                    restoreBtn();
-                    printStandardA4();
-                });
-            } else {
-                clearTimeout(safetyTimer);
-                restoreBtn();
-                printStandardA4();
-            }
-        } catch (e) {
-            clearTimeout(safetyTimer);
-            restoreBtn();
-            printStandardA4();
-        }
+            setTimeout(() => {
+                if (iframe.parentNode) iframe.remove();
+                cleanupPrintModes();
+            }, 2500);
+        }, 350);
     }
 
     function downloadExcel(btn) {

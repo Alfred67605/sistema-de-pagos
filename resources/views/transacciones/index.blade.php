@@ -2402,24 +2402,38 @@ window.doExportPDF = function() {
     <div class="footer">
         Página 1 / 1 · Reporte de Comercialización de Minerales
     </div>
-    <script>
-        window.onload = function() {
-            setTimeout(function() {
-                window.print();
-            }, 300);
-        };
-    <\/script>
 </body>
 </html>`;
 
-    const printWin = window.open('', '_blank', 'width=1100,height=850');
-    if (printWin) {
-        printWin.document.write(pdfHtml);
-        printWin.document.close();
-        printWin.focus();
-    } else {
-        alert('Por favor permite abrir ventanas emergentes para generar el PDF.');
-    }
+    const oldIframe = document.getElementById('mineral-print-iframe');
+    if (oldIframe) oldIframe.remove();
+
+    const iframe = document.createElement('iframe');
+    iframe.id = 'mineral-print-iframe';
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
+    iframe.style.visibility = 'hidden';
+    document.body.appendChild(iframe);
+
+    iframe.contentDocument.open();
+    iframe.contentDocument.write(pdfHtml);
+    iframe.contentDocument.close();
+
+    setTimeout(() => {
+        try {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+        } catch (e) {
+            window.print();
+        }
+        setTimeout(() => {
+            if (iframe.parentNode) iframe.remove();
+        }, 2500);
+    }, 350);
 };
 
 // ─── Excel Export ─────────────────────────────────────────────────────────────
