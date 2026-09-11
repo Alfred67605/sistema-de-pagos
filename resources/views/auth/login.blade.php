@@ -662,7 +662,7 @@
                     
                     spark.animate([
                         { transform: 'translate(0, 0) scale(1)', opacity: 1 },
-                        { transform: `translate(${vx}px, ${vy}px) scale(0)', opacity: 0 }
+                        { transform: `translate(${vx}px, ${vy}px) scale(0)`, opacity: 0 }
                     ], {
                         duration: Math.random() * 500 + 400,
                         easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)'
