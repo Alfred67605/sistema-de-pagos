@@ -48,14 +48,21 @@ class AnticipoController extends Controller
             'dias_debe' => 'nullable|numeric|min:0',
         ]);
 
-        \App\Models\Anticipo::create([
+        $anticipoData = [
             'trabajador_id' => $request->trabajador_id,
             'fecha' => $request->fecha,
             'monto' => $request->monto,
             'saldo' => $request->monto,
-            'observacion' => $request->observacion,
-            'dias_debe' => $request->dias_debe ?? 0,
-        ]);
+        ];
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn('anticipos', 'observacion')) {
+            $anticipoData['observacion'] = $request->observacion;
+        }
+        if (\Illuminate\Support\Facades\Schema::hasColumn('anticipos', 'dias_debe')) {
+            $anticipoData['dias_debe'] = $request->dias_debe ?? 0;
+        }
+
+        \App\Models\Anticipo::create($anticipoData);
 
         return redirect()->back()->with('success', 'Adelanto / Anticipo registrado con éxito.');
     }
@@ -72,13 +79,20 @@ class AnticipoController extends Controller
         $diferencia = $request->monto - $anticipo->monto;
         $nuevoSaldo = max(0, $anticipo->saldo + $diferencia);
 
-        $anticipo->update([
+        $updateData = [
             'fecha' => $request->fecha,
             'monto' => $request->monto,
             'saldo' => $nuevoSaldo,
-            'observacion' => $request->observacion,
-            'dias_debe' => $request->dias_debe ?? $anticipo->dias_debe,
-        ]);
+        ];
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn('anticipos', 'observacion')) {
+            $updateData['observacion'] = $request->observacion;
+        }
+        if (\Illuminate\Support\Facades\Schema::hasColumn('anticipos', 'dias_debe')) {
+            $updateData['dias_debe'] = $request->dias_debe ?? ($anticipo->dias_debe ?? 0);
+        }
+
+        $anticipo->update($updateData);
 
         return redirect()->back()->with('success', 'Adelanto actualizado con éxito.');
     }

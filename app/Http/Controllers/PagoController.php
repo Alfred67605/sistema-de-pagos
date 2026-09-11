@@ -390,15 +390,22 @@ class PagoController extends Controller
                     ? $request->adelanto_observacion
                     : 'Adelanto / Excedente (' . ($request->numero_nota ?: 'Liquidación #' . date('Ymd')) . ($diasDebe > 0 ? ' - Debe ' . $diasDebe . ' días' : '') . ')';
 
-                Anticipo::create([
+                $anticipoData = [
                     'trabajador_id' => $trabajadorId,
                     'fecha' => $request->fecha,
                     'monto' => $extra,
                     'saldo' => $extra,
                     'pagado' => false,
-                    'observacion' => $observacionAdelanto,
-                    'dias_debe' => $diasDebe,
-                ]);
+                ];
+
+                if (\Illuminate\Support\Facades\Schema::hasColumn('anticipos', 'observacion')) {
+                    $anticipoData['observacion'] = $observacionAdelanto;
+                }
+                if (\Illuminate\Support\Facades\Schema::hasColumn('anticipos', 'dias_debe')) {
+                    $anticipoData['dias_debe'] = $diasDebe;
+                }
+
+                Anticipo::create($anticipoData);
             }
 
             // Create Pago record
