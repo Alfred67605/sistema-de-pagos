@@ -285,7 +285,7 @@
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <input type="number" step="0.5" min="0.5" x-model="diasDebe" @input="onDiasDebeInput()"
+                                <input type="number" step="0.5" min="0" :disabled="tipoPago!=='debe_dias'" x-model="diasDebe" @input="onDiasDebeInput()"
                                        placeholder="Ej. 2"
                                        class="p-input font-mono font-black text-center text-purple-300 text-base !py-1.5 border-purple-500/40">
                                 <div class="flex gap-1 mt-1 justify-center">
@@ -302,8 +302,8 @@
                                 <div class="text-[9px] text-slate-400 mt-0.5">El trabajador queda debiendo estos días</div>
                             </div>
                         </div>
-                        <input type="hidden" name="dias_debe" :value="diasDebe">
-                        <input type="text" name="adelanto_observacion" x-model="adelantoObservacion"
+                        <input type="hidden" name="dias_debe" :value="diasDebe" :disabled="tipoPago!=='debe_dias'">
+                        <input type="text" name="adelanto_observacion" :disabled="tipoPago!=='debe_dias'" x-model="adelantoObservacion"
                                placeholder="Detalle (ej. Trabajador debe 2 días de trabajo)..."
                                class="p-input text-xs !py-1.5 border-purple-500/25">
                     </div>
@@ -319,7 +319,7 @@
                         <div class="grid grid-cols-2 gap-2">
                             <div class="relative">
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-black text-cyan-400 font-mono pointer-events-none">Bs.</span>
-                                <input type="number" step="0.01" min="0" x-model="montoAdelantoExtra" @input="onMontoAdelantoExtraInput()"
+                                <input type="number" step="0.01" min="0" :disabled="tipoPago!=='adelanto'" x-model="montoAdelantoExtra" @input="onMontoAdelantoExtraInput()"
                                        placeholder="0.00"
                                        class="p-input font-mono font-black text-right text-cyan-300 text-sm !py-2 !pl-9 border-cyan-500/40">
                                 <span class="text-[9px] text-slate-400 block text-center mt-0.5">Efectivo adicional</span>
@@ -331,8 +331,8 @@
                                 </div>
                             </div>
                         </div>
-                        <input type="hidden" name="dias_debe" :value="diasDebe">
-                        <input type="text" name="adelanto_observacion" x-model="adelantoObservacion"
+                        <input type="hidden" name="dias_debe" :value="diasDebe" :disabled="tipoPago!=='adelanto'">
+                        <input type="text" name="adelanto_observacion" :disabled="tipoPago!=='adelanto'" x-model="adelantoObservacion"
                                placeholder="Motivo del adelanto en efectivo (opcional)..."
                                class="p-input text-xs !py-1.5 border-cyan-500/20">
                     </div>

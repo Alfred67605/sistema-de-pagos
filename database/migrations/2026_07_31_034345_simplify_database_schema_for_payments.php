@@ -25,7 +25,7 @@ return new class extends Migration
 
         // 3. Add fields to trabajadores
         Schema::table('trabajadores', function (Blueprint $table) {
-            $table->foreignId('tipo_contrato_id')->nullable()->after('bocamina_id')->constrained('contratos')->nullOnDelete();
+            $table->unsignedBigInteger('tipo_contrato_id')->nullable()->after('bocamina_id');
             $table->decimal('tarifa_acordada', 10, 2)->nullable()->after('tipo_contrato_id');
             $table->text('observaciones')->nullable()->after('estado');
         });
