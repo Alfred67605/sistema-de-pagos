@@ -353,6 +353,78 @@ table.rpt-tbl tbody tr:hover td { background: var(--rpt-row-hover); }
     margin: 4px auto 0 auto;
 }
 
+/* Executive Worker Card & Item Breakdown Styles */
+.exec-worker-card {
+    border: 1.5px solid #cbd5e1;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    background: #ffffff;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    overflow: hidden;
+}
+.exec-worker-card-header {
+    background: #f1f5f9;
+    border-bottom: 1px solid #cbd5e1;
+    padding: 5px 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 9px;
+}
+.exec-worker-card-title {
+    font-weight: 900;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.exec-worker-card-kpis {
+    display: flex;
+    gap: 8px;
+    font-family: Consolas, monospace;
+    font-size: 8.5px;
+    font-weight: 700;
+}
+.exec-detail-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8.5px;
+    margin-bottom: 0;
+}
+.exec-detail-table th {
+    background: #334155 !important;
+    color: #ffffff !important;
+    border: 1px solid #cbd5e1;
+    padding: 4.5px 6px;
+    font-size: 8px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+.exec-detail-table td {
+    border: 1px solid #cbd5e1;
+    padding: 4.5px 6px;
+    color: #1e293b;
+    font-size: 8.5px;
+}
+.exec-detail-table tr:nth-child(even) td {
+    background: #f8fafc;
+}
+.exec-concept-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: #fef3c7;
+    border: 1px solid #fde68a;
+    color: #92400e;
+    font-size: 8.5px;
+    font-weight: 700;
+    font-family: Consolas, monospace;
+}
+
 .exec-section {
     margin-bottom: 18px;
     page-break-inside: avoid;
@@ -718,29 +790,62 @@ table.rpt-tbl tbody tr:hover td { background: var(--rpt-row-hover); }
                             <th @click="sortBy('fecha')">Fecha ⇕</th>
                             <th @click="sortBy('nombre')">Trabajador ⇕</th>
                             <th>Bocamina</th>
-                            <th>Subtotal Trabajos</th>
-                            <th>Bonos (+)</th>
-                            <th>Descuentos (-)</th>
-                            <th>Anticipos (-)</th>
-                            <th @click="sortBy('neto')">Pago Neto ⇕</th>
+                            <th>Concepto / Labor Minera</th>
+                            <th class="text-right">Cantidad / Tarifa</th>
+                            <th class="text-right">Subtotal Trabajos</th>
+                            <th class="text-right">Bonos (+)</th>
+                            <th class="text-right">Descuentos (-)</th>
+                            <th class="text-right">Anticipos (-)</th>
+                            <th @click="sortBy('neto')" class="text-right">Pago Neto ⇕</th>
+                            <th class="text-center no-print" style="width: 50px;">Recibo</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($listPagosTrabajador as $pago)
                             <tr>
-                                <td class="td-mono">{{ $pago->id }}</td>
+                                <td class="td-mono font-bold">{{ $pago->numero_nota ? '#' . $pago->numero_nota : $pago->id }}</td>
                                 <td class="td-mono">{{ $pago->fecha->format('d/m/Y') }}</td>
-                                <td class="td-name">{{ $pago->trabajador->nombre }}</td>
+                                <td class="td-name">
+                                    <div class="font-bold text-slate-100">{{ $pago->trabajador->nombre }}</div>
+                                    <div class="text-[10px] text-slate-400 font-mono">{{ $pago->trabajador->ci ?: 'S/N' }} &middot; {{ ucfirst($pago->trabajador->rol ?? 'Operario') }}</div>
+                                </td>
                                 <td>{{ $pago->trabajador->bocamina->nombre ?? 'N/A' }}</td>
-                                <td class="td-mono">Bs. {{ number_format($pago->subtotal, 2) }}</td>
-                                <td class="td-mono text-emerald-400">+Bs. {{ number_format($pago->bonos, 2) }}</td>
-                                <td class="td-mono text-red-400">-Bs. {{ number_format($pago->descuentos, 2) }}</td>
-                                <td class="td-mono text-red-400">-Bs. {{ number_format($pago->anticipos_descontados, 2) }}</td>
-                                <td class="td-mono text-emerald-400 font-bold">Bs. {{ number_format($pago->neto, 2) }}</td>
+                                <td>
+                                    <div class="font-bold text-slate-200">
+                                        {{ $pago->tipo_contrato_nombre ?: ($pago->trabajador->tipoContrato->nombre ?? 'Labor minera') }}
+                                    </div>
+                                    @if($pago->items && $pago->items->count() > 0)
+                                        <div class="space-y-0.5 mt-0.5">
+                                            @foreach($pago->items as $it)
+                                                <div class="text-[10px] text-slate-400 font-mono">
+                                                    &bull; {{ $it->tipo_trabajo ?: 'Item' }}: {{ $it->descripcion ?: '' }} ({{ number_format($it->cantidad, 2) }} × Bs. {{ number_format($it->precio_unitario, 2) }})
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                    @if($pago->observacion)
+                                        <div class="text-[10px] text-slate-400 italic mt-0.5">{{ $pago->observacion }}</div>
+                                    @endif
+                                </td>
+                                <td class="td-mono text-right text-xs">
+                                    <span class="font-black text-amber-400">{{ number_format($pago->cantidad_trabajada, 2) }}</span> unid.
+                                    <span class="block text-[10px] text-slate-400">@ Bs. {{ number_format($pago->tarifa_pago, 2) }}</span>
+                                </td>
+                                <td class="td-mono text-right font-semibold">Bs. {{ number_format($pago->subtotal, 2) }}</td>
+                                <td class="td-mono text-emerald-400 text-right">{{ $pago->bonos > 0 ? '+Bs. ' . number_format($pago->bonos, 2) : '-' }}</td>
+                                <td class="td-mono text-red-400 text-right">{{ $pago->descuentos > 0 ? '-Bs. ' . number_format($pago->descuentos, 2) : '-' }}</td>
+                                <td class="td-mono text-red-400 text-right">{{ $pago->anticipos_descontados > 0 ? '-Bs. ' . number_format($pago->anticipos_descontados, 2) : '-' }}</td>
+                                <td class="td-mono text-emerald-400 font-black text-right text-sm">Bs. {{ number_format($pago->neto, 2) }}</td>
+                                <td class="text-center no-print">
+                                    <a href="{{ route('pagos.show', $pago->id) }}" target="_blank"
+                                       class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-amber-400 transition inline-flex items-center justify-center" title="Imprimir / Ver Comprobante">
+                                        <i class="fa-solid fa-receipt text-xs"></i>
+                                    </a>
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="text-center py-8 text-slate-500">No se encontraron pagos registrados con los filtros seleccionados.</td>
+                                <td colspan="12" class="text-center py-8 text-slate-500">No se encontraron pagos registrados con los filtros seleccionados.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -829,39 +934,184 @@ table.rpt-tbl tbody tr:hover td { background: var(--rpt-row-hover); }
                         </div>
                     </div>
 
-                    {{-- Workers table --}}
+                    {{-- Resumen de Conceptos de Trabajo en esta Bocamina --}}
+                    @if(!empty($bRes['conceptos_resumen']))
+                        <div class="flex flex-wrap gap-2 pt-1 pb-1">
+                            <span class="text-[11px] font-bold text-slate-400 self-center uppercase tracking-wider mr-1">Conceptos Pagados:</span>
+                            @foreach($bRes['conceptos_resumen'] as $cTipo => $cData)
+                                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-mono">
+                                    <i class="fa-solid fa-hammer text-[10px]"></i>
+                                    <strong>{{ $cTipo }}:</strong>
+                                    <span>{{ number_format($cData['cantidad'], 2) }} unid.</span>
+                                    <span class="text-slate-500">|</span>
+                                    <span class="font-bold text-white">Bs. {{ number_format($cData['subtotal'], 2) }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    {{-- Workers table with Accordion for Detailed Payments --}}
                     <div class="overflow-x-auto">
                         <table class="rpt-tbl">
                             <thead>
                                 <tr>
+                                    <th style="width: 25px;">#</th>
                                     <th>Trabajador</th>
                                     <th>C.I.</th>
                                     <th>Cargo</th>
-                                    <th>Contrato</th>
-                                    <th class="text-right">Total Pagos</th>
-                                    <th class="text-right">Total Anticipos</th>
-                                    <th class="text-right">Total Egresado</th>
+                                    <th>Modalidad</th>
+                                    <th class="text-right">Subtotal Bruto</th>
+                                    <th class="text-right">Bonos (+)</th>
+                                    <th class="text-right">Desc. (-)</th>
+                                    <th class="text-right">Anticipos (-)</th>
+                                    <th class="text-right">Líquido Pagado</th>
+                                    <th class="text-center" style="width: 120px;">Desglose</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                @foreach($bRes['trabajadores_detalle'] as $wd)
-                                    <tr>
-                                        <td class="td-name">{{ $wd['trabajador']->nombre }}</td>
+                            @foreach($bRes['trabajadores_detalle'] as $idx => $wd)
+                                <tbody x-data="{ openDetail: false }">
+                                    <tr class="hover:bg-slate-800/40 cursor-pointer" @click="openDetail = !openDetail">
+                                        <td class="font-mono text-slate-500 font-bold text-center">{{ $idx + 1 }}</td>
+                                        <td class="td-name">
+                                            <div class="flex items-center gap-2">
+                                                <i class="fa-solid fa-chevron-right text-[10px] text-amber-500 transition-transform duration-200" :class="{ 'rotate-90': openDetail }"></i>
+                                                <span class="font-bold text-slate-100">{{ $wd['trabajador']->nombre }}</span>
+                                            </div>
+                                        </td>
                                         <td class="font-mono text-xs text-slate-400">{{ $wd['trabajador']->ci ?: 'S/N' }}</td>
                                         <td><span class="badge badge-gray">{{ ucfirst($wd['trabajador']->rol ?? 'Trabajador') }}</span></td>
-                                        <td>{{ $wd['trabajador']->tipoContrato->nombre ?? 'N/A' }}</td>
-                                        <td class="td-mono text-right">Bs. {{ number_format($wd['pagos'], 2) }}</td>
-                                        <td class="td-mono text-right text-rose-400">Bs. {{ number_format($wd['anticipos'], 2) }}</td>
-                                        <td class="td-mono text-right text-emerald-400 font-bold">Bs. {{ number_format($wd['total'], 2) }}</td>
+                                        <td><span class="text-xs text-slate-300">{{ $wd['trabajador']->tipoContrato->nombre ?? 'N/A' }}</span></td>
+                                        <td class="td-mono text-right font-medium">Bs. {{ number_format($wd['total_subtotal'], 2) }}</td>
+                                        <td class="td-mono text-right text-emerald-400">{{ $wd['total_bonos'] > 0 ? '+Bs. ' . number_format($wd['total_bonos'], 2) : '-' }}</td>
+                                        <td class="td-mono text-right text-rose-400">{{ $wd['total_descuentos'] > 0 ? '-Bs. ' . number_format($wd['total_descuentos'], 2) : '-' }}</td>
+                                        <td class="td-mono text-right text-rose-400">{{ $wd['total_anticipos_desc'] > 0 ? '-Bs. ' . number_format($wd['total_anticipos_desc'], 2) : '-' }}</td>
+                                        <td class="td-mono text-right text-emerald-400 font-black text-sm">Bs. {{ number_format($wd['pagos'], 2) }}</td>
+                                        <td class="text-center">
+                                            <button type="button" @click.stop="openDetail = !openDetail"
+                                                    class="px-2 py-1 text-[11px] font-bold rounded-lg bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 border border-amber-500/30 transition">
+                                                <i class="fa-solid fa-list-ul mr-1"></i>
+                                                <span x-text="openDetail ? 'Ocultar' : 'Ver ({{ count($wd['pagos_lista']) }})'"></span>
+                                            </button>
+                                        </td>
                                     </tr>
-                                @endforeach
-                            </tbody>
+                                    {{-- Detailed payments accordion row --}}
+                                    <tr x-show="openDetail" x-cloak class="bg-slate-950/70 border-t border-b border-amber-500/20">
+                                        <td colspan="11" class="p-4">
+                                            <div class="space-y-3">
+                                                <div class="flex items-center justify-between">
+                                                    <span class="text-xs font-black uppercase text-amber-400 tracking-wider flex items-center gap-2">
+                                                        <i class="fa-solid fa-receipt"></i> Detalle de Pagos y Conceptos — {{ $wd['trabajador']->nombre }}
+                                                    </span>
+                                                    <span class="text-[11px] font-mono text-slate-400">{{ count($wd['pagos_lista']) }} nota(s) registradas</span>
+                                                </div>
+
+                                                @if(count($wd['pagos_lista']) > 0)
+                                                    <table class="w-full text-xs border border-slate-800 rounded-lg overflow-hidden">
+                                                        <thead class="bg-slate-900 text-slate-300 font-mono text-[10px] uppercase">
+                                                            <tr>
+                                                                <th class="p-2 text-left">N° Doc / Fecha</th>
+                                                                <th class="p-2 text-left">Concepto / Labor Realizada</th>
+                                                                <th class="p-2 text-right">Cantidad / Avance</th>
+                                                                <th class="p-2 text-right">Tarifa (Bs.)</th>
+                                                                <th class="p-2 text-right">Subtotal</th>
+                                                                <th class="p-2 text-right">Bonos (+)</th>
+                                                                <th class="p-2 text-right">Desc. (-)</th>
+                                                                <th class="p-2 text-right">Anticipos (-)</th>
+                                                                <th class="p-2 text-right font-bold text-emerald-400">Neto Pagado</th>
+                                                                <th class="p-2 text-left">Observación</th>
+                                                                <th class="p-2 text-center">Recibo</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody class="divide-y divide-slate-800 bg-slate-900/40 font-sans">
+                                                            @foreach($wd['pagos_lista'] as $p)
+                                                                <tr>
+                                                                    <td class="p-2 font-mono text-slate-400">
+                                                                        <span class="font-bold text-amber-400">#{{ $p->numero_nota ?: $p->id }}</span>
+                                                                        <span class="block text-[10px]">{{ $p->fecha->format('d/m/Y') }}</span>
+                                                                    </td>
+                                                                    <td class="p-2">
+                                                                        <div class="font-bold text-slate-200">
+                                                                            {{ $p->tipo_contrato_nombre ?: ($wd['trabajador']->tipoContrato->nombre ?? 'Labor minera') }}
+                                                                        </div>
+                                                                        @if($p->items && $p->items->count() > 0)
+                                                                            <div class="mt-1 space-y-0.5">
+                                                                                @foreach($p->items as $it)
+                                                                                    <div class="text-[10px] text-slate-400 font-mono">
+                                                                                        &bull; {{ $it->tipo_trabajo ?: 'Ítem' }}: {{ $it->descripcion ?: '' }} ({{ number_format($it->cantidad, 2) }} × Bs. {{ number_format($it->precio_unitario, 2) }} = Bs. {{ number_format($it->subtotal, 2) }})
+                                                                                    </div>
+                                                                                @endforeach
+                                                                            </div>
+                                                                        @endif
+                                                                    </td>
+                                                                    <td class="p-2 text-right font-mono text-amber-300 font-bold">
+                                                                        {{ number_format($p->cantidad_trabajada, 2) }}
+                                                                    </td>
+                                                                    <td class="p-2 text-right font-mono text-slate-300">
+                                                                        Bs. {{ number_format($p->tarifa_pago, 2) }}
+                                                                    </td>
+                                                                    <td class="p-2 text-right font-mono text-slate-200">
+                                                                        Bs. {{ number_format($p->subtotal, 2) }}
+                                                                    </td>
+                                                                    <td class="p-2 text-right font-mono text-emerald-400">
+                                                                        {{ $p->bonos > 0 ? '+Bs. ' . number_format($p->bonos, 2) : '-' }}
+                                                                    </td>
+                                                                    <td class="p-2 text-right font-mono text-rose-400">
+                                                                        {{ $p->descuentos > 0 ? '-Bs. ' . number_format($p->descuentos, 2) : '-' }}
+                                                                    </td>
+                                                                    <td class="p-2 text-right font-mono text-rose-400">
+                                                                        {{ $p->anticipos_descontados > 0 ? '-Bs. ' . number_format($p->anticipos_descontados, 2) : '-' }}
+                                                                    </td>
+                                                                    <td class="p-2 text-right font-mono font-black text-emerald-400 text-sm">
+                                                                        Bs. {{ number_format($p->neto, 2) }}
+                                                                    </td>
+                                                                    <td class="p-2 text-[11px] text-slate-400">
+                                                                        {{ $p->observacion ?: '—' }}
+                                                                    </td>
+                                                                    <td class="p-2 text-center">
+                                                                        <a href="{{ route('pagos.show', $p->id) }}" target="_blank"
+                                                                           class="p-1 px-2 rounded bg-slate-800 hover:bg-slate-700 text-amber-400 text-[10px] font-bold inline-flex items-center gap-1 transition">
+                                                                            <i class="fa-solid fa-print"></i> Ver
+                                                                        </a>
+                                                                    </td>
+                                                                </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
+                                                @else
+                                                    <p class="text-xs text-slate-500 italic py-2">No existen liquidaciones registradas en este periodo para este trabajador.</p>
+                                                @endif
+
+                                                @if(count($wd['anticipos_lista']) > 0)
+                                                    <div class="mt-2 pt-2 border-t border-slate-800">
+                                                        <span class="text-[11px] font-bold uppercase text-rose-400 flex items-center gap-1 mb-1">
+                                                            <i class="fa-solid fa-hand-holding-dollar"></i> Vales de Anticipo Registrados en el Periodo:
+                                                        </span>
+                                                        <div class="flex flex-wrap gap-2">
+                                                            @foreach($wd['anticipos_lista'] as $ant)
+                                                                <div class="px-2.5 py-1 rounded bg-rose-500/10 border border-rose-500/20 text-rose-300 font-mono text-[10px] flex items-center gap-2">
+                                                                    <span>Vale #{{ $ant->id }} ({{ $ant->fecha->format('d/m/Y') }}):</span>
+                                                                    <strong>Bs. {{ number_format($ant->monto, 2) }}</strong>
+                                                                    <span class="text-slate-400">| Saldo:</span>
+                                                                    <strong class="{{ $ant->saldo > 0 ? 'text-amber-400' : 'text-slate-400' }}">Bs. {{ number_format($ant->saldo, 2) }}</strong>
+                                                                </div>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            @endforeach
                             <tfoot>
-                                <tr class="border-t-2 border-slate-700 bg-slate-900/50 font-bold">
-                                    <td colspan="4" class="text-right text-xs uppercase text-slate-400 py-3">Subtotal {{ $bRes['bocamina']->nombre }}:</td>
-                                    <td class="td-mono text-right text-indigo-400 py-3">Bs. {{ number_format($bRes['total_pagos'], 2) }}</td>
-                                    <td class="td-mono text-right text-rose-400 py-3">Bs. {{ number_format($bRes['total_anticipos'], 2) }}</td>
-                                    <td class="td-mono text-right text-emerald-400 font-extrabold py-3">Bs. {{ number_format($bRes['total_gastado'], 2) }}</td>
+                                <tr class="border-t-2 border-slate-700 bg-slate-900/60 font-bold text-xs">
+                                    <td colspan="5" class="text-right uppercase text-slate-400 py-3">Totales Consolidados {{ $bRes['bocamina']->nombre }}:</td>
+                                    <td class="td-mono text-right text-slate-100 py-3">Bs. {{ number_format($bRes['total_subtotal'], 2) }}</td>
+                                    <td class="td-mono text-right text-emerald-400 py-3">+Bs. {{ number_format($bRes['total_bonos'], 2) }}</td>
+                                    <td class="td-mono text-right text-rose-400 py-3">-Bs. {{ number_format($bRes['total_descuentos'], 2) }}</td>
+                                    <td class="td-mono text-right text-rose-400 py-3">-Bs. {{ number_format($bRes['total_anticipos_desc'], 2) }}</td>
+                                    <td class="td-mono text-right text-emerald-400 font-black py-3 text-sm">Bs. {{ number_format($bRes['total_pagos'], 2) }}</td>
+                                    <td></td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -1140,18 +1390,38 @@ table.rpt-tbl tbody tr:hover td { background: var(--rpt-row-hover); }
                                 <span>Total Bocamina: <strong style="color: #6ee7b7; font-size: 11px;">Bs. {{ number_format($bRes['total_gastado'], 2) }}</strong></span>
                             </div>
                         </div>
-                        <table class="exec-table">
+
+                        {{-- Resumen de Conceptos y Labores Consolidadas en esta Bocamina --}}
+                        @if(!empty($bRes['conceptos_resumen']))
+                            <div style="padding: 6px 10px; background: #f8fafc; border: 1.5px solid #cbd5e1; border-top: none; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px;">
+                                <span style="font-size: 8.5px; font-weight: 800; color: #475569; text-transform: uppercase;">RESUMEN DE LABORES Y PRODUCCIÓN:</span>
+                                @foreach($bRes['conceptos_resumen'] as $cTipo => $cData)
+                                    <span class="exec-concept-pill">
+                                        <i class="fa-solid fa-hammer" style="color: #d97706;"></i>
+                                        <strong>{{ $cTipo }}:</strong> {{ number_format($cData['cantidad'], 2) }} unid. (Bs. {{ number_format($cData['subtotal'], 2) }})
+                                    </span>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        {{-- 1. Matriz de Personal y Planilla Consolidada de la Bocamina --}}
+                        <div style="font-size: 9.5px; font-weight: 800; color: #1e293b; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.04em;">
+                            📋 RESUMEN CONSOLIDADO DE PERSONAL ASIGNADO
+                        </div>
+                        <table class="exec-table" style="margin-bottom: 12px;">
                             <thead>
                                 <tr>
-                                    <th style="width: 30px; text-align: center;">#</th>
+                                    <th style="width: 25px; text-align: center;">#</th>
                                     <th style="text-align: left;">APELLIDOS Y NOMBRES</th>
-                                    <th style="width: 85px; text-align: center;">C.I.</th>
-                                    <th style="width: 110px; text-align: center;">CARGO / ROL</th>
-                                    <th style="width: 140px; text-align: center;">MODALIDAD CONTRATO</th>
-                                    <th style="width: 115px; text-align: right;">TOTAL PLANILLAS (Bs.)</th>
-                                    <th style="width: 115px; text-align: right;">TOTAL ANTICIPOS (Bs.)</th>
-                                    <th style="width: 130px; text-align: right;">TOTAL EGRESADO (Bs.)</th>
-                                    <th style="width: 130px; text-align: center;">FIRMA / CONFORMIDAD</th>
+                                    <th style="width: 80px; text-align: center;">C.I.</th>
+                                    <th style="width: 95px; text-align: center;">CARGO / ROL</th>
+                                    <th style="width: 110px; text-align: center;">MODALIDAD CONTRATO</th>
+                                    <th style="width: 100px; text-align: right;">PROD. BRUTA (Bs.)</th>
+                                    <th style="width: 75px; text-align: right;">BONOS (+)</th>
+                                    <th style="width: 75px; text-align: right;">DESC. (-)</th>
+                                    <th style="width: 85px; text-align: right;">ANTICIPOS (-)</th>
+                                    <th style="width: 110px; text-align: right;">TOTAL LÍQUIDO (Bs.)</th>
+                                    <th style="width: 100px; text-align: center;">FIRMA GENERAL</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1159,42 +1429,173 @@ table.rpt-tbl tbody tr:hover td { background: var(--rpt-row-hover); }
                                     <tr>
                                         <td style="text-align: center; font-weight: bold; color: #64748b;">{{ $idx + 1 }}</td>
                                         <td style="font-weight: 700; color: #0f172a;">{{ $wd['trabajador']->nombre }}</td>
-                                        <td style="text-align: center; font-family: monospace; font-size: 10px; color: #475569;">{{ $wd['trabajador']->ci ?: 'S/N' }}</td>
+                                        <td style="text-align: center; font-family: monospace; font-size: 9.5px; color: #475569;">{{ $wd['trabajador']->ci ?: 'S/N' }}</td>
                                         <td style="text-align: center;">
                                             <span class="exec-badge">{{ ucfirst($wd['trabajador']->rol ?? 'Operario') }}</span>
                                         </td>
-                                        <td style="text-align: center; font-size: 10.5px; color: #334155;">{{ $wd['trabajador']->tipoContrato->nombre ?? 'N/A' }}</td>
-                                        <td style="text-align: right; font-family: monospace; font-weight: 600; color: #0f172a;">Bs. {{ number_format($wd['pagos'], 2) }}</td>
-                                        <td style="text-align: right; font-family: monospace; font-weight: 600; color: #be123c;">Bs. {{ number_format($wd['anticipos'], 2) }}</td>
-                                        <td style="text-align: right; font-family: monospace; font-weight: 800; color: #047857;">Bs. {{ number_format($wd['total'], 2) }}</td>
+                                        <td style="text-align: center; font-size: 9.5px; color: #334155;">{{ $wd['trabajador']->tipoContrato->nombre ?? 'N/A' }}</td>
+                                        <td style="text-align: right; font-family: monospace; font-weight: 600; color: #0f172a;">Bs. {{ number_format($wd['total_subtotal'], 2) }}</td>
+                                        <td style="text-align: right; font-family: monospace; font-weight: 600; color: #047857;">{{ $wd['total_bonos'] > 0 ? '+' . number_format($wd['total_bonos'], 2) : '-' }}</td>
+                                        <td style="text-align: right; font-family: monospace; font-weight: 600; color: #be123c;">{{ $wd['total_descuentos'] > 0 ? '-' . number_format($wd['total_descuentos'], 2) : '-' }}</td>
+                                        <td style="text-align: right; font-family: monospace; font-weight: 600; color: #be123c;">{{ $wd['total_anticipos_desc'] > 0 ? '-' . number_format($wd['total_anticipos_desc'], 2) : '-' }}</td>
+                                        <td style="text-align: right; font-family: monospace; font-weight: 800; color: #047857;">Bs. {{ number_format($wd['pagos'], 2) }}</td>
                                         <td style="text-align: center;">
                                             <div class="exec-sig-cell"></div>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="9" style="text-align: center; color: #94a3b8; padding: 12px; font-style: italic;">No hay personal registrado en esta bocamina según los filtros actuales.</td>
+                                        <td colspan="11" style="text-align: center; color: #94a3b8; padding: 10px; font-style: italic;">No hay personal registrado en esta bocamina según los filtros actuales.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
                             <tfoot>
                                 <tr class="exec-subtotal-row">
                                     <td colspan="5" style="text-align: right; font-weight: 800; text-transform: uppercase;">
-                                        SUBTOTAL {{ strtoupper($bRes['bocamina']->nombre) }}:
+                                        SUBTOTAL CONSOLIDADO {{ strtoupper($bRes['bocamina']->nombre) }}:
                                     </td>
                                     <td style="text-align: right; font-family: monospace; font-weight: 800; color: #0f172a;">
-                                        Bs. {{ number_format($bRes['total_pagos'], 2) }}
+                                        Bs. {{ number_format($bRes['total_subtotal'], 2) }}
+                                    </td>
+                                    <td style="text-align: right; font-family: monospace; font-weight: 800; color: #047857;">
+                                        +Bs. {{ number_format($bRes['total_bonos'], 2) }}
                                     </td>
                                     <td style="text-align: right; font-family: monospace; font-weight: 800; color: #be123c;">
-                                        Bs. {{ number_format($bRes['total_anticipos'], 2) }}
+                                        -Bs. {{ number_format($bRes['total_descuentos'], 2) }}
+                                    </td>
+                                    <td style="text-align: right; font-family: monospace; font-weight: 800; color: #be123c;">
+                                        -Bs. {{ number_format($bRes['total_anticipos_desc'], 2) }}
                                     </td>
                                     <td style="text-align: right; font-family: monospace; font-weight: 900; color: #047857;">
-                                        Bs. {{ number_format($bRes['total_gastado'], 2) }}
+                                        Bs. {{ number_format($bRes['total_pagos'], 2) }}
                                     </td>
                                     <td></td>
                                 </tr>
                             </tfoot>
                         </table>
+
+                        {{-- 2. DESGLOSE Y AUDITORÍA PORMENORIZADA DE CONCEPTOS Y TRABAJOS POR CADA OPERARIO --}}
+                        <div style="margin-top: 14px; margin-bottom: 16px;">
+                            <div style="font-size: 10px; font-weight: 900; color: #0f172a; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.04em; display: flex; align-items: center; gap: 6px;">
+                                <i class="fa-solid fa-file-invoice-dollar" style="color: #d97706;"></i> DESGLOSE Y AUDITORÍA DETALLADA DE CONCEPTOS LIQUIDADOS POR OPERARIO
+                            </div>
+
+                            @foreach($bRes['trabajadores_detalle'] as $idx => $wd)
+                                <div class="exec-worker-card">
+                                    <div class="exec-worker-card-header">
+                                        <div class="exec-worker-card-title">
+                                            <span style="background: #0f172a; color: #fff; padding: 1px 6px; border-radius: 3px; font-size: 8px;">#{{ $idx + 1 }}</span>
+                                            <span>{{ strtoupper($wd['trabajador']->nombre) }}</span>
+                                            <span style="color: #64748b; font-weight: normal;">| C.I.: {{ $wd['trabajador']->ci ?: 'S/N' }}</span>
+                                            <span class="exec-badge">{{ ucfirst($wd['trabajador']->rol ?? 'Operario') }}</span>
+                                            <span style="color: #047857; font-weight: 700;">({{ $wd['trabajador']->tipoContrato->nombre ?? 'N/A' }})</span>
+                                        </div>
+                                        <div class="exec-worker-card-kpis">
+                                            <span>Bruto: <strong>Bs. {{ number_format($wd['total_subtotal'], 2) }}</strong></span>
+                                            <span style="color: #047857;">Bonos: <strong>+{{ number_format($wd['total_bonos'], 2) }}</strong></span>
+                                            <span style="color: #be123c;">Desc: <strong>-{{ number_format($wd['total_descuentos'], 2) }}</strong></span>
+                                            <span style="color: #be123c;">Anticipos: <strong>-{{ number_format($wd['total_anticipos_desc'], 2) }}</strong></span>
+                                            <span style="color: #047857; font-size: 10px;">LÍQUIDO PAGADO: <strong>Bs. {{ number_format($wd['pagos'], 2) }}</strong></span>
+                                        </div>
+                                    </div>
+
+                                    @if(count($wd['pagos_lista']) > 0)
+                                        <table class="exec-detail-table">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width: 75px; text-align: center;">N° DOC / FECHA</th>
+                                                    <th style="text-align: left;">CONCEPTO / DETALLE DE LA LABOR MINERA</th>
+                                                    <th style="width: 70px; text-align: right;">CANTIDAD</th>
+                                                    <th style="width: 70px; text-align: right;">TARIFA (Bs.)</th>
+                                                    <th style="width: 80px; text-align: right;">SUBTOTAL</th>
+                                                    <th style="width: 60px; text-align: right;">BONOS (+)</th>
+                                                    <th style="width: 60px; text-align: right;">DESC. (-)</th>
+                                                    <th style="width: 65px; text-align: right;">ANTICIPOS (-)</th>
+                                                    <th style="width: 85px; text-align: right;">NETO PAGADO</th>
+                                                    <th style="width: 75px; text-align: center;">MÉTODO</th>
+                                                    <th style="width: 90px; text-align: center;">FIRMA CONFORME</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($wd['pagos_lista'] as $p)
+                                                    <tr>
+                                                        <td style="text-align: center; font-family: monospace; font-weight: bold;">
+                                                            <div>#{{ $p->numero_nota ?: $p->id }}</div>
+                                                            <div style="font-size: 8px; color: #64748b; font-weight: normal;">{{ $p->fecha->format('d/m/Y') }}</div>
+                                                        </td>
+                                                        <td>
+                                                            <div style="font-weight: 700; color: #0f172a;">
+                                                                {{ $p->tipo_contrato_nombre ?: ($wd['trabajador']->tipoContrato->nombre ?? 'Labor minera') }}
+                                                            </div>
+                                                            @if($p->items && $p->items->count() > 0)
+                                                                <div style="margin-top: 2px;">
+                                                                    @foreach($p->items as $it)
+                                                                        <div style="font-size: 8px; color: #475569; font-family: monospace;">
+                                                                            &bull; {{ $it->tipo_trabajo ?: 'Ítem' }}: {{ $it->descripcion ?: '' }} 
+                                                                            ({{ number_format($it->cantidad, 2) }} × Bs. {{ number_format($it->precio_unitario, 2) }} = Bs. {{ number_format($it->subtotal, 2) }})
+                                                                        </div>
+                                                                    @endforeach
+                                                                </div>
+                                                            @endif
+                                                            @if($p->observacion)
+                                                                <div style="font-size: 8px; color: #64748b; font-style: italic; margin-top: 1px;">
+                                                                    Nota: {{ $p->observacion }}
+                                                                </div>
+                                                            @endif
+                                                        </td>
+                                                        <td style="text-align: right; font-family: monospace; font-weight: 700; color: #d97706;">
+                                                            {{ number_format($p->cantidad_trabajada, 2) }}
+                                                        </td>
+                                                        <td style="text-align: right; font-family: monospace; color: #475569;">
+                                                            Bs. {{ number_format($p->tarifa_pago, 2) }}
+                                                        </td>
+                                                        <td style="text-align: right; font-family: monospace; font-weight: 600;">
+                                                            Bs. {{ number_format($p->subtotal, 2) }}
+                                                        </td>
+                                                        <td style="text-align: right; font-family: monospace; color: #047857;">
+                                                            {{ $p->bonos > 0 ? '+' . number_format($p->bonos, 2) : '-' }}
+                                                        </td>
+                                                        <td style="text-align: right; font-family: monospace; color: #be123c;">
+                                                            {{ $p->descuentos > 0 ? '-' . number_format($p->descuentos, 2) : '-' }}
+                                                        </td>
+                                                        <td style="text-align: right; font-family: monospace; color: #be123c;">
+                                                            {{ $p->anticipos_descontados > 0 ? '-' . number_format($p->anticipos_descontados, 2) : '-' }}
+                                                        </td>
+                                                        <td style="text-align: right; font-family: monospace; font-weight: 900; color: #047857;">
+                                                            Bs. {{ number_format($p->neto, 2) }}
+                                                        </td>
+                                                        <td style="text-align: center; font-size: 8px; text-transform: uppercase;">
+                                                            <span class="exec-badge" style="padding: 1px 4px; font-size: 7.5px;">{{ $p->metodo_pago ?: 'Efectivo' }}</span>
+                                                        </td>
+                                                        <td style="text-align: center;">
+                                                            <div class="exec-sig-cell" style="width: 75px; height: 12px; margin-top: 2px;"></div>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    @else
+                                        <div style="padding: 6px 10px; font-size: 8.5px; color: #94a3b8; font-style: italic;">
+                                            Sin planillas ni liquidaciones registradas en este periodo.
+                                        </div>
+                                    @endif
+
+                                    {{-- Desglose de Anticipos del Operario si hubieran --}}
+                                    @if(count($wd['anticipos_lista']) > 0)
+                                        <div style="background: #fff1f2; border-top: 1px dashed #fecdd3; padding: 4px 8px; font-size: 8px; display: flex; align-items: center; justify-content: space-between;">
+                                            <span style="font-weight: 800; color: #be123c;">
+                                                <i class="fa-solid fa-hand-holding-dollar"></i> VALES DE ANTICIPO EMITIDOS EN EL PERIODO ({{ count($wd['anticipos_lista']) }}):
+                                            </span>
+                                            <div style="display: flex; gap: 8px; font-family: monospace;">
+                                                @foreach($wd['anticipos_lista'] as $ant)
+                                                    <span>Vale #{{ $ant->id }} ({{ $ant->fecha->format('d/m/Y') }}): <strong>Bs. {{ number_format($ant->monto, 2) }}</strong> (Saldo: <span style="color: {{ $ant->saldo > 0 ? '#b91c1c' : '#047857' }};">Bs. {{ number_format($ant->saldo, 2) }}</span>)</span>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
                 @endforeach
 
@@ -1282,43 +1683,59 @@ table.rpt-tbl tbody tr:hover td { background: var(--rpt-row-hover); }
                 <table class="exec-table">
                     <thead>
                         <tr>
-                            <th style="width: 35px; text-align: center;">ID</th>
-                            <th style="width: 75px; text-align: center;">FECHA</th>
+                            <th style="width: 30px; text-align: center;">N°</th>
+                            <th style="width: 70px; text-align: center;">FECHA</th>
                             <th style="text-align: left;">TRABAJADOR</th>
-                            <th style="width: 100px; text-align: left;">BOCAMINA</th>
-                            <th style="width: 90px; text-align: center;">CARGO</th>
-                            <th style="width: 90px; text-align: right;">SUBTOTAL</th>
-                            <th style="width: 80px; text-align: right;">BONOS (+)</th>
-                            <th style="width: 80px; text-align: right;">DESC. (-)</th>
-                            <th style="width: 85px; text-align: right;">ANTICIPOS (-)</th>
-                            <th style="width: 105px; text-align: right;">NETO PAGADO</th>
-                            <th style="width: 110px; text-align: center;">FIRMA CONFORME</th>
+                            <th style="width: 85px; text-align: left;">BOCAMINA</th>
+                            <th style="width: 75px; text-align: center;">CARGO</th>
+                            <th style="width: 140px; text-align: left;">CONCEPTO / LABOR</th>
+                            <th style="width: 60px; text-align: right;">CANTIDAD</th>
+                            <th style="width: 65px; text-align: right;">TARIFA (Bs.)</th>
+                            <th style="width: 80px; text-align: right;">SUBTOTAL</th>
+                            <th style="width: 65px; text-align: right;">BONOS (+)</th>
+                            <th style="width: 65px; text-align: right;">DESC. (-)</th>
+                            <th style="width: 75px; text-align: right;">ANTICIPOS (-)</th>
+                            <th style="width: 95px; text-align: right;">NETO PAGADO</th>
+                            <th style="width: 85px; text-align: center;">FIRMA CONFORME</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($listPagosTrabajador as $pago)
                             <tr>
-                                <td style="text-align: center; font-family: monospace; font-weight: bold; color: #64748b;">{{ $pago->id }}</td>
+                                <td style="text-align: center; font-family: monospace; font-weight: bold; color: #64748b;">{{ $pago->numero_nota ?: $pago->id }}</td>
                                 <td style="text-align: center; font-family: monospace;">{{ $pago->fecha->format('d/m/Y') }}</td>
-                                <td style="font-weight: 700; color: #0f172a;">{{ $pago->trabajador->nombre }}</td>
+                                <td style="font-weight: 700; color: #0f172a;">
+                                    <div>{{ $pago->trabajador->nombre }}</div>
+                                    <div style="font-size: 8px; color: #64748b; font-family: monospace;">{{ $pago->trabajador->ci ?: 'S/N' }}</div>
+                                </td>
                                 <td>{{ $pago->trabajador->bocamina->nombre ?? 'N/A' }}</td>
                                 <td style="text-align: center;"><span class="exec-badge">{{ ucfirst($pago->trabajador->rol ?? 'Operario') }}</span></td>
-                                <td style="text-align: right; font-family: monospace;">Bs. {{ number_format($pago->subtotal, 2) }}</td>
-                                <td style="text-align: right; font-family: monospace; color: #047857;">+{{ number_format($pago->bonos, 2) }}</td>
-                                <td style="text-align: right; font-family: monospace; color: #be123c;">-{{ number_format($pago->descuentos, 2) }}</td>
-                                <td style="text-align: right; font-family: monospace; color: #be123c;">-{{ number_format($pago->anticipos_descontados, 2) }}</td>
-                                <td style="text-align: right; font-family: monospace; font-weight: 800; color: #047857;">Bs. {{ number_format($pago->neto, 2) }}</td>
-                                <td style="text-align: center;"><div class="exec-sig-cell"></div></td>
+                                <td>
+                                    <div style="font-weight: 700; color: #0f172a;">
+                                        {{ $pago->tipo_contrato_nombre ?: ($pago->trabajador->tipoContrato->nombre ?? 'Labor minera') }}
+                                    </div>
+                                    @if($pago->observacion)
+                                        <div style="font-size: 8px; color: #64748b; font-style: italic;">{{ $pago->observacion }}</div>
+                                    @endif
+                                </td>
+                                <td style="text-align: right; font-family: monospace; font-weight: 700; color: #d97706;">{{ number_format($pago->cantidad_trabajada, 2) }}</td>
+                                <td style="text-align: right; font-family: monospace; color: #475569;">Bs. {{ number_format($pago->tarifa_pago, 2) }}</td>
+                                <td style="text-align: right; font-family: monospace; font-weight: 600;">Bs. {{ number_format($pago->subtotal, 2) }}</td>
+                                <td style="text-align: right; font-family: monospace; color: #047857;">{{ $pago->bonos > 0 ? '+' . number_format($pago->bonos, 2) : '-' }}</td>
+                                <td style="text-align: right; font-family: monospace; color: #be123c;">{{ $pago->descuentos > 0 ? '-' . number_format($pago->descuentos, 2) : '-' }}</td>
+                                <td style="text-align: right; font-family: monospace; color: #be123c;">{{ $pago->anticipos_descontados > 0 ? '-' . number_format($pago->anticipos_descontados, 2) : '-' }}</td>
+                                <td style="text-align: right; font-family: monospace; font-weight: 900; color: #047857;">Bs. {{ number_format($pago->neto, 2) }}</td>
+                                <td style="text-align: center;"><div class="exec-sig-cell" style="width: 70px; height: 12px;"></div></td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="11" style="text-align: center; color: #94a3b8; padding: 12px;">Sin registros con los filtros seleccionados.</td>
+                                <td colspan="14" style="text-align: center; color: #94a3b8; padding: 12px;">Sin registros con los filtros seleccionados.</td>
                             </tr>
                         @endforelse
                     </tbody>
                     <tfoot>
                         <tr class="exec-grandtotal-row">
-                            <td colspan="5" style="text-align: right; font-weight: 900; text-transform: uppercase;">TOTALES GENERALES:</td>
+                            <td colspan="8" style="text-align: right; font-weight: 900; text-transform: uppercase;">TOTALES GENERALES:</td>
                             <td style="text-align: right; font-family: monospace; font-weight: 900;">Bs. {{ number_format($listPagosTrabajador->sum('subtotal'), 2) }}</td>
                             <td style="text-align: right; font-family: monospace; font-weight: 900; color: #6ee7b7;">+Bs. {{ number_format($listPagosTrabajador->sum('bonos'), 2) }}</td>
                             <td style="text-align: right; font-family: monospace; font-weight: 900; color: #fda4af;">-Bs. {{ number_format($listPagosTrabajador->sum('descuentos'), 2) }}</td>
@@ -1826,6 +2243,15 @@ function doExportPDF(btnEl) {
         .exec-grandtotal-row td { background: #0f172a !important; color: #ffffff !important; font-weight: 900 !important; font-size: 10px !important; }
         .exec-badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 8.5px; font-weight: 700; text-transform: uppercase; background: #e2e8f0; color: #334155; }
         .exec-sig-cell { width: 90px; height: 14px; border-bottom: 1px dashed #94a3b8; margin: 4px auto 0 auto; }
+        .exec-worker-card { border: 1.5px solid #cbd5e1; border-radius: 6px; margin-bottom: 12px; background: #ffffff; page-break-inside: avoid; break-inside: avoid; overflow: hidden; }
+        .exec-worker-card-header { background: #f1f5f9; border-bottom: 1px solid #cbd5e1; padding: 5px 8px; display: flex; justify-content: space-between; align-items: center; font-size: 9px; }
+        .exec-worker-card-title { font-weight: 900; color: #0f172a; display: flex; align-items: center; gap: 6px; }
+        .exec-worker-card-kpis { display: flex; gap: 8px; font-family: Consolas, monospace; font-size: 8.5px; font-weight: 700; }
+        .exec-detail-table { width: 100%; border-collapse: collapse; font-size: 8.5px; margin-bottom: 0; }
+        .exec-detail-table th { background: #334155 !important; color: #ffffff !important; border: 1px solid #cbd5e1; padding: 4.5px 6px; font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.03em; }
+        .exec-detail-table td { border: 1px solid #cbd5e1; padding: 4.5px 6px; color: #1e293b; font-size: 8.5px; }
+        .exec-detail-table tr:nth-child(even) td { background: #f8fafc; }
+        .exec-concept-pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 4px; background: #fef3c7; border: 1px solid #fde68a; color: #92400e; font-size: 8.5px; font-weight: 700; font-family: Consolas, monospace; }
         .exec-section { margin-bottom: 16px; page-break-inside: avoid; }
         .exec-section-header { background: #0f172a; color: #ffffff; padding: 6px 12px; border-radius: 6px 6px 0 0; display: flex; justify-content: space-between; align-items: center; }
         .exec-signatures { margin-top: 24px; display: flex; justify-content: space-between; gap: 30px; page-break-inside: avoid; }
@@ -1902,7 +2328,7 @@ function doExportExcel(btnEl) {
                 rowStr += '</tr>';
                 rowsHtml += rowStr;
             });
-            rowsHtml += '<tr><td colspan="9">&nbsp;</td></tr>';
+            rowsHtml += '<tr><td colspan="14">&nbsp;</td></tr>';
         });
     } else {
         const activeTable = document.querySelector('.rpt-page table:not(.no-print)');
@@ -1943,9 +2369,9 @@ function doExportExcel(btnEl) {
         </head>
         <body>
             <table style="width:100%; border-collapse:collapse;">
-                <tr><td colspan="9" class="header-banner">CORPORACIÓN MINERA SCPM — REPORTE OFICIAL DE ${tabName.toUpperCase()}</td></tr>
-                <tr><td colspan="9" class="info-sub">FECHA DE GENERACIÓN: ${new Date().toLocaleDateString('es-BO')} ${new Date().toLocaleTimeString('es-BO')}</td></tr>
-                <tr><td colspan="9">&nbsp;</td></tr>
+                <tr><td colspan="14" class="header-banner">CORPORACIÓN MINERA SCPM — REPORTE OFICIAL DE ${tabName.toUpperCase()}</td></tr>
+                <tr><td colspan="14" class="info-sub">FECHA DE GENERACIÓN: ${new Date().toLocaleDateString('es-BO')} ${new Date().toLocaleTimeString('es-BO')}</td></tr>
+                <tr><td colspan="14">&nbsp;</td></tr>
                 ${rowsHtml}
             </table>
         </body>

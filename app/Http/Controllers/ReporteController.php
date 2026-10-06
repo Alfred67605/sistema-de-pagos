@@ -183,7 +183,7 @@ class ReporteController extends Controller
         $trabContratoId = $request->input('tipo_contrato_id');
         $trabBocaminaId = $request->input('bocamina_id');
 
-        $pagosTrabajadorQuery = Pago::with(['trabajador.bocamina', 'trabajador.tipoContrato'])->orderBy('fecha', 'desc');
+        $pagosTrabajadorQuery = Pago::with(['trabajador.bocamina', 'trabajador.tipoContrato', 'items', 'anticipos'])->orderBy('fecha', 'desc');
         $anticiposTrabajadorQuery = Anticipo::with(['trabajador.bocamina'])->orderBy('fecha', 'desc');
 
         if ($trabId) {
@@ -254,7 +254,7 @@ class ReporteController extends Controller
             $totGastado = $totPagos + $totAnticipos;
 
             $workersDetalle = $workers->map(function($w) use ($fechaDesde, $fechaHasta) {
-                $wpQuery = Pago::where('trabajador_id', $w->id);
+                $wpQuery = Pago::with(['items', 'anticipos'])->where('trabajador_id', $w->id);
                 $waQuery = Anticipo::where('trabajador_id', $w->id);
                 if ($fechaDesde) {
                     $wpQuery->where('fecha', '>=', $fechaDesde);
@@ -264,13 +264,77 @@ class ReporteController extends Controller
                     $wpQuery->where('fecha', '<=', $fechaHasta);
                     $waQuery->where('fecha', '<=', $fechaHasta);
                 }
+
+                $listaPagos = $wpQuery->orderBy('fecha', 'desc')->get();
+                $listaAnticipos = $waQuery->orderBy('fecha', 'desc')->get();
+
+                $totSubtotal = $listaPagos->sum('subtotal');
+                $totBonos = $listaPagos->sum('bonos');
+                $totDescuentos = $listaPagos->sum('descuentos');
+                $totAnticiposDesc = $listaPagos->sum('anticipos_descontados');
+                $totNeto = $listaPagos->sum('neto');
+                $totPagosMonto = $listaPagos->sum('monto_pagado');
+                $totSaldoPendiente = $listaPagos->sum('saldo_pendiente');
+                $totAnticiposMonto = $listaAnticipos->sum('monto');
+                $totAnticiposSaldo = $listaAnticipos->sum('saldo');
+
+                // Resumen agrupado por labor/concepto de este trabajador
+                $conceptosTrabajador = [];
+                foreach ($listaPagos as $p) {
+                    if ($p->items && $p->items->count() > 0) {
+                        foreach ($p->items as $it) {
+                            $tipo = $it->tipo_trabajo ?: ($p->tipo_contrato_nombre ?: 'Labor minera');
+                            if (!isset($conceptosTrabajador[$tipo])) {
+                                $conceptosTrabajador[$tipo] = ['cantidad' => 0, 'subtotal' => 0, 'tarifa' => (float)$it->precio_unitario];
+                            }
+                            $conceptosTrabajador[$tipo]['cantidad'] += (float)$it->cantidad;
+                            $conceptosTrabajador[$tipo]['subtotal'] += (float)$it->subtotal;
+                        }
+                    } else {
+                        $tipo = $p->tipo_contrato_nombre ?: ($w->tipoContrato->nombre ?? 'Labor minera');
+                        if (!isset($conceptosTrabajador[$tipo])) {
+                            $conceptosTrabajador[$tipo] = ['cantidad' => 0, 'subtotal' => 0, 'tarifa' => (float)$p->tarifa_pago];
+                        }
+                        $conceptosTrabajador[$tipo]['cantidad'] += (float)$p->cantidad_trabajada;
+                        $conceptosTrabajador[$tipo]['subtotal'] += (float)$p->subtotal;
+                    }
+                }
+
                 return [
                     'trabajador' => $w,
-                    'pagos' => $wpQuery->sum('monto_pagado'),
-                    'anticipos' => $waQuery->sum('monto'),
-                    'total' => $wpQuery->sum('monto_pagado') + $waQuery->sum('monto'),
+                    'pagos_lista' => $listaPagos,
+                    'anticipos_lista' => $listaAnticipos,
+                    'conceptos_resumen' => $conceptosTrabajador,
+                    'total_subtotal' => $totSubtotal,
+                    'total_bonos' => $totBonos,
+                    'total_descuentos' => $totDescuentos,
+                    'total_anticipos_desc' => $totAnticiposDesc,
+                    'total_neto' => $totNeto,
+                    'total_saldo_pendiente' => $totSaldoPendiente,
+                    'pagos' => $totPagosMonto,
+                    'anticipos' => $totAnticiposMonto,
+                    'anticipos_saldo' => $totAnticiposSaldo,
+                    'total' => $totPagosMonto + $totAnticiposMonto,
                 ];
             });
+
+            // Resumen de conceptos agrupados a nivel de toda la bocamina
+            $conceptosBocamina = [];
+            foreach ($workersDetalle as $wd) {
+                foreach ($wd['conceptos_resumen'] as $tipo => $cData) {
+                    if (!isset($conceptosBocamina[$tipo])) {
+                        $conceptosBocamina[$tipo] = ['cantidad' => 0, 'subtotal' => 0, 'tarifa' => $cData['tarifa']];
+                    }
+                    $conceptosBocamina[$tipo]['cantidad'] += $cData['cantidad'];
+                    $conceptosBocamina[$tipo]['subtotal'] += $cData['subtotal'];
+                }
+            }
+
+            $totSubtotalBoc = $workersDetalle->sum('total_subtotal');
+            $totBonosBoc = $workersDetalle->sum('total_bonos');
+            $totDescuentosBoc = $workersDetalle->sum('total_descuentos');
+            $totAnticiposDescBoc = $workersDetalle->sum('total_anticipos_desc');
+            $totNetoBoc = $workersDetalle->sum('total_neto');
 
             return [
                 'bocamina' => $b,
@@ -278,6 +342,12 @@ class ReporteController extends Controller
                 'total_pagos' => $totPagos,
                 'total_anticipos' => $totAnticipos,
                 'total_gastado' => $totGastado,
+                'total_subtotal' => $totSubtotalBoc,
+                'total_bonos' => $totBonosBoc,
+                'total_descuentos' => $totDescuentosBoc,
+                'total_anticipos_desc' => $totAnticiposDescBoc,
+                'total_neto' => $totNetoBoc,
+                'conceptos_resumen' => $conceptosBocamina,
                 'trabajadores_detalle' => $workersDetalle,
             ];
         })->filter()->values();
