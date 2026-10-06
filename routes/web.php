@@ -41,6 +41,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('tipos-trabajo', TipoTrabajoController::class);
 
     // Servicios Externos
+    Route::post('/servicios-externos/tipos', [ServicioExternoController::class, 'storeTipo'])->name('servicios-externos.store-tipo');
     Route::get('/servicios-externos/{servicio}/recibo', [ServicioExternoController::class, 'recibo'])->name('servicios-externos.recibo');
     Route::resource('servicios-externos', ServicioExternoController::class);
 

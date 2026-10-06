@@ -42,16 +42,25 @@
 </style>
 
 <div x-data="{
-    tipoServicio: '{{ old('tipo_servicio', 'Volqueta / Transporte de Mineral (Flete)') }}',
+    tipoServicio: '{{ old('tipo_servicio', request('tipo_servicio', 'Volqueta / Transporte de Mineral (Flete)')) }}',
     esPersonalizado: false,
-    otroTipoServicio: '{{ old('otro_tipo_servicio', '') }}',
+    otroTipoServicio: '{{ old('otro_tipo_servicio', request('tipo_servicio', '')) }}',
     choferOperador: '{{ old('chofer_operador', '') }}',
     placaMaquinaria: '{{ old('placa_maquinaria', '') }}',
     cantidad: {{ old('cantidad', 1) }},
-    unidadMedida: '{{ old('unidad_medida', 'viajes') }}',
+    unidadMedida: '{{ old('unidad_medida', request('unidad_medida', 'viajes')) }}',
     precioUnitario: {{ old('precio_unitario', 0) }},
     montoTotal: {{ old('monto_total', 0) }},
     userEditedTotal: false,
+
+    init() {
+        const opciones = {{ json_encode($tiposServicio ?? []) }};
+        if (this.tipoServicio && !opciones.includes(this.tipoServicio)) {
+            this.esPersonalizado = true;
+            this.otroTipoServicio = this.tipoServicio;
+        }
+        this.calcTotal();
+    },
 
     onTipoChange() {
         if (this.tipoServicio === 'OTRO_PERSONALIZADO') {

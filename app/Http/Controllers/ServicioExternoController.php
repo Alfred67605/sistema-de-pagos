@@ -36,16 +36,55 @@ class ServicioExternoController extends Controller
     public static function getTiposServicioDisponibles()
     {
         $predefinidos = self::getTiposServicioPredefinidos();
+        
+        $customs = [];
+        $jsonPath = storage_path('app/tipos_servicio_custom.json');
+        if (file_exists($jsonPath)) {
+            $customs = json_decode(file_get_contents($jsonPath), true) ?: [];
+        }
+
         try {
             $enBd = ServicioExterno::distinct()
                 ->whereNotNull('tipo_servicio')
                 ->where('tipo_servicio', '!=', '')
                 ->pluck('tipo_servicio')
                 ->toArray();
-            return array_values(array_unique(array_merge($predefinidos, $enBd)));
+            return array_values(array_unique(array_merge($predefinidos, $customs, $enBd)));
         } catch (\Exception $e) {
-            return $predefinidos;
+            return array_values(array_unique(array_merge($predefinidos, $customs)));
         }
+    }
+
+    public function storeTipo(Request $request)
+    {
+        $request->validate([
+            'nombre' => 'required|string|max:255',
+        ]);
+
+        $nombre = trim($request->nombre);
+        $jsonPath = storage_path('app/tipos_servicio_custom.json');
+        $customs = [];
+        if (file_exists($jsonPath)) {
+            $customs = json_decode(file_get_contents($jsonPath), true) ?: [];
+        }
+
+        if (!in_array($nombre, $customs)) {
+            $customs[] = $nombre;
+            if (!is_dir(dirname($jsonPath))) {
+                mkdir(dirname($jsonPath), 0755, true);
+            }
+            file_put_contents($jsonPath, json_encode($customs, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        }
+
+        if ($request->input('action') === 'crear_servicio') {
+            return redirect()->route('servicios-externos.create', [
+                'tipo_servicio' => $nombre,
+                'unidad_medida' => $request->input('unidad_medida', 'horas'),
+            ])->with('success', "Tipo de servicio '{$nombre}' añadido. Completa los datos para registrar el pago.");
+        }
+
+        return redirect()->route('servicios-externos.index')
+            ->with('success', "Tipo de servicio '{$nombre}' añadido con éxito al catálogo.");
     }
 
     public function index(Request $request)

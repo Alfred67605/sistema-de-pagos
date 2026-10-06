@@ -33,13 +33,13 @@
         box-shadow: 0 6px 18px rgba(225, 29, 72, 0.4);
         transform: translateY(-1px);
     }
-    .btn-export-print {
+    .btn-nuevo-tipo {
         background: linear-gradient(135deg, #d97706, #b45309);
         color: #ffffff;
         box-shadow: 0 4px 14px rgba(217, 119, 6, 0.25);
         transition: all 0.2s ease;
     }
-    .btn-export-print:hover {
+    .btn-nuevo-tipo:hover {
         background: linear-gradient(135deg, #f59e0b, #d97706);
         box-shadow: 0 6px 18px rgba(217, 119, 6, 0.4);
         transform: translateY(-1px);
@@ -70,7 +70,7 @@
     }
 </style>
 
-<div class="space-y-6">
+<div class="space-y-6" x-data="{ openModalNuevoTipo: false, nuevoTipoNombre: '', nuevoTipoUnidad: 'horas' }">
 
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0 no-print">
@@ -92,9 +92,9 @@
             <button type="button" onclick="doExportPDF(this)" class="btn-export-pdf inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer">
                 <i class="fa-solid fa-file-pdf mr-2 text-sm"></i> PDF
             </button>
-            {{-- Botón Imprimir --}}
-            <button type="button" onclick="window.print()" class="btn-export-print inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer">
-                <i class="fa-solid fa-print mr-2 text-sm"></i> Imprimir
+            {{-- Botón Añadir Nuevo Tipo de Servicio (Sustituye a Imprimir) --}}
+            <button type="button" @click="openModalNuevoTipo = true" class="btn-nuevo-tipo inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer">
+                <i class="fa-solid fa-folder-plus mr-2 text-sm"></i> + Añadir Tipo de Servicio
             </button>
             {{-- Botón Registrar Nuevo --}}
             <a href="{{ route('servicios-externos.create') }}" class="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-xs font-bold text-white transition duration-150 shadow-lg shadow-sky-500/20 cursor-pointer">
@@ -499,6 +499,118 @@
                 <span>Generado el {{ now()->format('d/m/Y H:i:s') }} · Página 1 / 1</span>
             </div>
 
+        </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- 🗂️ MODAL: AÑADIR NUEVO TIPO DE SERVICIO                              -->
+    <!-- ===================================================================== -->
+    <div x-show="openModalNuevoTipo" 
+         x-cloak 
+         class="fixed inset-0 z-50 overflow-y-auto no-print" 
+         style="background: rgba(2, 6, 23, 0.8); backdrop-filter: blur(8px);">
+        
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+            <div @click.away="openModalNuevoTipo = false" 
+                 class="inline-block w-full max-w-lg p-6 sm:p-8 my-8 overflow-hidden text-left align-middle transition-all transform bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl relative">
+                
+                {{-- Botón Cerrar (X) --}}
+                <button type="button" @click="openModalNuevoTipo = false" class="absolute top-5 right-5 text-slate-400 hover:text-slate-200 text-lg transition cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+                {{-- Encabezado del Modal --}}
+                <div class="flex items-center gap-3.5 mb-5 pb-4 border-b border-slate-800">
+                    <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-xl flex-shrink-0 border border-amber-500/20">
+                        <i class="fa-solid fa-layer-group"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-black text-slate-100 tracking-tight">
+                            Añadir Nuevo Tipo de Servicio
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-0.5">
+                            Crea un nuevo concepto de flete, maquinaria pesada o labor técnica.
+                        </p>
+                    </div>
+                </div>
+
+                {{-- Formulario --}}
+                <form action="{{ route('servicios-externos.store-tipo') }}" method="POST" class="space-y-4">
+                    @csrf
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+                            Nombre del Tipo de Servicio <span class="text-rose-400">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-amber-400 text-sm">
+                                <i class="fa-solid fa-pen-nib"></i>
+                            </span>
+                            <input type="text" name="nombre" x-model="nuevoTipoNombre" required autofocus
+                                   placeholder="Ej. Alquiler de Martillo Hidráulico, Cama Baja, Bomba..."
+                                   class="w-full pl-10 pr-4 py-2.5 bg-slate-950/80 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm font-semibold">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+                            Unidad de Medida Sugerida
+                        </label>
+                        <select name="unidad_medida" x-model="nuevoTipoUnidad" class="w-full px-3 py-2.5 bg-slate-950/80 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm font-semibold">
+                            <option value="horas">Horas (Maquinaria, excavadora, tractor, operador)</option>
+                            <option value="viajes">Viajes (Flete, volqueta, transporte de mineral, cisterna)</option>
+                            <option value="días">Días (Alquiler de generador, compresor, campamento)</option>
+                            <option value="servicio">Servicio Global (Mantenimiento, tornería, catering)</option>
+                            <option value="litros">Litros / Galones (Combustible, diésel, agua)</option>
+                        </select>
+                    </div>
+
+                    {{-- Sugerencias Rápidas --}}
+                    <div class="pt-1">
+                        <span class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">
+                            Sugerencias Rápidas para Minería:
+                        </span>
+                        <div class="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
+                            @php
+                                $sugerencias = [
+                                    'Cargador Frontal (Pala Cargadora)',
+                                    'Cisterna de Combustible / Diésel',
+                                    'Cisterna de Agua (Riego / Abastecimiento)',
+                                    'Compresor de Aire (Perforación Externa)',
+                                    'Generador Eléctrico (Grupo Electrógeno)',
+                                    'Grúa / Cama Baja / Transporte Pesado',
+                                    'Tornería y Soldadura Especializada',
+                                    'Alimentación / Catering para Campamento',
+                                    'Seguridad y Vigilancia Especializada',
+                                    'Alquiler de Martillo Hidráulico',
+                                    'Reparación de Bomba Sumergible',
+                                ];
+                            @endphp
+                            @foreach($sugerencias as $sug)
+                                <button type="button" 
+                                        @click="nuevoTipoNombre = '{{ $sug }}'; if('{{ $sug }}'.includes('Viajes') || '{{ $sug }}'.includes('Cisterna')) nuevoTipoUnidad = 'viajes'; else if('{{ $sug }}'.includes('Alquiler') || '{{ $sug }}'.includes('Generador') || '{{ $sug }}'.includes('Compresor')) nuevoTipoUnidad = 'días'; else if('{{ $sug }}'.includes('Catering') || '{{ $sug }}'.includes('Tornería') || '{{ $sug }}'.includes('Reparación')) nuevoTipoUnidad = 'servicio'; else nuevoTipoUnidad = 'horas';"
+                                        class="px-2.5 py-1 rounded-lg text-[10.5px] font-semibold bg-slate-800 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 border border-slate-700 hover:border-amber-500/40 transition cursor-pointer">
+                                    + {{ $sug }}
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- Botones de Acción --}}
+                    <div class="pt-5 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-end gap-2.5">
+                        <button type="button" @click="openModalNuevoTipo = false" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition cursor-pointer">
+                            Cancelar
+                        </button>
+                        <button type="submit" name="action" value="guardar_catalogo" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-100 text-xs font-bold transition cursor-pointer">
+                            <i class="fa-solid fa-save mr-1.5"></i> Guardar en Catálogo
+                        </button>
+                        <button type="submit" name="action" value="crear_servicio" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-black text-xs transition shadow-lg shadow-amber-500/20 cursor-pointer">
+                            <i class="fa-solid fa-arrow-right mr-1.5"></i> Guardar y Registrar Pago
+                        </button>
+                    </div>
+                </form>
+
+            </div>
         </div>
     </div>
 
