@@ -29,6 +29,10 @@ class ServicioExternoController extends Controller
             $query->where('tipo_servicio', $request->tipo_servicio);
         }
 
+        if ($request->filled('bocamina_id')) {
+            $query->where('bocamina_id', $request->bocamina_id);
+        }
+
         if ($request->filled('fecha_desde')) {
             $query->whereDate('fecha', '>=', $request->fecha_desde);
         }
@@ -44,11 +48,16 @@ class ServicioExternoController extends Controller
         $total_gastado_anticipos = Anticipo::sum('monto');
         $total_gastado_servicios = ServicioExterno::sum('monto_total');
         $saldo_caja = $total_recargado - ($total_gastado_pagos + $total_gastado_anticipos + $total_gastado_servicios);
+        
+        $total_filtrado = $servicios->sum('monto_total');
+        $bocaminas = Bocamina::orderBy('nombre')->get();
 
         return view('servicios_externos.index', compact(
             'servicios',
             'total_gastado_servicios',
-            'saldo_caja'
+            'saldo_caja',
+            'total_filtrado',
+            'bocaminas'
         ));
     }
 
