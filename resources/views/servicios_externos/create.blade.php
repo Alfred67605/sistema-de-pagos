@@ -42,26 +42,56 @@
 </style>
 
 <div x-data="{
-    tipoServicio: 'Volqueta / Transporte de Mineral',
-    choferOperador: '',
-    placaMaquinaria: '',
-    cantidad: 1,
-    unidadMedida: 'viajes',
-    precioUnitario: 0,
-    montoTotal: 0,
+    tipoServicio: '{{ old('tipo_servicio', 'Volqueta / Transporte de Mineral (Flete)') }}',
+    esPersonalizado: false,
+    otroTipoServicio: '{{ old('otro_tipo_servicio', '') }}',
+    choferOperador: '{{ old('chofer_operador', '') }}',
+    placaMaquinaria: '{{ old('placa_maquinaria', '') }}',
+    cantidad: {{ old('cantidad', 1) }},
+    unidadMedida: '{{ old('unidad_medida', 'viajes') }}',
+    precioUnitario: {{ old('precio_unitario', 0) }},
+    montoTotal: {{ old('monto_total', 0) }},
     userEditedTotal: false,
 
     onTipoChange() {
-        if (this.tipoServicio.includes('Volqueta') || this.tipoServicio.includes('Transporte')) {
-            this.unidadMedida = 'viajes';
-        } else if (this.tipoServicio.includes('Excavadora') || this.tipoServicio.includes('Gallinita') || this.tipoServicio.includes('Oruga')) {
-            this.unidadMedida = 'horas';
-        } else if (this.tipoServicio.includes('Mantenimiento')) {
+        if (this.tipoServicio === 'OTRO_PERSONALIZADO') {
+            this.esPersonalizado = true;
             this.unidadMedida = 'servicio';
+            this.$nextTick(() => {
+                if (this.$refs.otroInput) this.$refs.otroInput.focus();
+            });
+            this.calcTotal();
+            return;
+        }
+        this.esPersonalizado = false;
+        const t = (this.tipoServicio || '').toLowerCase();
+        if (t.includes('volqueta') || t.includes('transporte') || t.includes('flete')) {
+            this.unidadMedida = 'viajes';
+        } else if (t.includes('excavadora') || t.includes('gallinita') || t.includes('oruga') || t.includes('cargador') || t.includes('retroexcavadora') || t.includes('grúa') || t.includes('tractor') || t.includes('pala')) {
+            this.unidadMedida = 'horas';
+        } else if (t.includes('mantenimiento') || t.includes('reparación') || t.includes('soldadura') || t.includes('eléctrico') || t.includes('seguridad')) {
+            this.unidadMedida = 'servicio';
+        } else if (t.includes('cisterna') || t.includes('combustible') || t.includes('agua')) {
+            this.unidadMedida = 'viajes';
+        } else if (t.includes('generador') || t.includes('compresor')) {
+            this.unidadMedida = 'días';
         } else {
-            this.unidadMedida = 'global';
+            this.unidadMedida = 'servicio';
         }
         this.calcTotal();
+    },
+
+    togglePersonalizado() {
+        this.esPersonalizado = !this.esPersonalizado;
+        if (this.esPersonalizado) {
+            this.tipoServicio = 'OTRO_PERSONALIZADO';
+            this.$nextTick(() => {
+                if (this.$refs.otroInput) this.$refs.otroInput.focus();
+            });
+        } else {
+            this.tipoServicio = 'Volqueta / Transporte de Mineral (Flete)';
+            this.onTipoChange();
+        }
     },
 
     calcTotal() {
@@ -112,18 +142,64 @@
                 </div>
 
                 {{-- Tipo de Servicio --}}
-                <div>
-                    <label class="se-label">
-                        <span><i class="fa-solid fa-layer-group text-sky-400 mr-1.5"></i> Tipo de Servicio <span class="text-rose-400">*</span></span>
-                    </label>
-                    <select name="tipo_servicio" x-model="tipoServicio" @change="onTipoChange()" class="se-input font-bold text-sky-400" required>
-                        <option value="Volqueta / Transporte de Mineral">🚚 Volqueta / Transporte de Mineral (Flete)</option>
-                        <option value="Excavadora">🚜 Excavadora (Por hora/periodo)</option>
-                        <option value="Gallinita / Retroexcavadora">🚜 Gallinita / Retroexcavadora</option>
-                        <option value="Tractor Oruga">🏗️ Tractor Oruga</option>
-                        <option value="Mantenimiento de Maquinaria">⚙️ Mantenimiento de Maquinaria</option>
-                        <option value="Otro Servicio">📑 Otro Servicio Externo</option>
-                    </select>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="se-label !mb-0">
+                            <span><i class="fa-solid fa-layer-group text-sky-400 mr-1.5"></i> Tipo de Servicio <span class="text-rose-400">*</span></span>
+                        </label>
+                        <button type="button" @click="togglePersonalizado()" class="text-[11px] font-bold text-sky-400 hover:text-sky-300 transition flex items-center gap-1.5 cursor-pointer">
+                            <i class="fa-solid" :class="esPersonalizado ? 'fa-list' : 'fa-plus-circle'"></i>
+                            <span x-text="esPersonalizado ? 'Seleccionar de la lista' : '+ Añadir Otro Tipo de Servicio'"></span>
+                        </button>
+                    </div>
+
+                    {{-- Selector de la Lista --}}
+                    <div x-show="!esPersonalizado">
+                        <select name="tipo_servicio" x-model="tipoServicio" @change="onTipoChange()" class="se-input font-bold text-sky-400">
+                            @if(isset($tiposServicio) && count($tiposServicio) > 0)
+                                @foreach($tiposServicio as $tipo)
+                                    <option value="{{ $tipo }}">{{ $tipo }}</option>
+                                @endforeach
+                            @else
+                                <option value="Volqueta / Transporte de Mineral (Flete)">🚚 Volqueta / Transporte de Mineral (Flete)</option>
+                                <option value="Excavadora (Movimiento de Tierras)">🚜 Excavadora (Movimiento de Tierras)</option>
+                                <option value="Gallinita / Retroexcavadora">🚜 Gallinita / Retroexcavadora</option>
+                                <option value="Tractor Oruga (Bulldozer / Desbroce)">🏗️ Tractor Oruga (Bulldozer / Desbroce)</option>
+                                <option value="Cargador Frontal (Pala Cargadora)">🚜 Cargador Frontal (Pala Cargadora)</option>
+                                <option value="Cisterna de Agua (Riego / Abastecimiento)">🚛 Cisterna de Agua (Riego / Abastecimiento)</option>
+                                <option value="Cisterna de Combustible / Diésel">🛢️ Cisterna de Combustible / Diésel</option>
+                                <option value="Compresor de Aire (Perforación Externa)">💨 Compresor de Aire (Perforación Externa)</option>
+                                <option value="Generador Eléctrico (Grupo Electrógeno)">⚡ Generador Eléctrico (Grupo Electrógeno)</option>
+                                <option value="Grúa / Cama Baja / Transporte Pesado">🏗️ Grúa / Cama Baja / Transporte Pesado</option>
+                                <option value="Mantenimiento y Reparación de Maquinaria">⚙️ Mantenimiento y Reparación de Maquinaria</option>
+                                <option value="Tornería y Soldadura Especializada">🔧 Tornería y Soldadura Especializada</option>
+                                <option value="Servicio Eléctrico / Electromecánico">⚡ Servicio Eléctrico / Electromecánico</option>
+                                <option value="Alimentación / Catering para Campamento">🍱 Alimentación / Catering para Campamento</option>
+                                <option value="Seguridad y Vigilancia Especializada">🛡️ Seguridad y Vigilancia Especializada</option>
+                                <option value="Otro Servicio Externo">📑 Otro Servicio Externo</option>
+                            @endif
+                            <option value="OTRO_PERSONALIZADO">➕ Añadir / Escribir Otro Servicio Personalizado...</option>
+                        </select>
+                    </div>
+
+                    {{-- Input para Escribir Otro Tipo de Servicio Personalizado --}}
+                    <div x-show="esPersonalizado" x-cloak class="space-y-1.5">
+                        <div class="relative">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sky-400 text-sm">
+                                <i class="fa-solid fa-pen-nib"></i>
+                            </span>
+                            <input type="text" x-ref="otroInput" name="otro_tipo_servicio" x-model="otroTipoServicio"
+                                   :required="esPersonalizado"
+                                   placeholder="Escribe el nombre del nuevo servicio (ej. Alquiler de Martillo Hidráulico, Reparación de Bomba...)"
+                                   class="se-input !pl-10 font-bold text-sky-300 border-sky-500/50 bg-sky-950/30">
+                        </div>
+                        <div class="flex items-center justify-between text-[10px] text-slate-400">
+                            <span><i class="fa-solid fa-circle-info text-sky-400 mr-1"></i> Se guardará y aparecerá en las opciones de este módulo.</span>
+                            <button type="button" @click="togglePersonalizado()" class="text-amber-400 hover:underline font-semibold cursor-pointer">
+                                Volver a la lista
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 {{-- Chofer / Operador / Proveedor --}}

@@ -78,18 +78,75 @@
                 </div>
 
                 {{-- Tipo de Servicio --}}
-                <div>
-                    <label class="se-label">
-                        <span><i class="fa-solid fa-layer-group text-sky-400 mr-1.5"></i> Tipo de Servicio <span class="text-rose-400">*</span></span>
-                    </label>
-                    <select name="tipo_servicio" class="se-input font-bold text-sky-400" required>
-                        <option value="Volqueta / Transporte de Mineral" {{ $servicio->tipo_servicio === 'Volqueta / Transporte de Mineral' ? 'selected' : '' }}>🚚 Volqueta / Transporte de Mineral (Flete)</option>
-                        <option value="Excavadora" {{ $servicio->tipo_servicio === 'Excavadora' ? 'selected' : '' }}>🚜 Excavadora (Por hora/periodo)</option>
-                        <option value="Gallinita / Retroexcavadora" {{ $servicio->tipo_servicio === 'Gallinita / Retroexcavadora' ? 'selected' : '' }}>🚜 Gallinita / Retroexcavadora</option>
-                        <option value="Tractor Oruga" {{ $servicio->tipo_servicio === 'Tractor Oruga' ? 'selected' : '' }}>🏗️ Tractor Oruga</option>
-                        <option value="Mantenimiento de Maquinaria" {{ $servicio->tipo_servicio === 'Mantenimiento de Maquinaria' ? 'selected' : '' }}>⚙️ Mantenimiento de Maquinaria</option>
-                        <option value="Otro Servicio" {{ $servicio->tipo_servicio === 'Otro Servicio' ? 'selected' : '' }}>📑 Otro Servicio Externo</option>
-                    </select>
+                <div x-data="{
+                    tipoServicio: '{{ old('tipo_servicio', $servicio->tipo_servicio) }}',
+                    esPersonalizado: false,
+                    otroTipoServicio: '{{ old('otro_tipo_servicio', '') }}',
+                    init() {
+                        const opciones = {{ json_encode($tiposServicio ?? []) }};
+                        if (this.tipoServicio && !opciones.includes(this.tipoServicio)) {
+                            this.esPersonalizado = true;
+                            this.otroTipoServicio = this.tipoServicio;
+                        }
+                    },
+                    togglePersonalizado() {
+                        this.esPersonalizado = !this.esPersonalizado;
+                        if (this.esPersonalizado) {
+                            this.tipoServicio = 'OTRO_PERSONALIZADO';
+                            this.$nextTick(() => { if (this.$refs.otroInputEdit) this.$refs.otroInputEdit.focus(); });
+                        } else {
+                            this.tipoServicio = 'Volqueta / Transporte de Mineral (Flete)';
+                        }
+                    }
+                }" class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="se-label !mb-0">
+                            <span><i class="fa-solid fa-layer-group text-sky-400 mr-1.5"></i> Tipo de Servicio <span class="text-rose-400">*</span></span>
+                        </label>
+                        <button type="button" @click="togglePersonalizado()" class="text-[11px] font-bold text-sky-400 hover:text-sky-300 transition flex items-center gap-1.5 cursor-pointer">
+                            <i class="fa-solid" :class="esPersonalizado ? 'fa-list' : 'fa-plus-circle'"></i>
+                            <span x-text="esPersonalizado ? 'Seleccionar de la lista' : '+ Añadir Otro Tipo de Servicio'"></span>
+                        </button>
+                    </div>
+
+                    {{-- Selector de la Lista --}}
+                    <div x-show="!esPersonalizado">
+                        <select name="tipo_servicio" x-model="tipoServicio" @change="if(tipoServicio === 'OTRO_PERSONALIZADO') { esPersonalizado = true; $nextTick(() => { if($refs.otroInputEdit) $refs.otroInputEdit.focus(); }); }" class="se-input font-bold text-sky-400">
+                            @if(isset($tiposServicio) && count($tiposServicio) > 0)
+                                @foreach($tiposServicio as $tipo)
+                                    <option value="{{ $tipo }}">{{ $tipo }}</option>
+                                @endforeach
+                            @else
+                                <option value="Volqueta / Transporte de Mineral (Flete)">🚚 Volqueta / Transporte de Mineral (Flete)</option>
+                                <option value="Excavadora (Movimiento de Tierras)">🚜 Excavadora (Movimiento de Tierras)</option>
+                                <option value="Gallinita / Retroexcavadora">🚜 Gallinita / Retroexcavadora</option>
+                                <option value="Tractor Oruga (Bulldozer / Desbroce)">🏗️ Tractor Oruga (Bulldozer / Desbroce)</option>
+                                <option value="Cargador Frontal (Pala Cargadora)">🚜 Cargador Frontal (Pala Cargadora)</option>
+                                <option value="Mantenimiento y Reparación de Maquinaria">⚙️ Mantenimiento y Reparación de Maquinaria</option>
+                                <option value="Otro Servicio Externo">📑 Otro Servicio Externo</option>
+                            @endif
+                            <option value="OTRO_PERSONALIZADO">➕ Añadir / Escribir Otro Servicio Personalizado...</option>
+                        </select>
+                    </div>
+
+                    {{-- Input para Escribir Otro Tipo de Servicio Personalizado --}}
+                    <div x-show="esPersonalizado" x-cloak class="space-y-1.5">
+                        <div class="relative">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sky-400 text-sm">
+                                <i class="fa-solid fa-pen-nib"></i>
+                            </span>
+                            <input type="text" x-ref="otroInputEdit" name="otro_tipo_servicio" x-model="otroTipoServicio"
+                                   :required="esPersonalizado"
+                                   placeholder="Escribe el nombre del nuevo servicio..."
+                                   class="se-input !pl-10 font-bold text-sky-300 border-sky-500/50 bg-sky-950/30">
+                        </div>
+                        <div class="flex items-center justify-between text-[10px] text-slate-400">
+                            <span><i class="fa-solid fa-circle-info text-sky-400 mr-1"></i> Se guardará y aparecerá en las opciones de este módulo.</span>
+                            <button type="button" @click="togglePersonalizado()" class="text-amber-400 hover:underline font-semibold cursor-pointer">
+                                Volver a la lista
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 {{-- Chofer / Operador / Proveedor --}}

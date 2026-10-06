@@ -11,6 +11,43 @@ use Illuminate\Http\Request;
 
 class ServicioExternoController extends Controller
 {
+    public static function getTiposServicioPredefinidos()
+    {
+        return [
+            'Volqueta / Transporte de Mineral (Flete)',
+            'Excavadora (Movimiento de Tierras)',
+            'Gallinita / Retroexcavadora',
+            'Tractor Oruga (Bulldozer / Desbroce)',
+            'Cargador Frontal (Pala Cargadora)',
+            'Cisterna de Agua (Riego / Abastecimiento)',
+            'Cisterna de Combustible / Diésel',
+            'Compresor de Aire (Perforación Externa)',
+            'Generador Eléctrico (Grupo Electrógeno)',
+            'Grúa / Cama Baja / Transporte Pesado',
+            'Mantenimiento y Reparación de Maquinaria',
+            'Tornería y Soldadura Especializada',
+            'Servicio Eléctrico / Electromecánico',
+            'Alimentación / Catering para Campamento',
+            'Seguridad y Vigilancia Especializada',
+            'Otro Servicio Externo',
+        ];
+    }
+
+    public static function getTiposServicioDisponibles()
+    {
+        $predefinidos = self::getTiposServicioPredefinidos();
+        try {
+            $enBd = ServicioExterno::distinct()
+                ->whereNotNull('tipo_servicio')
+                ->where('tipo_servicio', '!=', '')
+                ->pluck('tipo_servicio')
+                ->toArray();
+            return array_values(array_unique(array_merge($predefinidos, $enBd)));
+        } catch (\Exception $e) {
+            return $predefinidos;
+        }
+    }
+
     public function index(Request $request)
     {
         $query = ServicioExterno::with('bocamina');
@@ -51,13 +88,15 @@ class ServicioExternoController extends Controller
         
         $total_filtrado = $servicios->sum('monto_total');
         $bocaminas = Bocamina::orderBy('nombre')->get();
+        $tiposServicio = self::getTiposServicioDisponibles();
 
         return view('servicios_externos.index', compact(
             'servicios',
             'total_gastado_servicios',
             'saldo_caja',
             'total_filtrado',
-            'bocaminas'
+            'bocaminas',
+            'tiposServicio'
         ));
     }
 
@@ -70,12 +109,19 @@ class ServicioExternoController extends Controller
         $total_gastado_anticipos = Anticipo::sum('monto');
         $total_gastado_servicios = ServicioExterno::sum('monto_total');
         $saldo_caja = $total_recargado - ($total_gastado_pagos + $total_gastado_anticipos + $total_gastado_servicios);
+        $tiposServicio = self::getTiposServicioDisponibles();
 
-        return view('servicios_externos.create', compact('bocaminas', 'saldo_caja'));
+        return view('servicios_externos.create', compact('bocaminas', 'saldo_caja', 'tiposServicio'));
     }
 
     public function store(Request $request)
     {
+        if ($request->input('tipo_servicio') === 'OTRO_PERSONALIZADO' || $request->filled('otro_tipo_servicio')) {
+            if ($request->filled('otro_tipo_servicio')) {
+                $request->merge(['tipo_servicio' => trim($request->otro_tipo_servicio)]);
+            }
+        }
+
         $data = $request->validate([
             'fecha'              => 'required|date',
             'numero_comprobante' => 'nullable|string|max:100',
@@ -112,11 +158,19 @@ class ServicioExternoController extends Controller
     {
         $servicio = $servicios_externo;
         $bocaminas = Bocamina::orderBy('nombre')->get();
-        return view('servicios_externos.edit', compact('servicio', 'bocaminas'));
+        $tiposServicio = self::getTiposServicioDisponibles();
+
+        return view('servicios_externos.edit', compact('servicio', 'bocaminas', 'tiposServicio'));
     }
 
     public function update(Request $request, ServicioExterno $servicios_externo)
     {
+        if ($request->input('tipo_servicio') === 'OTRO_PERSONALIZADO' || $request->filled('otro_tipo_servicio')) {
+            if ($request->filled('otro_tipo_servicio')) {
+                $request->merge(['tipo_servicio' => trim($request->otro_tipo_servicio)]);
+            }
+        }
+
         $data = $request->validate([
             'fecha'              => 'required|date',
             'numero_comprobante' => 'nullable|string|max:100',

@@ -152,12 +152,28 @@
                         onchange="submitFilterRealTime(this.form)"
                         class="mt-1 block w-full px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-lg text-slate-100 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 text-sm">
                     <option value="">Todos los Servicios</option>
-                    <option value="Volqueta / Transporte de Mineral" {{ request('tipo_servicio') === 'Volqueta / Transporte de Mineral' ? 'selected' : '' }}>Volqueta / Transporte de Mineral</option>
-                    <option value="Excavadora" {{ request('tipo_servicio') === 'Excavadora' ? 'selected' : '' }}>Excavadora</option>
-                    <option value="Gallinita / Retroexcavadora" {{ request('tipo_servicio') === 'Gallinita / Retroexcavadora' ? 'selected' : '' }}>Gallinita / Retroexcavadora</option>
-                    <option value="Tractor Oruga" {{ request('tipo_servicio') === 'Tractor Oruga' ? 'selected' : '' }}>Tractor Oruga</option>
-                    <option value="Mantenimiento de Maquinaria" {{ request('tipo_servicio') === 'Mantenimiento de Maquinaria' ? 'selected' : '' }}>Mantenimiento de Maquinaria</option>
-                    <option value="Otro Servicio" {{ request('tipo_servicio') === 'Otro Servicio' ? 'selected' : '' }}>Otro Servicio</option>
+                    @if(isset($tiposServicio) && count($tiposServicio) > 0)
+                        @foreach($tiposServicio as $tipo)
+                            <option value="{{ $tipo }}" {{ request('tipo_servicio') === $tipo ? 'selected' : '' }}>{{ $tipo }}</option>
+                        @endforeach
+                    @else
+                        <option value="Volqueta / Transporte de Mineral (Flete)" {{ request('tipo_servicio') === 'Volqueta / Transporte de Mineral (Flete)' ? 'selected' : '' }}>Volqueta / Transporte de Mineral (Flete)</option>
+                        <option value="Excavadora (Movimiento de Tierras)" {{ request('tipo_servicio') === 'Excavadora (Movimiento de Tierras)' ? 'selected' : '' }}>Excavadora (Movimiento de Tierras)</option>
+                        <option value="Gallinita / Retroexcavadora" {{ request('tipo_servicio') === 'Gallinita / Retroexcavadora' ? 'selected' : '' }}>Gallinita / Retroexcavadora</option>
+                        <option value="Tractor Oruga (Bulldozer / Desbroce)" {{ request('tipo_servicio') === 'Tractor Oruga (Bulldozer / Desbroce)' ? 'selected' : '' }}>Tractor Oruga (Bulldozer / Desbroce)</option>
+                        <option value="Cargador Frontal (Pala Cargadora)" {{ request('tipo_servicio') === 'Cargador Frontal (Pala Cargadora)' ? 'selected' : '' }}>Cargador Frontal (Pala Cargadora)</option>
+                        <option value="Cisterna de Agua (Riego / Abastecimiento)" {{ request('tipo_servicio') === 'Cisterna de Agua (Riego / Abastecimiento)' ? 'selected' : '' }}>Cisterna de Agua (Riego / Abastecimiento)</option>
+                        <option value="Cisterna de Combustible / Diésel" {{ request('tipo_servicio') === 'Cisterna de Combustible / Diésel' ? 'selected' : '' }}>Cisterna de Combustible / Diésel</option>
+                        <option value="Compresor de Aire (Perforación Externa)" {{ request('tipo_servicio') === 'Compresor de Aire (Perforación Externa)' ? 'selected' : '' }}>Compresor de Aire (Perforación Externa)</option>
+                        <option value="Generador Eléctrico (Grupo Electrógeno)" {{ request('tipo_servicio') === 'Generador Eléctrico (Grupo Electrógeno)' ? 'selected' : '' }}>Generador Eléctrico (Grupo Electrógeno)</option>
+                        <option value="Grúa / Cama Baja / Transporte Pesado" {{ request('tipo_servicio') === 'Grúa / Cama Baja / Transporte Pesado' ? 'selected' : '' }}>Grúa / Cama Baja / Transporte Pesado</option>
+                        <option value="Mantenimiento y Reparación de Maquinaria" {{ request('tipo_servicio') === 'Mantenimiento y Reparación de Maquinaria' ? 'selected' : '' }}>Mantenimiento y Reparación de Maquinaria</option>
+                        <option value="Tornería y Soldadura Especializada" {{ request('tipo_servicio') === 'Tornería y Soldadura Especializada' ? 'selected' : '' }}>Tornería y Soldadura Especializada</option>
+                        <option value="Servicio Eléctrico / Electromecánico" {{ request('tipo_servicio') === 'Servicio Eléctrico / Electromecánico' ? 'selected' : '' }}>Servicio Eléctrico / Electromecánico</option>
+                        <option value="Alimentación / Catering para Campamento" {{ request('tipo_servicio') === 'Alimentación / Catering para Campamento' ? 'selected' : '' }}>Alimentación / Catering para Campamento</option>
+                        <option value="Seguridad y Vigilancia Especializada" {{ request('tipo_servicio') === 'Seguridad y Vigilancia Especializada' ? 'selected' : '' }}>Seguridad y Vigilancia Especializada</option>
+                        <option value="Otro Servicio Externo" {{ request('tipo_servicio') === 'Otro Servicio Externo' ? 'selected' : '' }}>Otro Servicio Externo</option>
+                    @endif
                 </select>
             </div>
 
