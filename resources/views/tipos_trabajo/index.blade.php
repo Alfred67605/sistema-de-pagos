@@ -34,46 +34,52 @@
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
         <div>
-            <h1 class="text-3xl font-bold tracking-tight text-slate-100 flex items-center gap-3">
-                <span class="w-10 h-10 rounded-2xl flex items-center justify-center text-white flex-shrink-0" style="background:linear-gradient(135deg,#f59e0b,#d97706);">
-                    <i class="fa-solid fa-hammer text-sm"></i>
+            <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-100 flex items-center gap-3">
+                <span class="w-10 h-10 rounded-xl flex items-center justify-center text-amber-400 bg-amber-500/10 border border-amber-500/20 flex-shrink-0">
+                    <i class="fa-solid fa-hammer text-base"></i>
                 </span>
                 Catálogo de Tipos de Trabajo
             </h1>
-            <p class="text-sm text-slate-400 mt-1">Configura las actividades laborales (Jornal, Carguío, Descarguío, Transporte, Mantenimiento, etc.) para los pagos.</p>
+            <p class="text-xs md:text-sm text-slate-400 mt-1">Configura las actividades laborales (Jornal, Carguío, Descarguío, Transporte, Mantenimiento) para la liquidación de pagos.</p>
         </div>
-        <button @click="openCreate()" class="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-sm font-bold text-slate-950 transition duration-150 shadow-lg shadow-amber-500/10 self-start cursor-pointer">
+        <button @click="openCreate()" class="btn-gold inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-bold text-slate-950 self-start cursor-pointer">
             <i class="fa-solid fa-plus mr-2"></i> Nuevo Tipo de Trabajo
         </button>
     </div>
 
     <!-- Summary Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <div class="glass-card rounded-2xl p-5 border border-amber-500/20 bg-amber-500/5">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="mining-card p-5 gold-accent-line">
             <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">Total Registrados</span>
-                <i class="fa-solid fa-layer-group text-amber-400 text-lg"></i>
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Registrados</span>
+                <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
             </div>
-            <div class="text-2xl font-black font-mono text-slate-100 mt-2">{{ count($tiposTrabajo) }}</div>
-            <p class="text-[10px] text-slate-400 mt-1">Tipos de trabajo en catálogo</p>
+            <div class="text-2xl font-black font-mono tabular-nums text-slate-100 mt-2">{{ count($tiposTrabajo) }}</div>
+            <p class="text-[11px] text-slate-500 mt-1">Tipos de trabajo en catálogo</p>
         </div>
 
-        <div class="glass-card rounded-2xl p-5 border border-emerald-500/20 bg-emerald-500/5">
+        <div class="mining-card p-5">
             <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Activos</span>
-                <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Activos</span>
+                <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
             </div>
-            <div class="text-2xl font-black font-mono text-emerald-400 mt-2">{{ $totalActivos }}</div>
-            <p class="text-[10px] text-slate-400 mt-1">Disponibles para selección en pagos</p>
+            <div class="text-2xl font-black font-mono tabular-nums text-emerald-400 mt-2">{{ $totalActivos }}</div>
+            <p class="text-[11px] text-slate-500 mt-1">Disponibles para selección en pagos</p>
         </div>
 
-        <div class="glass-card rounded-2xl p-5 border border-slate-700/50 bg-slate-900/30">
+        <div class="mining-card p-5">
             <div class="flex items-center justify-between">
                 <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Inactivos / Desactivados</span>
-                <i class="fa-solid fa-circle-minus text-slate-500 text-lg"></i>
+                <div class="w-8 h-8 rounded-lg bg-slate-800 text-slate-400 border border-slate-700 flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-circle-minus"></i>
+                </div>
             </div>
-            <div class="text-2xl font-black font-mono text-slate-400 mt-2">{{ $totalInactivos }}</div>
-            <p class="text-[10px] text-slate-500 mt-1">Deshabilitados temporalmente</p>
+            <div class="text-2xl font-black font-mono tabular-nums text-slate-300 mt-2">{{ $totalInactivos }}</div>
+            <p class="text-[11px] text-slate-500 mt-1">Deshabilitados temporalmente</p>
         </div>
     </div>
 
@@ -100,7 +106,7 @@
             </div>
 
             <div class="flex space-x-2">
-                <button type="button" onclick="document.getElementById('buscar').value = ''; document.getElementById('estado_filter').value = ''; submitFilterRealTime(this.form);" class="btn-vibrant-warm flex-1 inline-flex items-center justify-center px-4 py-2 text-sm font-bold rounded-lg shadow-lg cursor-pointer" title="Limpiar Filtros">
+                <button type="button" onclick="document.getElementById('buscar').value = ''; document.getElementById('estado_filter').value = ''; submitFilterRealTime(this.form);" class="btn-secondary flex-1 inline-flex items-center justify-center px-4 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl cursor-pointer" title="Limpiar Filtros">
                     <i class="fa-solid fa-rotate-left mr-2"></i> Limpiar
                 </button>
             </div>

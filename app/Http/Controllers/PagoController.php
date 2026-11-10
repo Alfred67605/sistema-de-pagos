@@ -13,7 +13,7 @@ class PagoController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Pago::with(['trabajador']);
+        $query = Pago::with(['trabajador.bocamina']);
 
         if ($request->filled('buscar')) {
             $buscar = $request->buscar;

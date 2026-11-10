@@ -1,0 +1,17 @@
+{
+  "name": "Sistema Minero TORMAN",
+  "short_name": "TORMAN Minería",
+  "description": "Sistema de Gestión de Pagos, Personal y Comercialización de Minerales",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/app.ico",
+      "sizes": "256x256 64x64 32x32 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}
+

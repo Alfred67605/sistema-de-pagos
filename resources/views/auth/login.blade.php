@@ -8,6 +8,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión - SCPM</title>
+    <link rel="icon" type="image/x-icon" href="/app.ico">
+    <link rel="manifest" href="/manifest.webmanifest">
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,44 +28,66 @@
             perspective: 1000px;
         }
 
-        /* Full-screen Ken Burns background cover */
+        /* Full-screen Ken Burns background cover with local mining hero */
         .bg-mining-full {
             position: fixed;
             inset: 0;
-            background-image: url('/images/mining_bg.png');
+            background-image: url('{{ asset('images/mining/login_hero.jpg') }}');
             background-size: cover;
-            background-position: center;
-            z-index: -2;
+            background-position: center 35%;
+            z-index: -3;
         }
         .animate-kenburns {
-            animation: kenburns 45s ease-in-out infinite;
+            animation: kenburns 35s ease-in-out infinite alternate;
         }
         @keyframes kenburns {
-            0%, 100% {
-                transform: scale(1.02) translate(0, 0);
+            0% {
+                transform: scale(1.0);
             }
-            50% {
-                transform: scale(1.10) translate(-0.8%, -0.4%);
+            100% {
+                transform: scale(1.06) translate(-1%, -0.5%);
             }
         }
         
-        /* Dark overlay for contrast */
+        /* Dark overlay for contrast and depth */
         .bg-overlay {
             position: fixed;
             inset: 0;
-            background: radial-gradient(circle at center, rgba(15, 23, 42, 0.35) 0%, rgba(2, 6, 23, 0.88) 100%);
+            background: linear-gradient(to right, rgba(9, 13, 22, 0.94) 0%, rgba(9, 13, 22, 0.85) 45%, rgba(2, 6, 23, 0.65) 100%),
+                        radial-gradient(circle at center, transparent 20%, rgba(2, 6, 23, 0.88) 100%);
+            z-index: -2;
+        }
+
+        /* Ambient Tunnel Lantern Glow */
+        .ambient-tunnel-glow {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 65% 45%, rgba(245, 158, 11, 0.16) 0%, rgba(217, 119, 6, 0.06) 35%, transparent 70%);
+            pointer-events: none;
             z-index: -1;
+            animation: tunnelBreathing 10s ease-in-out infinite alternate;
+        }
+        @keyframes tunnelBreathing {
+            0% { opacity: 0.45; transform: scale(1); }
+            100% { opacity: 0.85; transform: scale(1.05); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .animate-kenburns, .ambient-tunnel-glow, .veta-oro-border, .animate-fade-in-up {
+                animation: none !important;
+                transform: none !important;
+            }
         }
 
         /* Glassmorphism card (frosted glass) */
         .glass-card {
-            background: rgba(10, 12, 18, 0.45);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border-radius: 28px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+            background: rgba(10, 15, 28, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
             transform-style: preserve-3d;
-            transition: transform 0.1s ease-out, box-shadow 0.3s;
+            transition: transform 0.2s ease-out, box-shadow 0.3s;
             position: relative;
             z-index: 10;
         }
@@ -71,17 +95,17 @@
         /* Veta de Oro (Golden Glowing Seam) Border Animation */
         @keyframes goldVein {
             0%, 100% {
-                border-color: rgba(245, 158, 11, 0.22);
-                box-shadow: 0 0 20px rgba(245, 158, 11, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+                border-color: rgba(245, 158, 11, 0.25);
+                box-shadow: 0 0 15px rgba(245, 158, 11, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.06);
             }
             50% {
-                border-color: rgba(234, 88, 12, 0.55);
-                box-shadow: 0 0 35px rgba(234, 88, 12, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+                border-color: rgba(245, 158, 11, 0.55);
+                box-shadow: 0 0 25px rgba(245, 158, 11, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.12);
             }
         }
         .veta-oro-border {
-            border: 1.5px solid rgba(245, 158, 11, 0.22);
-            animation: goldVein 7s ease-in-out infinite;
+            border: 1.5px solid rgba(245, 158, 11, 0.25);
+            animation: goldVein 6s ease-in-out infinite;
         }
 
         /* Spotlight Sheen Layer inside card */
@@ -294,8 +318,8 @@
     <div class="bg-mining-full animate-kenburns"></div>
     <div class="bg-overlay"></div>
     
-    <!-- Canvas for Floating Glowing Gold/Fire Sparks -->
-    <canvas id="particle-canvas" class="fixed inset-0 pointer-events-none z-0 opacity-75"></canvas>
+    <!-- Ambient Tunnel Glow & Depth -->
+    <div class="ambient-tunnel-glow"></div>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 min-h-screen relative z-10 w-full">
         
@@ -488,203 +512,63 @@
             }
         }
 
-        // Particle Canvas - Embers physics
-        const canvas = document.getElementById('particle-canvas');
-        if (canvas) {
-            const ctx = canvas.getContext('2d');
-            let width = canvas.width = window.innerWidth;
-            let height = canvas.height = window.innerHeight;
-            
-            let mouse = { x: -1000, y: -1000, active: false };
-            
-            window.addEventListener('resize', () => {
-                width = canvas.width = window.innerWidth;
-                height = canvas.height = window.innerHeight;
-            });
-            
-            window.addEventListener('mousemove', (e) => {
-                mouse.x = e.clientX;
-                mouse.y = e.clientY;
-                mouse.active = true;
-            });
-            
-            window.addEventListener('mouseleave', () => {
-                mouse.active = false;
-            });
-            
-            const particles = [];
-            const maxParticles = 75; // Full screen spark density
-            
-            class Spark {
-                constructor() {
-                    this.reset(true);
-                }
-                
-                reset(initial = false) {
-                    this.x = Math.random() * width;
-                    this.y = initial ? Math.random() * height : height + 15;
-                    this.size = Math.random() * 2.8 + 1.0;
-                    this.speedY = Math.random() * 1.6 + 0.7;
-                    this.speedX = (Math.random() - 0.5) * 0.7;
-                    this.life = Math.random() * 0.75 + 0.25; // life value 0 to 1
-                    this.decay = Math.random() * 0.003 + 0.0018;
-                    this.opacity = Math.random() * 0.85 + 0.15;
-                    this.wiggleFreq = Math.random() * 0.015 + 0.004;
-                    this.wiggleAmp = Math.random() * 1.8 + 0.3;
-                }
-                
-                update() {
-                    this.y -= this.speedY;
-                    this.life -= this.decay;
-                    
-                    // Fire-like wiggle
-                    this.x += Math.sin(this.y * this.wiggleFreq) * 0.2 * this.wiggleAmp;
-                    
-                    // Wind repulsion from mouse
-                    if (mouse.active) {
-                        const dx = this.x - mouse.x;
-                        const dy = this.y - mouse.y;
-                        const dist = Math.sqrt(dx * dx + dy * dy);
-                        if (dist < 140) {
-                            const force = (140 - dist) / 140;
-                            this.x += (dx / dist) * force * 3.5;
-                            this.y += (dy / dist) * force * 1.5;
-                        }
-                    }
-                    
-                    if (this.life <= 0 || this.x < 0 || this.x > width || this.y < -15) {
-                        this.reset();
-                    }
-                }
-                
-                draw() {
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                    
-                    // Temperature color states
-                    let r, g, b;
-                    if (this.life > 0.7) {
-                        // Glowing white-yellow seam
-                        r = 254; g = 240; b = 138;
-                    } else if (this.life > 0.4) {
-                        // Molten copper orange
-                        r = 249; g = 115; b = 22;
-                    } else if (this.life > 0.18) {
-                        // Fire red
-                        r = 239; g = 68; b = 68;
-                    } else {
-                        // Ash gray
-                        r = 100; g = 116; b = 139;
-                    }
-                    
-                    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${this.life * this.opacity})`;
-                    ctx.shadowBlur = this.life > 0.4 ? this.size * 3.5 : 0;
-                    ctx.shadowColor = 'rgb(249, 115, 22)';
-                    ctx.fill();
-                    ctx.shadowBlur = 0; // reset shadow for performance
+    <!-- Lightweight interactive scripts -->
+    <script>
+        // Password toggler
+        function togglePasswordVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input && icon) {
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
                 }
             }
-            
-            for (let i = 0; i < maxParticles; i++) {
-                particles.push(new Spark());
-            }
-            
-            function animate() {
-                ctx.clearRect(0, 0, width, height);
-                for (let i = 0; i < particles.length; i++) {
-                    particles[i].update();
-                    particles[i].draw();
-                }
-                requestAnimationFrame(animate);
-            }
-            animate();
         }
 
-        // 3D Parallax Tilt effect on Card
+        // Gentle Tilt Parallax on Desktop (disabled if prefers-reduced-motion)
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         const card = document.querySelector('.glass-card');
-        if (card) {
+        
+        if (card && !prefersReducedMotion && window.innerWidth >= 1024) {
+            let ticking = false;
             document.addEventListener('mousemove', (e) => {
-                const cx = window.innerWidth / 2;
-                const cy = window.innerHeight / 2;
-                const dx = e.clientX - cx;
-                const dy = e.clientY - cy;
-                
-                // Max 6 degrees rotation
-                const rx = -(dy / cy) * 6.5;
-                const ry = (dx / cx) * 6.5;
-                
-                card.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
-                
-                // Shift spotlight reflection sheen
-                const sheen = card.querySelector('.card-sheen');
-                if (sheen) {
-                    const xPercent = (e.clientX / window.innerWidth) * 100;
-                    const yPercent = (e.clientY / window.innerHeight) * 100;
-                    sheen.style.background = `radial-gradient(circle at ${xPercent}% ${yPercent}%, rgba(255, 255, 255, 0.08) 0%, transparent 65%)`;
+                if (!ticking) {
+                    window.requestAnimationFrame(() => {
+                        const cx = window.innerWidth / 2;
+                        const cy = window.innerHeight / 2;
+                        const dx = e.clientX - cx;
+                        const dy = e.clientY - cy;
+                        
+                        const rx = -(dy / cy) * 3.5;
+                        const ry = (dx / cx) * 3.5;
+                        
+                        card.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
+                        
+                        const sheen = card.querySelector('.card-sheen');
+                        if (sheen) {
+                            const xPercent = (e.clientX / window.innerWidth) * 100;
+                            const yPercent = (e.clientY / window.innerHeight) * 100;
+                            sheen.style.background = `radial-gradient(circle at ${xPercent}% ${yPercent}%, rgba(255, 255, 255, 0.06) 0%, transparent 60%)`;
+                        }
+                        ticking = false;
+                    });
+                    ticking = true;
                 }
-            });
+            }, { passive: true });
             
-            // Soft return transition on mouse exit
             document.addEventListener('mouseleave', () => {
                 card.style.transform = 'rotateX(0deg) rotateY(0deg)';
-                card.style.transition = 'transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)';
+                card.style.transition = 'transform 0.4s ease-out';
             });
             
             document.addEventListener('mouseenter', () => {
                 card.style.transition = 'none';
-            });
-        }
-
-        // Micro-Sparks Button animation
-        const btn = document.getElementById('submit-btn');
-        if (btn) {
-            function spawnSparks(e) {
-                const rect = btn.getBoundingClientRect();
-                // Spawn 6 spark particles
-                for (let i = 0; i < 6; i++) {
-                    const spark = document.createElement('span');
-                    spark.className = 'button-spark';
-                    const size = Math.random() * 3.5 + 2.0;
-                    spark.style.width = `${size}px`;
-                    spark.style.height = `${size}px`;
-                    
-                    // Inside button coordinates
-                    const x = Math.random() * rect.width;
-                    const y = rect.height - Math.random() * 3;
-                    spark.style.left = `${x}px`;
-                    spark.style.top = `${y}px`;
-                    
-                    // Trajectory velocity
-                    const vx = (Math.random() - 0.5) * 55;
-                    const vy = -(Math.random() * 55 + 35);
-                    
-                    btn.appendChild(spark);
-                    
-                    spark.animate([
-                        { transform: 'translate(0, 0) scale(1)', opacity: 1 },
-                        { transform: `translate(${vx}px, ${vy}px) scale(0)`, opacity: 0 }
-                    ], {
-                        duration: Math.random() * 500 + 400,
-                        easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)'
-                    }).onfinish = () => spark.remove();
-                }
-            }
-            
-            // Spawn sparks continuously on mouse hover
-            let sparkInterval;
-            btn.addEventListener('mouseenter', (e) => {
-                spawnSparks(e);
-                sparkInterval = setInterval(() => spawnSparks(e), 250);
-            });
-            btn.addEventListener('mouseleave', () => {
-                clearInterval(sparkInterval);
-            });
-            
-            // Burst sparks on click
-            btn.addEventListener('click', (e) => {
-                for(let k = 0; k < 3; k++) {
-                    setTimeout(() => spawnSparks(e), k * 80);
-                }
             });
         }
     </script>

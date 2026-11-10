@@ -38,26 +38,20 @@ class ReporteController extends Controller
             ->take(5)
             ->get();
             
-        $recientesAnticipos = Anticipo::with('trabajador')->orderBy('fecha', 'desc')->take(5)->get();
-        $recientesPagos = Pago::with('trabajador')->orderBy('fecha', 'desc')->take(5)->get();
-        $recientesTransaccionesMineral = \App\Models\TransaccionMineral::with('bocamina')
+        // Optimized eager loading with specific columns
+        $recientesAnticipos = Anticipo::with('trabajador:id,nombre')->orderBy('fecha', 'desc')->take(5)->get();
+        $recientesPagos = Pago::with('trabajador:id,nombre')->orderBy('fecha', 'desc')->take(5)->get();
+        $recientesTransaccionesMineral = \App\Models\TransaccionMineral::with('bocamina:id,nombre')
             ->orderBy('fecha', 'desc')
             ->take(5)
             ->get();
 
-        // Chart data: Production (subtotal of pagos) by Bocamina
-        $produccionBocaminas = Bocamina::with(['trabajadores.pagos'])
-            ->get()
-            ->map(function($bocamina) {
-                $total = 0;
-                foreach ($bocamina->trabajadores as $trabajador) {
-                    $total += $trabajador->pagos->sum('subtotal');
-                }
-                return [
-                    'nombre' => $bocamina->nombre,
-                    'total' => $total
-                ];
-            });
+        // Chart data: Production (subtotal of pagos) by Bocamina - Optimized single indexed query
+        $produccionBocaminas = Bocamina::leftJoin('trabajadores', 'trabajadores.bocamina_id', '=', 'bocaminas.id')
+            ->leftJoin('pagos', 'pagos.trabajador_id', '=', 'trabajadores.id')
+            ->select('bocaminas.nombre', DB::raw('COALESCE(SUM(pagos.subtotal), 0) as total'))
+            ->groupBy('bocaminas.id', 'bocaminas.nombre')
+            ->get();
 
         // Chart data: Payments by month (last 6 months)
         $driverName = DB::connection()->getDriverName();
@@ -459,7 +453,7 @@ class ReporteController extends Controller
             }
         }
 
-        $query = \App\Models\TransaccionMineral::with('bocamina')->orderBy('fecha', 'desc');
+        $query = \App\Models\TransaccionMineral::with('bocamina')->orderBy('fecha', 'desc')->orderBy('id', 'desc');
 
         if ($fechaDesde) $query->where('fecha', '>=', $fechaDesde);
         if ($fechaHasta) $query->where('fecha', '<=', $fechaHasta);
@@ -471,23 +465,34 @@ class ReporteController extends Controller
         $bocaminaFiltro = $request->input('bocamina_id');
         if ($bocaminaFiltro) $query->where('bocamina_id', $bocaminaFiltro);
 
-        $transacciones = $query->get();
+        $totalsQuery = clone $query;
+        $totalVentas  = (float)((clone $totalsQuery)->where('tipo', 'venta')->sum('monto_total') ?: 0);
+        $totalCompras = (float)((clone $totalsQuery)->where('tipo', 'compra')->sum('monto_total') ?: 0);
+        $totalPesoNetoVentas  = (float)((clone $totalsQuery)->where('tipo', 'venta')->sum('peso_neto_seco') ?: 0);
+        $totalPesoNetoCompras = (float)((clone $totalsQuery)->where('tipo', 'compra')->sum('peso_neto_seco') ?: 0);
+        $totalCountVentas = (int)((clone $totalsQuery)->where('tipo', 'venta')->count());
+        $totalCountCompras = (int)((clone $totalsQuery)->where('tipo', 'compra')->count());
 
-        $totalVentas  = $transacciones->where('tipo', 'venta')->sum('monto_total');
-        $totalCompras = $transacciones->where('tipo', 'compra')->sum('monto_total');
-        $totalPesoNetoVentas  = $transacciones->where('tipo', 'venta')->sum('peso_neto_seco');
-        $totalPesoNetoCompras = $transacciones->where('tipo', 'compra')->sum('peso_neto_seco');
+        $transacciones = $query->paginate(25)->withQueryString();
 
-        $resumenBocaminas = $bocaminas->map(function ($b) use ($transacciones) {
-            $bTx = $transacciones->where('bocamina_id', $b->id);
+        $resumenBocaminas = $bocaminas->map(function ($b) use ($fechaDesde, $fechaHasta, $tipoFiltro) {
+            $bQuery = \App\Models\TransaccionMineral::where('bocamina_id', $b->id);
+            if ($fechaDesde) $bQuery->where('fecha', '>=', $fechaDesde);
+            if ($fechaHasta) $bQuery->where('fecha', '<=', $fechaHasta);
+            if ($tipoFiltro === 'venta')  $bQuery->where('tipo', 'venta');
+            if ($tipoFiltro === 'compra') $bQuery->where('tipo', 'compra');
+
+            $cnt = (clone $bQuery)->count();
+            if ($cnt === 0) return null;
+
             return [
                 'bocamina'        => $b,
-                'total_ventas'    => $bTx->where('tipo', 'venta')->sum('monto_total'),
-                'total_compras'   => $bTx->where('tipo', 'compra')->sum('monto_total'),
-                'peso_neto_ventas' => $bTx->where('tipo', 'venta')->sum('peso_neto_seco'),
-                'cantidad'        => $bTx->count(),
+                'total_ventas'    => (float)((clone $bQuery)->where('tipo', 'venta')->sum('monto_total') ?: 0),
+                'total_compras'   => (float)((clone $bQuery)->where('tipo', 'compra')->sum('monto_total') ?: 0),
+                'peso_neto_ventas' => (float)((clone $bQuery)->where('tipo', 'venta')->sum('peso_neto_seco') ?: 0),
+                'cantidad'        => $cnt,
             ];
-        })->filter(fn($r) => $r['cantidad'] > 0);
+        })->filter()->values();
 
         $meses = collect();
         for ($i = 5; $i >= 0; $i--) {
@@ -511,6 +516,8 @@ class ReporteController extends Controller
             'totalCompras',
             'totalPesoNetoVentas',
             'totalPesoNetoCompras',
+            'totalCountVentas',
+            'totalCountCompras',
             'resumenBocaminas',
             'filtroFecha',
             'fechaDesde',
@@ -520,4 +527,73 @@ class ReporteController extends Controller
             'meses'
         ));
     }
+
+    public function exportarExcel(Request $request)
+    {
+        $filtroFecha = $request->input('filtro_fecha', 'personalizado');
+        $fechaDesde  = $request->input('fecha_desde');
+        $fechaHasta  = $request->input('fecha_hasta');
+
+        if ($request->filled('filtro_fecha') && $filtroFecha !== 'personalizado') {
+            $hoy = Carbon::today();
+            if ($filtroFecha === 'esta_semana') {
+                $fechaDesde = $hoy->copy()->startOfWeek()->toDateString();
+                $fechaHasta = $hoy->copy()->endOfWeek()->toDateString();
+            } elseif ($filtroFecha === 'semana_pasada') {
+                $fechaDesde = $hoy->copy()->subWeek()->startOfWeek()->toDateString();
+                $fechaHasta = $hoy->copy()->endOfWeek()->toDateString();
+            } elseif ($filtroFecha === 'este_mes') {
+                $fechaDesde = $hoy->copy()->startOfMonth()->toDateString();
+                $fechaHasta = $hoy->copy()->endOfMonth()->toDateString();
+            } elseif ($filtroFecha === 'mes_pasado') {
+                $fechaDesde = $hoy->copy()->subMonth()->startOfMonth()->toDateString();
+                $fechaHasta = $hoy->copy()->subMonth()->endOfMonth()->toDateString();
+            }
+        }
+
+        $query = \App\Models\TransaccionMineral::with('bocamina')->orderBy('fecha', 'desc')->orderBy('id', 'desc');
+
+        if ($fechaDesde) $query->where('fecha', '>=', $fechaDesde);
+        if ($fechaHasta) $query->where('fecha', '<=', $fechaHasta);
+
+        $tipoFiltro = $request->input('tipo', 'todos');
+        if ($tipoFiltro === 'venta')  $query->where('tipo', 'venta');
+        if ($tipoFiltro === 'compra') $query->where('tipo', 'compra');
+
+        $bocaminaFiltro = $request->input('bocamina_id');
+        if ($bocaminaFiltro) $query->where('bocamina_id', $bocaminaFiltro);
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="Reporte_Comercializacion_' . date('Y-m-d_H-i') . '.csv"',
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0'
+        ];
+
+        return response()->stream(function() use ($query) {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF");
+            fputcsv($handle, ['ID', 'Fecha', 'Tipo', 'Cliente/Proveedor', 'Bocamina', 'Presentación', 'Cantidad', 'Peso Neto Seco (Kg)', 'Precio Unitario (Bs)', 'Monto Total (Bs)', 'Observación']);
+
+            foreach ($query->cursor() as $row) {
+                fputcsv($handle, [
+                    $row->tipo === 'compra' ? 'LOT-' . str_pad($row->id, 5, '0', STR_PAD_LEFT) : 'SLD-' . str_pad($row->id, 5, '0', STR_PAD_LEFT),
+                    $row->fecha ? $row->fecha->format('d/m/Y') : '',
+                    strtoupper($row->tipo),
+                    $row->cliente_proveedor,
+                    $row->bocamina->nombre ?? 'N/A',
+                    $row->presentacion === 'Otro' ? ($row->presentacion_otro ?: 'Otro') : $row->presentacion,
+                    number_format($row->cantidad, 2, '.', ''),
+                    number_format($row->peso_neto_seco, 2, '.', ''),
+                    number_format($row->precio_unidad, 2, '.', ''),
+                    number_format($row->monto_total, 2, '.', ''),
+                    $row->observacion ?? ''
+                ]);
+            }
+
+            fclose($handle);
+        }, 200, $headers);
+    }
 }
+

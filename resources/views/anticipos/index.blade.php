@@ -5,16 +5,34 @@
 @section('content')
 <div class="space-y-6">
 
-    <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-        <div>
-            <h1 class="text-3xl font-bold tracking-tight text-slate-100">Historial de Anticipos (Adelantos)</h1>
-            <p class="text-sm text-slate-400 mt-1">Historial de adelantos de dinero registrados. Se descuentan automáticamente en las liquidaciones semanales.</p>
-        </div>
-        <div class="no-print">
-            <button type="button" onclick="openModalAnticipo()" class="btn-vibrant-success px-5 py-2.5 rounded-xl font-bold text-sm flex items-center shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all cursor-pointer">
-                <i class="fa-solid fa-hand-holding-dollar mr-2"></i> Registrar Anticipo
-            </button>
+    <!-- Header with Contextual Background -->
+    <div class="relative overflow-hidden rounded-2xl glass-card border border-amber-500/30 p-6 shadow-2xl">
+        <div class="absolute inset-0 bg-cover bg-center opacity-20 mix-blend-luminosity pointer-events-none" style="background-image: url('{{ asset('images/mining/cash_advance.jpg') }}');"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/90 to-slate-950/80 pointer-events-none"></div>
+
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+            <div>
+                <div class="flex items-center gap-2 mb-1.5">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 pulse-dot mr-1.5"></span>
+                        CAJA & ADELANTOS
+                    </span>
+                    <span class="text-xs text-slate-500">•</span>
+                    <span class="text-[11px] text-slate-400 font-mono">Deducciones Semanales</span>
+                </div>
+                <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-100 flex items-center gap-3">
+                    <span class="w-11 h-11 rounded-xl flex items-center justify-center text-amber-400 bg-amber-500/20 border border-amber-500/30 flex-shrink-0 shadow-md">
+                        <i class="fa-solid fa-hand-holding-dollar text-lg"></i>
+                    </span>
+                    Historial de Anticipos
+                </h1>
+                <p class="text-xs md:text-sm text-slate-400 mt-1">Historial de adelantos de dinero registrados. Se descuentan automáticamente en las liquidaciones semanales.</p>
+            </div>
+            <div class="no-print">
+                <button type="button" onclick="openModalAnticipo()" class="btn-gold px-5 py-2.5 rounded-xl font-bold text-sm flex items-center text-slate-950 transition-all cursor-pointer shadow-lg shadow-amber-500/20 hover:scale-105 active:scale-95">
+                    <i class="fa-solid fa-plus mr-2"></i> Registrar Anticipo
+                </button>
+            </div>
         </div>
     </div>
 
@@ -25,7 +43,7 @@
                 <label for="bocamina_id_filter" class="block text-xs font-semibold uppercase tracking-wider text-slate-400">Bocamina</label>
                 <select name="bocamina_id" id="bocamina_id_filter" 
                         onchange="submitFilterRealTime(this.form)"
-                        class="mt-1 block w-full px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-lg text-slate-100 focus:outline-none focus:ring-1 focus:ring-rose-500 focus:border-rose-500 text-sm">
+                        class="mt-1 block w-full px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-lg text-slate-100 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-sm">
                     <option value="">Todas las Bocaminas</option>
                     @foreach($bocaminas as $bocamina)
                         <option value="{{ $bocamina->id }}" {{ request('bocamina_id') == $bocamina->id ? 'selected' : '' }}>{{ $bocamina->nombre }}</option>
@@ -37,7 +55,7 @@
                 <label for="trabajador_id_filter" class="block text-xs font-semibold uppercase tracking-wider text-slate-400">Trabajador / Contratista</label>
                 <select name="trabajador_id" id="trabajador_id_filter" 
                         onchange="submitFilterRealTime(this.form)"
-                        class="mt-1 block w-full px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-lg text-slate-100 focus:outline-none focus:ring-1 focus:ring-rose-500 focus:border-rose-500 text-sm">
+                        class="mt-1 block w-full px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-lg text-slate-100 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-sm">
                     <option value="">Todos los Trabajadores / Contratistas</option>
                     @foreach($trabajadores as $trabajador)
                         <option value="{{ $trabajador->id }}" {{ request('trabajador_id') == $trabajador->id ? 'selected' : '' }}>{{ $trabajador->nombre }}</option>
@@ -49,7 +67,7 @@
                 <label for="estado_filter" class="block text-xs font-semibold uppercase tracking-wider text-slate-400">Estado de Saldo</label>
                 <select name="estado" id="estado_filter" 
                         onchange="submitFilterRealTime(this.form)"
-                        class="mt-1 block w-full px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-lg text-slate-100 focus:outline-none focus:ring-1 focus:ring-rose-500 focus:border-rose-500 text-sm">
+                        class="mt-1 block w-full px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-lg text-slate-100 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-sm">
                     <option value="">Todos los Anticipos</option>
                     <option value="pendiente" {{ request('estado') === 'pendiente' ? 'selected' : '' }}>Con Saldo Pendiente</option>
                     <option value="pagado" {{ request('estado') === 'pagado' ? 'selected' : '' }}>Totalmente Descontados</option>
@@ -57,7 +75,7 @@
             </div>
 
             <div class="flex space-x-2">
-                <button type="button" onclick="limpiarFiltrosAnticipos()" class="btn-vibrant-warm flex-1 inline-flex items-center justify-center px-4 py-2 text-sm font-bold rounded-lg shadow-lg" title="Limpiar Filtros">
+                <button type="button" onclick="limpiarFiltrosAnticipos()" class="btn-secondary flex-1 inline-flex items-center justify-center px-4 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl cursor-pointer" title="Limpiar Filtros">
                     <i class="fa-solid fa-rotate-left mr-2"></i> Limpiar
                 </button>
             </div>
@@ -65,7 +83,7 @@
     </div>
 
     <!-- Table Section -->
-    <div id="table-container" class="glass-card rounded-xl overflow-hidden">
+    <div id="table-container" class="glass-card shimmer-card rounded-2xl overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-800">
                 <thead>
@@ -82,8 +100,8 @@
                 </thead>
                 <tbody class="divide-y divide-slate-800/40 text-sm text-slate-300">
                     @forelse($anticipos as $anticipo)
-                        <tr class="hover:bg-slate-900/10 transition duration-150">
-                            <td class="px-6 py-4 font-mono text-xs">{{ $anticipo->id }}</td>
+                        <tr class="interactive-table-row">
+                            <td class="px-6 py-4 font-mono text-xs font-bold text-sky-400">#{{ $anticipo->id }}</td>
                             <td class="px-6 py-4 font-mono text-xs">
                                 {{ $anticipo->fecha->format('d/m/Y') }}
                                 <span class="text-[10px] text-slate-500 block">{{ $anticipo->created_at->format('H:i:s') }}</span>
@@ -103,9 +121,10 @@
                             </td>
                             <td class="px-6 py-4 text-xs">{{ $anticipo->trabajador->bocamina ? $anticipo->trabajador->bocamina->nombre : 'Sin Bocamina' }}</td>
                             <td class="px-6 py-4 font-mono font-medium text-slate-200">Bs. {{ number_format($anticipo->monto, 2) }}</td>
-                            <td class="px-6 py-4 font-mono font-bold {{ $anticipo->saldo > 0 ? 'text-rose-450' : 'text-slate-400' }}">Bs. {{ number_format($anticipo->saldo, 2) }}</td>
+                            <td class="px-6 py-4 font-mono font-bold {{ $anticipo->saldo > 0 ? 'text-rose-400' : 'text-slate-400' }}">Bs. {{ number_format($anticipo->saldo, 2) }}</td>
                             <td class="px-6 py-4">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $anticipo->saldo == 0 ? 'bg-slate-800 text-slate-400 border border-slate-700' : 'bg-red-500/10 text-red-400 border border-red-500/25' }}">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $anticipo->saldo == 0 ? 'bg-slate-800 text-slate-400 border border-slate-700' : 'bg-rose-500/15 text-rose-400 border border-rose-500/30' }}">
+                                    <span class="w-1.5 h-1.5 rounded-full mr-1.5 {{ $anticipo->saldo == 0 ? 'bg-slate-500' : 'bg-rose-400 pulse-dot' }}"></span>
                                     {{ $anticipo->saldo == 0 ? 'Descontado' : 'Pendiente' }}
                                 </span>
                             </td>
@@ -140,13 +159,16 @@
 
     <!-- Modal Nuevo Anticipo -->
     <div id="modalAnticipo" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm modal-hide transition-all duration-300" style="display: none; align-items: center; justify-content: center;">
-        <div class="glass-card w-full max-w-lg rounded-2xl border border-slate-700/60 shadow-2xl overflow-hidden transform transition-all duration-300 mx-auto my-auto">
-            <div class="bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-4 flex items-center justify-between">
-                <h3 class="text-lg font-bold text-white flex items-center">
-                    <i class="fa-solid fa-hand-holding-dollar mr-2"></i> Registrar Nuevo Anticipo
+        <div class="mining-card w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden transform transition-all duration-300 mx-auto my-auto border border-slate-800">
+            <div class="bg-slate-900/80 px-6 py-4 flex items-center justify-between border-b border-slate-800">
+                <h3 class="text-base font-extrabold text-slate-100 flex items-center gap-2.5">
+                    <span class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-hand-holding-dollar"></i>
+                    </span>
+                    Registrar Nuevo Anticipo
                 </h3>
-                <button type="button" onclick="closeModalAnticipo()" class="text-white/70 hover:text-white transition-colors">
-                    <i class="fa-solid fa-xmark text-xl"></i>
+                <button type="button" onclick="closeModalAnticipo()" class="text-slate-400 hover:text-slate-200 transition-colors cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
             
@@ -154,8 +176,8 @@
                 @csrf
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Trabajador <span class="text-rose-500">*</span></label>
-                        <select name="trabajador_id" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-200 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors">
+                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Trabajador <span class="text-amber-400">*</span></label>
+                        <select name="trabajador_id" required class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-2.5 text-slate-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors text-sm">
                             <option value="">Seleccione un trabajador...</option>
                             @foreach($trabajadores as $t)
                                 <option value="{{ $t->id }}">{{ $t->nombre }} {{ $t->bocamina ? '('.$t->bocamina->nombre.')' : '' }}</option>
@@ -165,14 +187,14 @@
                     
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Fecha <span class="text-rose-500">*</span></label>
-                            <input type="date" name="fecha" required value="{{ date('Y-m-d') }}" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-200 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors">
+                            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Fecha <span class="text-amber-400">*</span></label>
+                            <input type="date" name="fecha" required value="{{ date('Y-m-d') }}" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-2.5 text-slate-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors text-sm font-mono">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Monto (Bs.) <span class="text-rose-500">*</span></label>
+                            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Monto (Bs.) <span class="text-amber-400">*</span></label>
                             <div class="relative">
-                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500 font-bold">Bs.</span>
-                                <input type="number" step="0.01" min="1" name="monto" required placeholder="0.00" class="w-full pl-10 bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-200 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors font-mono">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500 font-bold text-sm">Bs.</span>
+                                <input type="number" step="0.01" min="1" name="monto" required placeholder="0.00" class="w-full pl-10 bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-2.5 text-slate-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors font-mono tabular-nums text-sm">
                             </div>
                         </div>
                     </div>
@@ -180,22 +202,22 @@
                     <div>
                         <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Días de Trabajo que debe (Opcional)</label>
                         <div class="relative">
-                            <input type="number" step="0.5" min="0" name="dias_debe" placeholder="Ej. 2 o 3 días" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-200 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors font-mono">
+                            <input type="number" step="0.5" min="0" name="dias_debe" placeholder="Ej. 2 o 3 días" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-2.5 text-slate-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors font-mono tabular-nums text-sm">
                             <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 text-xs font-semibold">días</span>
                         </div>
                     </div>
                     
                     <div>
                         <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Observación (Opcional)</label>
-                        <textarea name="observacion" rows="2" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-200 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors" placeholder="Motivo del adelanto..."></textarea>
+                        <textarea name="observacion" rows="2" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-2.5 text-slate-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors text-sm" placeholder="Motivo del adelanto..."></textarea>
                     </div>
                 </div>
                 
                 <div class="mt-6 pt-5 border-t border-slate-800 flex justify-end space-x-3">
-                    <button type="button" onclick="closeModalAnticipo()" class="px-5 py-2.5 rounded-xl font-bold text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors">
+                    <button type="button" onclick="closeModalAnticipo()" class="btn-secondary px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider cursor-pointer">
                         Cancelar
                     </button>
-                    <button type="submit" class="btn-vibrant-success px-6 py-2.5 rounded-xl font-bold text-sm flex items-center shadow-lg">
+                    <button type="submit" class="btn-gold px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center cursor-pointer">
                         <i class="fa-solid fa-save mr-2"></i> Guardar Anticipo
                     </button>
                 </div>

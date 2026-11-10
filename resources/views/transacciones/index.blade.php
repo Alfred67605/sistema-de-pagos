@@ -82,11 +82,11 @@
     white-space: nowrap;
 }
 .m-tab:hover { color: var(--m-text); background: rgba(255,255,255,0.05); }
-.m-tab-caja.active    { background: linear-gradient(135deg,#3b82f6,#1d4ed8); color:#fff; box-shadow:0 4px 12px rgba(59,130,246,0.35); }
-.m-tab-compras.active { background: linear-gradient(135deg,#f59e0b,#d97706); color:#fff; box-shadow:0 4px 12px rgba(245,158,11,0.35); }
-.m-tab-ventas.active  { background: linear-gradient(135deg,#10b981,#059669); color:#fff; box-shadow:0 4px 12px rgba(16,185,129,0.35); }
-.m-tab-stock.active   { background: linear-gradient(135deg,#06b6d4,#0891b2); color:#fff; box-shadow:0 4px 12px rgba(6,182,212,0.35); }
-.m-tab-reportes.active{ background: linear-gradient(135deg,#6366f1,#4f46e5); color:#fff; box-shadow:0 4px 12px rgba(99,102,241,0.35); }
+.m-tab-caja.active    { background: rgba(59,130,246,0.15); color: #93c5fd; border: 1px solid rgba(59,130,246,0.35); box-shadow: 0 2px 10px rgba(59,130,246,0.15); }
+.m-tab-compras.active { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.35); box-shadow: 0 2px 10px rgba(245,158,11,0.15); }
+.m-tab-ventas.active  { background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.35); box-shadow: 0 2px 10px rgba(16,185,129,0.15); }
+.m-tab-stock.active   { background: rgba(6,182,212,0.15); color: #67e8f9; border: 1px solid rgba(6,182,212,0.35); box-shadow: 0 2px 10px rgba(6,182,212,0.15); }
+.m-tab-reportes.active{ background: rgba(168,85,247,0.15); color: #d8b4fe; border: 1px solid rgba(168,85,247,0.35); box-shadow: 0 2px 10px rgba(168,85,247,0.15); }
 
 /* ─── Table Premium ─── */
 .m-table { width:100%; border-collapse:collapse; font-size:12px; }
@@ -311,8 +311,9 @@
 .light-theme .premium-filter-input option { background:#fff; color:#0f172a; }
 </style>
 
-<div class="m-container erp-container space-y-5"
-     x-data="{
+<script>
+function transaccionesMineralesData() {
+    return {
         activeTab: '{{ request('tab', 'compras') }}',
         openCompraModal: false,
         openVentaModal: false,
@@ -385,6 +386,7 @@
         ventaTotal: 0,
         loteInfo: null,
         fichaLote: null,
+        initialLotes: @json($lotesDisponibles),
 
         // Methods Compra
         initCompra() {
@@ -645,15 +647,58 @@
             fetch('/transacciones-minerales/' + id)
                 .then(r => r.json())
                 .then(data => { this.fichaLote = data; this.openDetailModal = true; });
+        },
+
+        searchServerLotes(index, term) {
+            const selectEl = document.getElementById('lote-select-' + index);
+            if (!term || term.trim().length === 0) {
+                this.ventaLotes[index].customLotes = null;
+                if (selectEl) {
+                    this.renderLoteOptions(selectEl, this.initialLotes, this.ventaLotes[index].lote_id);
+                }
+                return;
+            }
+            fetch('/transacciones-minerales/buscar-lotes?q=' + encodeURIComponent(term.trim()))
+                .then(r => r.json())
+                .then(res => {
+                    const list = res.data || res || [];
+                    this.ventaLotes[index].customLotes = list;
+                    if (selectEl) {
+                        this.renderLoteOptions(selectEl, list, this.ventaLotes[index].lote_id);
+                    }
+                })
+                .catch(err => {
+                    console.error('Error buscando lotes en servidor:', err);
+                });
+        },
+
+        renderLoteOptions(selectEl, lotes, selectedId) {
+            let html = '<option value="">— Seleccionar Lote Disponible —</option>';
+            lotes.forEach(lot => {
+                const idStr = String(lot.id).padStart(5, '0');
+                const sel = (lot.id == selectedId) ? 'selected' : '';
+                const pres = lot.presentacion ? ' (' + (lot.presentacion === 'Otro' ? (lot.presentacion_otro || 'Otro') : lot.presentacion) + ')' : '';
+                html += `<option value="${lot.id}" ${sel}>LOT-${idStr} · ${lot.cliente_proveedor} · Stock: ${parseFloat(lot.peso_disponible).toFixed(2)} Kg${pres}</option>`;
+            });
+            selectEl.innerHTML = html;
+        },
+
+        init() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('create') === '1' || urlParams.get('open_modal') === '1') {
+                if (this.activeTab === 'compras') this.initCompra();
+                if (this.activeTab === 'ventas') this.initVenta();
+            }
         }
-     }"
-     x-init="
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('create') === '1' || urlParams.get('open_modal') === '1') {
-            if (activeTab === 'compras') initCompra();
-            if (activeTab === 'ventas') initVenta();
-        }
-     ">
+    };
+}
+window.transaccionesMineralesData = transaccionesMineralesData;
+document.addEventListener('alpine:init', () => {
+    Alpine.data('transaccionesMineralesData', transaccionesMineralesData);
+});
+</script>
+
+<div class="m-container erp-container space-y-5" x-data="transaccionesMineralesData()">
 
     {{-- ══════════ HEADER PREMIUM ══════════ --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -850,7 +895,7 @@
                             <p class="text-[10px] text-slate-500">Historial completo de Recargas, Compras y Ventas</p>
                         </div>
                     </div>
-                    <span class="m-badge m-badge-indigo">{{ count($movimientosCaja) }} registros</span>
+                    <span class="m-badge m-badge-indigo">{{ number_format($totalCajaMovements) }} movimientos (Pág. {{ $cajaPage }} de {{ $cajaLastPage }})</span>
                 </div>
 
                 <div class="px-5 py-4 border-b border-slate-800/50 grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -891,7 +936,7 @@
                             <tbody>
                                 @foreach($movimientosCaja as $i => $mov)
                                 <tr x-show="matchesFilter('{{ str_replace("'", "\'", $mov->glosa) }}','{{ number_format($mov->monto,2) }}','{{ $mov->tipo }}','{{ $mov->fecha->format('Y-m-d') }}')">
-                                    <td class="text-center font-mono text-slate-600 font-bold text-[10px]">{{ str_pad(count($movimientosCaja) - $i, 2, '0', STR_PAD_LEFT) }}</td>
+                                    <td class="text-center font-mono text-slate-600 font-bold text-[10px]">{{ str_pad($totalCajaMovements - (($cajaPage - 1) * 50) - $i, 2, '0', STR_PAD_LEFT) }}</td>
                                     <td class="font-mono font-bold text-slate-300 whitespace-nowrap text-xs">{{ $mov->fecha->format('d/m/Y') }}</td>
                                     <td class="text-center">
                                         @if($mov->tipo === 'recarga')
@@ -926,6 +971,28 @@
                             </tbody>
                         </table>
                     </div>
+
+                    @if($cajaLastPage > 1)
+                        <div class="px-5 py-3 border-t border-slate-800/60 bg-slate-900/40 flex flex-col sm:flex-row items-center justify-between gap-3">
+                            <div class="text-[11px] text-slate-400">
+                                Mostrando página <span class="font-bold text-slate-200">{{ $cajaPage }}</span> de <span class="font-bold text-slate-200">{{ $cajaLastPage }}</span> ({{ number_format($totalCajaMovements) }} movimientos totales)
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                @if($cajaPage > 1)
+                                    <a href="{{ request()->fullUrlWithQuery(['tab' => 'caja', 'caja_page' => $cajaPage - 1]) }}"
+                                       class="m-btn m-btn-ghost text-xs px-3 py-1.5 border border-slate-700/60">
+                                        <i class="fa-solid fa-chevron-left mr-1"></i> Anterior
+                                    </a>
+                                @endif
+                                @if($cajaPage < $cajaLastPage)
+                                    <a href="{{ request()->fullUrlWithQuery(['tab' => 'caja', 'caja_page' => $cajaPage + 1]) }}"
+                                       class="m-btn m-btn-ghost text-xs px-3 py-1.5 border border-slate-700/60">
+                                        Siguiente <i class="fa-solid fa-chevron-right ml-1"></i>
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
                 @endif
             </div>
         </div>
@@ -947,7 +1014,7 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span class="m-badge m-badge-amber">{{ count($transacciones->where('tipo', 'compra')) }} lotes</span>
+                    <span class="m-badge m-badge-amber">{{ number_format($totalComprasCount) }} lotes (Pág. {{ $transacciones->currentPage() }} de {{ $transacciones->lastPage() }})</span>
                     <button @click="initCompra()" type="button" class="m-btn m-btn-amber">
                         <i class="fa-solid fa-plus text-xs"></i> Nueva Compra
                     </button>
@@ -1039,6 +1106,11 @@
                     </tbody>
                 </table>
             </div>
+            @if($transacciones->hasPages())
+                <div class="px-5 py-3 border-t border-slate-800/60 bg-slate-900/40">
+                    {{ $transacciones->appends(array_merge(request()->query(), ['tab' => 'compras']))->links() }}
+                </div>
+            @endif
         </div>
     </div>
 
@@ -1058,7 +1130,7 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span class="m-badge m-badge-emerald">{{ count($transacciones->where('tipo', 'venta')) }} despachos</span>
+                    <span class="m-badge m-badge-emerald">{{ number_format($totalVentasCount) }} despachos (Pág. {{ $transacciones->currentPage() }} de {{ $transacciones->lastPage() }})</span>
                     <button @click="initVenta()" type="button" class="m-btn m-btn-emerald">
                         <i class="fa-solid fa-paper-plane text-xs"></i> Registrar Venta
                     </button>
@@ -1137,6 +1209,11 @@
                     </tbody>
                 </table>
             </div>
+            @if($transacciones->hasPages())
+                <div class="px-5 py-3 border-t border-slate-800/60 bg-slate-900/40">
+                    {{ $transacciones->appends(array_merge(request()->query(), ['tab' => 'ventas']))->links() }}
+                </div>
+            @endif
         </div>
     </div>
 
@@ -1202,7 +1279,7 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span class="m-badge m-badge-cyan">{{ count($todosLosLotes) }} lotes</span>
+                    <span class="m-badge m-badge-cyan">{{ number_format($todosLosLotes->total()) }} lotes (Pág. {{ $todosLosLotes->currentPage() }} de {{ $todosLosLotes->lastPage() }})</span>
                     <button @click="initCompra()" type="button" class="m-btn m-btn-amber">
                         <i class="fa-solid fa-plus text-xs"></i> Nueva Compra
                     </button>
@@ -1289,6 +1366,11 @@
                     </tbody>
                 </table>
             </div>
+            @if($todosLosLotes->hasPages())
+                <div class="px-5 py-3 border-t border-slate-800/60 bg-slate-900/40">
+                    {{ $todosLosLotes->appends(array_merge(request()->query(), ['tab' => 'stock']))->links() }}
+                </div>
+            @endif
         </div>
     </div>
 
@@ -1396,9 +1478,9 @@
 
         {{-- Resumen Financiero --}}
         @php
-            $rptCompras = $transacciones->where('tipo', 'compra')->sum('monto_total');
-            $rptVentas  = $transacciones->where('tipo', 'venta')->sum('monto_total');
-            $rptBalance = $rptVentas - $rptCompras;
+            $rptCompras = $total_egresos ?? 0;
+            $rptVentas  = $total_ingresos ?? 0;
+            $rptBalance = $balance ?? 0;
         @endphp
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div class="m-card p-5 border border-amber-500/15">
@@ -1424,7 +1506,7 @@
                     </div>
                     <div>
                         <h3 class="text-sm font-bold text-slate-200">Reporte Filtrado de Operaciones</h3>
-                        <p class="text-[10px] text-slate-500">{{ count($transacciones) }} registros encontrados</p>
+                        <p class="text-[10px] text-slate-500">{{ number_format($transacciones->total()) }} registros encontrados (Pág. {{ $transacciones->currentPage() }} de {{ $transacciones->lastPage() }})</p>
                     </div>
                 </div>
                 <div class="flex gap-2">
@@ -1485,6 +1567,11 @@
                     </tbody>
                 </table>
             </div>
+            @if($transacciones->hasPages())
+                <div class="px-5 py-3 border-t border-slate-800/60 bg-slate-900/40">
+                    {{ $transacciones->appends(array_merge(request()->query(), ['tab' => 'reportes']))->links() }}
+                </div>
+            @endif
         </div>
     </div>
 
@@ -1910,15 +1997,27 @@
                                         </div>
 
                                         <div class="p-4 space-y-3">
-                                            {{-- Selector de Lote --}}
-                                            <div>
-                                                <label class="m-label text-[9px]">Seleccionar Lote con Stock Disponible <span class="text-rose-400">*</span></label>
-                                                <select :name="'lotes['+index+'][lote_id]'" x-model="item.lote_id"
+                                            {{-- Selector de Lote con Búsqueda en Servidor --}}
+                                            <div class="space-y-1.5">
+                                                <div class="flex items-center justify-between">
+                                                    <label class="m-label text-[9px] mb-0">Seleccionar Lote con Stock Disponible <span class="text-rose-400">*</span></label>
+                                                    <span class="text-[9px] text-amber-400 font-mono" x-show="item.customLotes && item.customLotes.length > 0">
+                                                        <span x-text="item.customLotes.length"></span> encontrados
+                                                    </span>
+                                                </div>
+                                                <div class="relative">
+                                                    <input type="text"
+                                                           placeholder="🔍 Buscar lote por código (ej. 500, LOT-00500) o cliente/proveedor..."
+                                                           @input.debounce.300ms="searchServerLotes(index, $event.target.value)"
+                                                           class="m-input text-xs !pl-8 mb-1 bg-slate-900/90 border-slate-700/80 focus:border-amber-500">
+                                                    <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-slate-500 text-xs"></i>
+                                                </div>
+                                                <select :id="'lote-select-' + index" :name="'lotes['+index+'][lote_id]'" x-model="item.lote_id"
                                                         @change="onVentaLoteSelected(index)" class="m-input text-xs" required>
                                                     <option value="">— Seleccionar Lote Disponible —</option>
                                                     @foreach($lotesDisponibles as $lot)
                                                         <option value="{{ $lot->id }}">
-                                                            LOT-{{ str_pad($lot->id, 5, '0', STR_PAD_LEFT) }} · {{ $lot->cliente_proveedor }} · Stock: {{ number_format($lot->peso_disponible, 2) }} Kg
+                                                            LOT-{{ str_pad($lot->id, 5, '0', STR_PAD_LEFT) }} · {{ $lot->cliente_proveedor }} · Stock: {{ number_format($lot->peso_disponible, 2) }} Kg ({{ $lot->presentacion === 'Otro' ? ($lot->presentacion_otro ?: 'Otro') : $lot->presentacion }})
                                                         </option>
                                                     @endforeach
                                                 </select>
@@ -2438,36 +2537,8 @@ window.doExportPDF = function() {
 
 // ─── Excel Export ─────────────────────────────────────────────────────────────
 window.doExportExcel = function() {
-    const tableContainer = document.getElementById('report-output');
-    if (!tableContainer) return;
-    const table = tableContainer.querySelector('table');
-    if (!table) return;
-
-    // Build data matrix using textContent so hidden CSS doesn't create blank sheets
-    const aoa = [];
-    const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.replace(/\s+/g, ' ').trim());
-    aoa.push(headers);
-
-    Array.from(table.querySelectorAll('tbody tr')).forEach(tr => {
-        const rowData = Array.from(tr.querySelectorAll('td')).map(td => td.textContent.replace(/\s+/g, ' ').trim());
-        if (rowData.length > 0) {
-            aoa.push(rowData);
-        }
-    });
-
-    const filename = 'Reporte_Minerales_' + new Date().toLocaleDateString('es-BO').replace(/\//g,'-') + '.csv';
-
-    // Direct, infallible CSV export with UTF-8 BOM so Excel opens it with full formatting & zero blanks
-    const csvLines = aoa.map(row => row.map(cell => `"${cell.replace(/"/g, '""')}"`).join(","));
-    const csvContent = "\uFEFF" + csvLines.join("\r\n");
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", filename);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const params = new URLSearchParams(window.location.search);
+    window.location.href = "{{ route('transacciones-minerales.exportar-excel') }}?" + params.toString();
 };
 </script>
 @endpush

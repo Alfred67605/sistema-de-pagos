@@ -43,11 +43,16 @@
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
         <div>
-            <h1 class="text-3xl font-bold tracking-tight text-slate-100">Contratos de Personal</h1>
-            <p class="text-sm text-slate-400 mt-1">Asigna trabajadores a frentes de trabajo (Bocaminas), define su tipo de contrato y acuerda su tarifa habitual.</p>
+            <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-100 flex items-center gap-3">
+                <span class="w-10 h-10 rounded-xl flex items-center justify-center text-amber-400 bg-amber-500/10 border border-amber-500/20 flex-shrink-0">
+                    <i class="fa-solid fa-file-contract text-base"></i>
+                </span>
+                Contratos de Personal
+            </h1>
+            <p class="text-xs md:text-sm text-slate-400 mt-1">Asigna trabajadores a frentes de trabajo (Bocaminas), define su tipo de contrato y acuerda su tarifa habitual.</p>
         </div>
-        <button @click="openCreate()" class="inline-flex items-center justify-center px-4 py-2.5 rounded-lg bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-sm font-bold text-white transition duration-150 shadow-lg shadow-sky-500/10 self-start">
-            <i class="fa-solid fa-file-contract mr-2"></i> Nueva Asignación
+        <button @click="openCreate()" class="btn-gold inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-bold text-slate-950 self-start cursor-pointer">
+            <i class="fa-solid fa-plus mr-2"></i> Nueva Asignación
         </button>
     </div>
 
@@ -58,7 +63,7 @@
                 <label for="buscar" class="block text-xs font-semibold uppercase tracking-wider text-slate-400">Buscar por Trabajador</label>
                 <input type="text" name="buscar" id="buscar" value="{{ request('buscar') }}" 
                        oninput="clearTimeout(searchDebounceTimeout); searchDebounceTimeout = setTimeout(() => submitFilterRealTime(this.form), 250)"
-                       class="mt-1 block w-full px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 text-sm"
+                       class="mt-1 block w-full px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-sm"
                        placeholder="Ej. Juan Pérez...">
             </div>
 
@@ -66,7 +71,7 @@
                 <label for="bocamina_id_filter" class="block text-xs font-semibold uppercase tracking-wider text-slate-400">Filtrar por Bocamina</label>
                 <select name="bocamina_id" id="bocamina_id_filter" 
                         onchange="submitFilterRealTime(this.form)"
-                        class="mt-1 block w-full px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-lg text-slate-100 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 text-sm">
+                        class="mt-1 block w-full px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-lg text-slate-100 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-sm">
                     <option value="">Todas las Bocaminas</option>
                     @foreach($bocaminas as $bocamina)
                         <option value="{{ $bocamina->id }}" {{ request('bocamina_id') == $bocamina->id ? 'selected' : '' }}>{{ $bocamina->nombre }}</option>
@@ -78,7 +83,7 @@
                 <label for="estado_filter" class="block text-xs font-semibold uppercase tracking-wider text-slate-400">Estado</label>
                 <select name="estado" id="estado_filter" 
                         onchange="submitFilterRealTime(this.form)"
-                        class="mt-1 block w-full px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-lg text-slate-100 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 text-sm">
+                        class="mt-1 block w-full px-3 py-2 bg-slate-900 border border-slate-700/80 rounded-lg text-slate-100 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-sm">
                     <option value="">Todos los Estados</option>
                     <option value="activo" {{ request('estado') === 'activo' ? 'selected' : '' }}>Activos</option>
                     <option value="inactivo" {{ request('estado') === 'inactivo' ? 'selected' : '' }}>Inactivos</option>
@@ -86,7 +91,7 @@
             </div>
 
             <div class="flex space-x-2">
-                <button type="button" onclick="document.getElementById('buscar').value = ''; document.getElementById('bocamina_id_filter').value = ''; document.getElementById('estado_filter').value = ''; submitFilterRealTime(this.form);" class="btn-vibrant-warm flex-1 inline-flex items-center justify-center px-4 py-2 text-sm font-bold rounded-lg shadow-lg" title="Limpiar Filtros">
+                <button type="button" onclick="document.getElementById('buscar').value = ''; document.getElementById('bocamina_id_filter').value = ''; document.getElementById('estado_filter').value = ''; submitFilterRealTime(this.form);" class="btn-secondary flex-1 inline-flex items-center justify-center px-4 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl cursor-pointer" title="Limpiar Filtros">
                     <i class="fa-solid fa-rotate-left mr-2"></i> Limpiar
                 </button>
             </div>
@@ -94,7 +99,7 @@
     </div>
 
     <!-- Table Section -->
-    <div id="table-container" class="glass-card rounded-xl overflow-hidden">
+    <div id="table-container" class="glass-card shimmer-card rounded-2xl overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-800">
                 <thead>
@@ -110,7 +115,7 @@
                 </thead>
                 <tbody class="divide-y divide-slate-800/40 text-sm text-slate-300">
                     @forelse($contratos as $contrato)
-                        <tr class="hover:bg-slate-900/10 transition duration-150">
+                        <tr class="interactive-table-row">
                             <td class="px-6 py-4">
                                 <div class="font-medium text-slate-100">{{ $contrato->trabajador->nombre }}</div>
                                 <div class="text-xs text-slate-450 font-mono mt-0.5">CI: {{ $contrato->trabajador->ci ?: '-' }}</div>
@@ -133,6 +138,7 @@
                             </td>
                             <td class="px-6 py-4 text-center">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $contrato->estado === 'activo' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/25' : 'bg-slate-800 text-slate-450 border border-slate-700' }}">
+                                    <span class="w-1.5 h-1.5 rounded-full mr-1.5 {{ $contrato->estado === 'activo' ? 'bg-emerald-400 pulse-dot' : 'bg-slate-500' }}"></span>
                                     {{ $contrato->estado === 'activo' ? 'Activo' : 'Inactivo' }}
                                 </span>
                             </td>

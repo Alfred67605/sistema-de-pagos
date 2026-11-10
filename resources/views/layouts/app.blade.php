@@ -10,13 +10,15 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Sistema de Pagos Mineros') - SCPM</title>
+    <title>@yield('title', 'Sistema de Gestión Minera') - SCPM</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="icon" type="image/x-icon" href="/app.ico">
+    <link rel="manifest" href="/manifest.webmanifest">
     
-    <!-- Google Fonts -->
+    <!-- Google Fonts: Outfit & Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -24,10 +26,8 @@
     <!-- Tailwind CSS (Vite) -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
-    <!-- Chart.js -->
+    <!-- Chart.js & AlpineJS -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- AlpineJS -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <!-- SheetJS (XLSX) & html2pdf -->
@@ -35,1788 +35,992 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
+        /* === SISTEMA DE DISEÑO PREMIUM MINERO (DARK GRAPHITE & GOLD AMBER) === */
         :root {
-            --bg-main: #020617;
-            --bg-card: rgba(15, 23, 42, 0.45);
-            --border-card: rgba(255, 255, 255, 0.06);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --bg-sidebar: rgba(15, 23, 42, 0.8);
-            --border-sidebar: rgba(255, 255, 255, 0.06);
-            --bg-header: rgba(15, 23, 42, 0.7);
-            --text-nav: #94a3b8;
-            --text-nav-hover: #f8fafc;
-            --bg-input: rgba(15, 23, 42, 0.45);
-            --border-input: rgba(255, 255, 255, 0.08);
-            --text-input: #f8fafc;
-            --canvas-opacity: 0.4;
-        }
-
-        [x-cloak] {
-            display: none !important;
-        }
-
-        /* Light theme autofill overrides */
-        .light-theme input:-webkit-autofill,
-        .light-theme input:-webkit-autofill:hover, 
-        .light-theme input:-webkit-autofill:focus,
-        .light-theme textarea:-webkit-autofill,
-        .light-theme textarea:-webkit-autofill:hover,
-        .light-theme textarea:-webkit-autofill:focus,
-        .light-theme select:-webkit-autofill,
-        .light-theme select:-webkit-autofill:hover,
-        .light-theme select:-webkit-autofill:focus {
-            -webkit-text-fill-color: #0f172a !important;
-            -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
-            transition: background-color 5000s ease-in-out 0s !important;
+            --bg-canvas: #090d16;
+            --bg-surface-1: #0f172a;
+            --bg-surface-2: #131d31;
+            --bg-surface-3: #18243c;
+            --bg-input: #0b1120;
+            --border-subtle: rgba(255, 255, 255, 0.07);
+            --border-medium: rgba(255, 255, 255, 0.12);
+            --border-highlight: rgba(245, 158, 11, 0.35);
+            --accent-gold: #f59e0b;
+            --accent-gold-hover: #fbbf24;
+            --accent-gold-glow: rgba(245, 158, 11, 0.15);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-tertiary: #64748b;
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+            --card-shadow-hover: 0 20px 30px -10px rgba(0, 0, 0, 0.5), 0 0 20px rgba(245, 158, 11, 0.12);
         }
 
         .light-theme {
-            --bg-main: #f8fafc;
-            --bg-card: rgba(255, 255, 255, 0.85);
-            --border-card: rgba(15, 23, 42, 0.08);
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --bg-sidebar: rgba(241, 245, 249, 0.95);
-            --border-sidebar: rgba(15, 23, 42, 0.08);
-            --bg-header: rgba(241, 245, 249, 0.8);
-            --text-nav: #475569;
-            --text-nav-hover: #0f172a;
-            --bg-input: rgba(255, 255, 255, 0.95);
-            --border-input: rgba(15, 23, 42, 0.15);
-            --text-input: #0f172a;
-            --canvas-opacity: 0.12;
+            --bg-canvas: #f1f5f9;
+            --bg-surface-1: #ffffff;
+            --bg-surface-2: #f8fafc;
+            --bg-surface-3: #e2e8f0;
+            --bg-input: #ffffff;
+            --border-subtle: rgba(15, 23, 42, 0.08);
+            --border-medium: rgba(15, 23, 42, 0.14);
+            --border-highlight: rgba(217, 119, 6, 0.45);
+            --accent-gold: #d97706;
+            --accent-gold-hover: #b45309;
+            --accent-gold-glow: rgba(217, 119, 6, 0.12);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-tertiary: #64748b;
+            --card-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.06), 0 2px 4px -1px rgba(15, 23, 42, 0.04);
+            --card-shadow-hover: 0 12px 24px -4px rgba(15, 23, 42, 0.1), 0 0 16px rgba(217, 119, 6, 0.1);
         }
+
+        [x-cloak] { display: none !important; }
 
         html, body {
-            background-color: var(--bg-main) !important;
-            color: var(--text-main) !important;
-            transition: background-color 0.3s ease, color 0.3s ease;
+            background-color: var(--bg-canvas) !important;
+            color: var(--text-primary) !important;
+            font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            transition: background-color 0.25s ease, color 0.25s ease;
         }
 
-        body {
-            font-family: 'Outfit', sans-serif;
-        }
-        /* Custom scrollbar */
+        /* Sleek scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
         }
         ::-webkit-scrollbar-track {
-            background: #0f172a;
-        }
-        .light-theme ::-webkit-scrollbar-track {
-            background: #f1f5f9;
+            background: var(--bg-surface-1);
         }
         ::-webkit-scrollbar-thumb {
-            background: #f59e0b;
-            border-radius: 3px;
+            background: rgba(245, 158, 11, 0.4);
+            border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #d97706;
+            background: var(--accent-gold);
         }
-        /* Glassmorphism card utilities */
-        .glass-card {
-            background: var(--bg-card) !important;
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--border-card) !important;
+
+        /* Surface & Card classes */
+        .mining-card, .glass-card {
+            background: var(--bg-surface-2) !important;
+            border: 1px solid var(--border-subtle) !important;
+            box-shadow: var(--card-shadow) !important;
+            border-radius: 1.15rem;
             position: relative;
             overflow: hidden;
-            transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
         }
-        .light-theme .glass-card {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02) !important;
+        .mining-card:hover, .glass-card:hover {
+            border-color: var(--border-medium) !important;
         }
-        .glass-card::before {
+        .mining-card.interactive:hover, .glass-card.interactive:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--card-shadow-hover) !important;
+            border-color: var(--border-highlight) !important;
+        }
+
+        /* Card Shimmer Sweep on Hover */
+        @keyframes shimmerSweep {
+            0% { transform: translateX(-150%) skewX(-20deg); }
+            100% { transform: translateX(250%) skewX(-20deg); }
+        }
+        .shimmer-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 45%;
+            height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.06), transparent);
+            transform: translateX(-150%) skewX(-20deg);
+            pointer-events: none;
+            z-index: 5;
+        }
+        .shimmer-card:hover::after {
+            animation: shimmerSweep 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Distinctive Mining Jewel Tone Accents */
+        .accent-border-gold    { border-top: 3px solid #f59e0b !important; }
+        .accent-border-copper  { border-top: 3px solid #f97316 !important; }
+        .accent-border-emerald { border-top: 3px solid #10b981 !important; }
+        .accent-border-cyan    { border-top: 3px solid #06b6d4 !important; }
+        .accent-border-purple  { border-top: 3px solid #a855f7 !important; }
+        .accent-border-rose    { border-top: 3px solid #f43f5e !important; }
+
+        .glow-gold:hover    { box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.6), 0 0 25px rgba(245, 158, 11, 0.22) !important; }
+        .glow-copper:hover  { box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.6), 0 0 25px rgba(249, 115, 22, 0.22) !important; }
+        .glow-emerald:hover { box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.6), 0 0 25px rgba(16, 185, 129, 0.22) !important; }
+        .glow-cyan:hover    { box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.6), 0 0 25px rgba(6, 182, 212, 0.22) !important; }
+        .glow-purple:hover  { box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.6), 0 0 25px rgba(168, 85, 247, 0.22) !important; }
+        .glow-rose:hover    { box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.6), 0 0 25px rgba(244, 63, 94, 0.22) !important; }
+
+        /* Interactive Table Row Highlight with smooth slide & jewel accent */
+        .interactive-table-row {
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            border-left: 3.5px solid transparent !important;
+        }
+        .interactive-table-row:hover {
+            background-color: rgba(245, 158, 11, 0.06) !important;
+            border-left-color: #f59e0b !important;
+            transform: translateX(4px);
+        }
+
+        /* Pulsing Status Dot */
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); filter: drop-shadow(0 0 6px currentColor); }
+        }
+        .pulse-dot {
+            animation: pulseGlow 2.2s infinite ease-in-out;
+        }
+
+        /* Fluid Page Load Entrance Animation */
+        @keyframes pageEntrance {
+            0% { opacity: 0; transform: translateY(8px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .page-fade-in {
+            animation: pageEntrance 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Animated Gradient Progress Bar */
+        @keyframes progressFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .animated-progress-bar {
+            background-size: 200% 200%;
+            animation: progressFlow 3.5s ease infinite;
+        }
+
+        /* Top subtle gold ambient accent */
+        .gold-accent-line::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, #f59e0b, #ea580c, transparent);
+            height: 2.5px;
+            background: linear-gradient(90deg, transparent 0%, #f59e0b 50%, transparent 100%);
             opacity: 0.85;
-            z-index: 10;
-        }
-        .gold-glow {
-            box-shadow: 0 0 15px rgba(245, 158, 11, 0.15);
-        }
-        .gold-border-glow:focus {
-            outline: none;
-            border-color: #f59e0b;
-            box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
         }
 
-        /* Custom sidebar menu items hover and active colors */
-        .nav-item {
-            color: #94a3b8 !important;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            border: 1.2px solid transparent !important;
-            background: transparent !important;
-            border-radius: 12px !important;
+        /* Rich Colorful Buttons with Micro-interactions */
+        .btn-gold {
+            background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%) !important;
+            color: #090d16 !important;
+            box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3) !important;
+            font-weight: 800 !important;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
         }
-        .light-theme .nav-item {
-            color: #475569 !important;
+        .btn-gold:hover {
+            background: linear-gradient(135deg, #fbbf24 0%, #f97316 100%) !important;
+            box-shadow: 0 6px 22px rgba(245, 158, 11, 0.45) !important;
+            transform: translateY(-2px);
+        }
+        .btn-gold:active {
+            transform: translateY(1px) scale(0.97);
         }
 
-        /* AMBER */
-        .nav-item[data-theme-color="amber"]:hover, .nav-item[data-theme-color="amber"].active-nav-item {
+        .btn-emerald {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3) !important;
+            font-weight: 700 !important;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+        .btn-emerald:hover {
+            box-shadow: 0 6px 22px rgba(16, 185, 129, 0.45) !important;
+            transform: translateY(-2px);
+        }
+        .btn-emerald:active {
+            transform: translateY(1px) scale(0.97);
+        }
+
+        .btn-cyan {
+            background: linear-gradient(135deg, #06b6d4 0%, #0284c7 100%) !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 16px rgba(6, 182, 212, 0.3) !important;
+            font-weight: 700 !important;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+        .btn-cyan:hover {
+            box-shadow: 0 6px 22px rgba(6, 182, 212, 0.45) !important;
+            transform: translateY(-2px);
+        }
+        .btn-cyan:active {
+            transform: translateY(1px) scale(0.97);
+        }
+
+        /* Navigation item styles */
+        .sidebar-nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.55rem 0.75rem;
+            border-radius: 0.65rem;
+            font-size: 0.825rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            border: 1px solid transparent;
+            transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        .sidebar-nav-item:hover {
+            color: var(--text-primary);
+            background: var(--bg-surface-3);
+            border-color: var(--border-subtle);
+        }
+        .sidebar-nav-item.active-item {
             color: #fbbf24 !important;
-            background: linear-gradient(95deg, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.03) 100%) !important;
-            border: 1.2px solid rgba(245, 158, 11, 0.45) !important;
-            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.12) !important;
+            background: rgba(245, 158, 11, 0.1) !important;
+            border-color: rgba(245, 158, 11, 0.35) !important;
+            font-weight: 600;
+            box-shadow: 0 2px 10px rgba(245, 158, 11, 0.1);
         }
-        .nav-item[data-theme-color="amber"]:hover i, .nav-item[data-theme-color="amber"].active-nav-item i { color: #fbbf24 !important; }
-        .light-theme .nav-item[data-theme-color="amber"]:hover, .light-theme .nav-item[data-theme-color="amber"].active-nav-item {
+        .sidebar-nav-item.active-item i {
+            color: #fbbf24 !important;
+        }
+        .light-theme .sidebar-nav-item.active-item {
             color: #b45309 !important;
-            background: linear-gradient(95deg, rgba(245, 158, 11, 0.16) 0%, rgba(245, 158, 11, 0.05) 100%) !important;
-            border: 1.2px solid rgba(245, 158, 11, 0.4) !important;
-            box-shadow: 0 3px 8px rgba(245, 158, 11, 0.05) !important;
+            background: rgba(217, 119, 6, 0.12) !important;
+            border-color: rgba(217, 119, 6, 0.35) !important;
         }
-        .light-theme .nav-item[data-theme-color="amber"]:hover i, .light-theme .nav-item[data-theme-color="amber"].active-nav-item i { color: #b45309 !important; }
-
-        /* EMERALD */
-        .nav-item[data-theme-color="emerald"]:hover, .nav-item[data-theme-color="emerald"].active-nav-item {
-            color: #34d399 !important;
-            background: linear-gradient(95deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.03) 100%) !important;
-            border: 1.2px solid rgba(16, 185, 129, 0.45) !important;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.12) !important;
-        }
-        .nav-item[data-theme-color="emerald"]:hover i, .nav-item[data-theme-color="emerald"].active-nav-item i { color: #34d399 !important; }
-        .light-theme .nav-item[data-theme-color="emerald"]:hover, .light-theme .nav-item[data-theme-color="emerald"].active-nav-item {
-            color: #047857 !important;
-            background: linear-gradient(95deg, rgba(16, 185, 129, 0.16) 0%, rgba(16, 185, 129, 0.05) 100%) !important;
-            border: 1.2px solid rgba(16, 185, 129, 0.4) !important;
-            box-shadow: 0 3px 8px rgba(16, 185, 129, 0.05) !important;
-        }
-        .light-theme .nav-item[data-theme-color="emerald"]:hover i, .light-theme .nav-item[data-theme-color="emerald"].active-nav-item i { color: #047857 !important; }
-
-        /* SKY */
-        .nav-item[data-theme-color="sky"]:hover, .nav-item[data-theme-color="sky"].active-nav-item {
-            color: #38bdf8 !important;
-            background: linear-gradient(95deg, rgba(14, 165, 233, 0.15) 0%, rgba(14, 165, 233, 0.03) 100%) !important;
-            border: 1.2px solid rgba(14, 165, 233, 0.45) !important;
-            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.12) !important;
-        }
-        .nav-item[data-theme-color="sky"]:hover i, .nav-item[data-theme-color="sky"].active-nav-item i { color: #38bdf8 !important; }
-        .light-theme .nav-item[data-theme-color="sky"]:hover, .light-theme .nav-item[data-theme-color="sky"].active-nav-item {
-            color: #0369a1 !important;
-            background: linear-gradient(95deg, rgba(14, 165, 233, 0.16) 0%, rgba(14, 165, 233, 0.05) 100%) !important;
-            border: 1.2px solid rgba(14, 165, 233, 0.4) !important;
-            box-shadow: 0 3px 8px rgba(14, 165, 233, 0.05) !important;
-        }
-        .light-theme .nav-item[data-theme-color="sky"]:hover i, .light-theme .nav-item[data-theme-color="sky"].active-nav-item i { color: #0369a1 !important; }
-
-        /* INDIGO */
-        .nav-item[data-theme-color="indigo"]:hover, .nav-item[data-theme-color="indigo"].active-nav-item {
-            color: #818cf8 !important;
-            background: linear-gradient(95deg, rgba(129, 140, 248, 0.15) 0%, rgba(129, 140, 248, 0.03) 100%) !important;
-            border: 1.2px solid rgba(129, 140, 248, 0.45) !important;
-            box-shadow: 0 4px 12px rgba(129, 140, 248, 0.12) !important;
-        }
-        .nav-item[data-theme-color="indigo"]:hover i, .nav-item[data-theme-color="indigo"].active-nav-item i { color: #818cf8 !important; }
-        .light-theme .nav-item[data-theme-color="indigo"]:hover, .light-theme .nav-item[data-theme-color="indigo"].active-nav-item {
-            color: #4338ca !important;
-            background: linear-gradient(95deg, rgba(129, 140, 248, 0.16) 0%, rgba(129, 140, 248, 0.05) 100%) !important;
-            border: 1.2px solid rgba(129, 140, 248, 0.4) !important;
-            box-shadow: 0 3px 8px rgba(129, 140, 248, 0.05) !important;
-        }
-        .light-theme .nav-item[data-theme-color="indigo"]:hover i, .light-theme .nav-item[data-theme-color="indigo"].active-nav-item i { color: #4338ca !important; }
-
-        /* ROSE */
-        .nav-item[data-theme-color="rose"]:hover, .nav-item[data-theme-color="rose"].active-nav-item {
-            color: #fda4af !important;
-            background: linear-gradient(95deg, rgba(251, 113, 133, 0.15) 0%, rgba(251, 113, 133, 0.03) 100%) !important;
-            border: 1.2px solid rgba(251, 113, 133, 0.45) !important;
-            box-shadow: 0 4px 12px rgba(251, 113, 133, 0.12) !important;
-        }
-        .nav-item[data-theme-color="rose"]:hover i, .nav-item[data-theme-color="rose"].active-nav-item i { color: #fda4af !important; }
-        .light-theme .nav-item[data-theme-color="rose"]:hover, .light-theme .nav-item[data-theme-color="rose"].active-nav-item {
-            color: #be123c !important;
-            background: linear-gradient(95deg, rgba(251, 113, 133, 0.16) 0%, rgba(251, 113, 133, 0.05) 100%) !important;
-            border: 1.2px solid rgba(251, 113, 133, 0.4) !important;
-            box-shadow: 0 3px 8px rgba(251, 113, 133, 0.05) !important;
-        }
-        .light-theme .nav-item[data-theme-color="rose"]:hover i, .light-theme .nav-item[data-theme-color="rose"].active-nav-item i { color: #be123c !important; }
-
-        /* TEAL */
-        .nav-item[data-theme-color="teal"]:hover, .nav-item[data-theme-color="teal"].active-nav-item {
-            color: #2dd4bf !important;
-            background: linear-gradient(95deg, rgba(45, 212, 191, 0.15) 0%, rgba(45, 212, 191, 0.03) 100%) !important;
-            border: 1.2px solid rgba(45, 212, 191, 0.45) !important;
-            box-shadow: 0 4px 12px rgba(45, 212, 191, 0.12) !important;
-        }
-        .nav-item[data-theme-color="teal"]:hover i, .nav-item[data-theme-color="teal"].active-nav-item i { color: #2dd4bf !important; }
-        .light-theme .nav-item[data-theme-color="teal"]:hover, .light-theme .nav-item[data-theme-color="teal"].active-nav-item {
-            color: #0f766e !important;
-            background: linear-gradient(95deg, rgba(45, 212, 191, 0.16) 0%, rgba(45, 212, 191, 0.05) 100%) !important;
-            border: 1.2px solid rgba(45, 212, 191, 0.4) !important;
-            box-shadow: 0 3px 8px rgba(45, 212, 191, 0.05) !important;
-        }
-        .light-theme .nav-item[data-theme-color="teal"]:hover i, .light-theme .nav-item[data-theme-color="teal"].active-nav-item i { color: #0f766e !important; }
-
-        /* ORANGE */
-        .nav-item[data-theme-color="orange"]:hover, .nav-item[data-theme-color="orange"].active-nav-item {
-            color: #ff9d43 !important;
-            background: linear-gradient(95deg, rgba(249, 115, 22, 0.15) 0%, rgba(249, 115, 22, 0.03) 100%) !important;
-            border: 1.2px solid rgba(249, 115, 22, 0.45) !important;
-            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.12) !important;
-        }
-        .nav-item[data-theme-color="orange"]:hover i, .nav-item[data-theme-color="orange"].active-nav-item i { color: #ff9d43 !important; }
-        .light-theme .nav-item[data-theme-color="orange"]:hover, .light-theme .nav-item[data-theme-color="orange"].active-nav-item {
-            color: #c2410c !important;
-            background: linear-gradient(95deg, rgba(249, 115, 22, 0.16) 0%, rgba(249, 115, 22, 0.05) 100%) !important;
-            border: 1.2px solid rgba(249, 115, 22, 0.4) !important;
-            box-shadow: 0 3px 8px rgba(249, 115, 22, 0.05) !important;
-        }
-        .light-theme .nav-item[data-theme-color="orange"]:hover i, .light-theme .nav-item[data-theme-color="orange"].active-nav-item i { color: #c2410c !important; }
-
-        /* VIOLET */
-        .nav-item[data-theme-color="violet"]:hover, .nav-item[data-theme-color="violet"].active-nav-item {
-            color: #c084fc !important;
-            background: linear-gradient(95deg, rgba(167, 139, 250, 0.15) 0%, rgba(167, 139, 250, 0.03) 100%) !important;
-            border: 1.2px solid rgba(167, 139, 250, 0.45) !important;
-            box-shadow: 0 4px 12px rgba(167, 139, 250, 0.12) !important;
-        }
-        .nav-item[data-theme-color="violet"]:hover i, .nav-item[data-theme-color="violet"].active-nav-item i { color: #c084fc !important; }
-        .light-theme .nav-item[data-theme-color="violet"]:hover, .light-theme .nav-item[data-theme-color="violet"].active-nav-item {
-            color: #6d28d9 !important;
-            background: linear-gradient(95deg, rgba(167, 139, 250, 0.16) 0%, rgba(167, 139, 250, 0.05) 100%) !important;
-            border: 1.2px solid rgba(167, 139, 250, 0.4) !important;
-            box-shadow: 0 3px 8px rgba(167, 139, 250, 0.05) !important;
-        }
-        .light-theme .nav-item[data-theme-color="violet"]:hover i, .light-theme .nav-item[data-theme-color="violet"].active-nav-item i { color: #6d28d9 !important; }
-
-        /* CYAN */
-        .nav-item[data-theme-color="cyan"]:hover, .nav-item[data-theme-color="cyan"].active-nav-item {
-            color: #22d3ee !important;
-            background: linear-gradient(95deg, rgba(6, 182, 212, 0.15) 0%, rgba(6, 182, 212, 0.03) 100%) !important;
-            border: 1.2px solid rgba(6, 182, 212, 0.45) !important;
-            box-shadow: 0 4px 12px rgba(6, 182, 212, 0.12) !important;
-        }
-        .nav-item[data-theme-color="cyan"]:hover i, .nav-item[data-theme-color="cyan"].active-nav-item i { color: #22d3ee !important; }
-        .light-theme .nav-item[data-theme-color="cyan"]:hover, .light-theme .nav-item[data-theme-color="cyan"].active-nav-item {
-            color: #0e7490 !important;
-            background: linear-gradient(95deg, rgba(6, 182, 212, 0.16) 0%, rgba(6, 182, 212, 0.05) 100%) !important;
-            border: 1.2px solid rgba(6, 182, 212, 0.4) !important;
-            box-shadow: 0 3px 8px rgba(6, 182, 212, 0.05) !important;
-        }
-        .light-theme .nav-item[data-theme-color="cyan"]:hover i, .light-theme .nav-item[data-theme-color="cyan"].active-nav-item i { color: #0e7490 !important; }
-        
-        /* Global button hover spark styles */
-        .global-button-spark {
-            position: absolute;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9999;
-        }
-        
-        /* Premium button hover glows */
-        button, .btn, [type="submit"], [type="button"] {
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            position: relative;
-        }
-        
-        /* Submit button hover glow */
-        button[type="submit"], [type="submit"] {
-            box-shadow: 0 0 10px rgba(245, 158, 11, 0.1);
-        }
-        button[type="submit"]:hover, [type="submit"]:hover {
-            box-shadow: 0 0 20px rgba(245, 158, 11, 0.35);
-            transform: translateY(-1px);
-        }
-        
-        /* Delete/Danger button hover glow */
-        .bg-red-600:hover, .bg-red-500:hover, [class*="bg-red-"]:hover {
-            box-shadow: 0 0 18px rgba(239, 68, 68, 0.45) !important;
-            transform: translateY(-1px);
-        }
-        
-        /* Success/emerald button hover glow */
-        .bg-emerald-600:hover, .bg-emerald-500:hover, [class*="bg-emerald-"]:hover {
-            box-shadow: 0 0 18px rgba(16, 185, 129, 0.45) !important;
-            transform: translateY(-1px);
+        .light-theme .sidebar-nav-item.active-item i {
+            color: #b45309 !important;
         }
 
-        /* Vibrant animated buttons with moving gradient backgrounds */
-        .btn-vibrant-amber {
-            background: linear-gradient(135deg, #f59e0b 0%, #f97316 50%, #f59e0b 100%) !important;
-            background-size: 200% auto !important;
-            color: #020617 !important;
-            border: none !important;
-            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25) !important;
-            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
-        }
-        .btn-vibrant-success {
-            background: linear-gradient(135deg, #10b981 0%, #14b8a6 50%, #10b981 100%) !important;
-            background-size: 200% auto !important;
-            color: #020617 !important;
-            border: none !important;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important;
-            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
-        }
-        .btn-vibrant-danger {
-            background: linear-gradient(135deg, #ef4444 0%, #f43f5e 50%, #ef4444 100%) !important;
-            background-size: 200% auto !important;
-            color: #ffffff !important;
-            border: none !important;
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25) !important;
-            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
-        }
-        .btn-vibrant-indigo {
-            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #4f46e5 100%) !important;
-            background-size: 200% auto !important;
-            color: #ffffff !important;
-            border: none !important;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25) !important;
-            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
-        }
-        .btn-vibrant-warm {
-            background: linear-gradient(135deg, #ea580c 0%, #d97706 50%, #ea580c 100%) !important;
-            background-size: 200% auto !important;
-            color: #ffffff !important;
-            border: none !important;
-            box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25) !important;
-            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
-        }
-        
-        .btn-vibrant-amber:hover, .btn-vibrant-success:hover, .btn-vibrant-danger:hover, .btn-vibrant-indigo:hover, .btn-vibrant-warm:hover {
-            background-position: right center !important;
-            transform: translateY(-2px) !important;
-        }
-        .btn-vibrant-amber:hover {
-            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.48) !important;
-        }
-        .btn-vibrant-success:hover {
-            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.48) !important;
-        }
-        .btn-vibrant-danger:hover {
-            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.48) !important;
-        }
-        .btn-vibrant-indigo:hover {
-            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.48) !important;
-        }
-        .btn-vibrant-warm:hover {
-            box-shadow: 0 8px 25px rgba(234, 88, 12, 0.48) !important;
-        }
-        .btn-vibrant-amber:active, .btn-vibrant-success:active, .btn-vibrant-danger:active, .btn-vibrant-indigo:active, .btn-vibrant-warm:active {
-            transform: translateY(0) !important;
-        }
-
-        /* Float Screen Toast System */
-        .toast-item {
-            background: rgba(15, 23, 42, 0.82) !important;
-            backdrop-filter: blur(15px) !important;
-            -webkit-backdrop-filter: blur(15px) !important;
-            border-radius: 16px !important;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55) !important;
-            position: relative;
-            overflow: hidden;
-            border: 1.5px solid transparent;
-            animation: toastSlideIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            transition: all 0.35s ease;
-        }
-        .toast-success {
-            border-color: rgba(16, 185, 129, 0.35) !important;
-            box-shadow: 0 0 25px rgba(16, 185, 129, 0.18) !important;
-        }
-        .toast-danger {
-            border-color: rgba(244, 63, 94, 0.35) !important;
-            box-shadow: 0 0 25px rgba(244, 63, 94, 0.18) !important;
-        }
-        @keyframes toastSlideIn {
-            from {
-                opacity: 0;
-                transform: translateX(120%) scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0) scale(1);
-            }
-        }
-        .toast-progress {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            height: 3px;
+        /* Tablas mineras refinadas */
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
             width: 100%;
-            animation: toastTimer linear forwards;
         }
-        .toast-success .toast-progress {
-            animation-duration: 4.5s;
+        thead th {
+            background-color: var(--bg-surface-3) !important;
+            color: var(--text-secondary) !important;
+            font-size: 0.7rem !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.05em !important;
+            border-bottom: 1px solid var(--border-subtle) !important;
+            padding: 0.75rem 1rem !important;
+            white-space: nowrap;
         }
-        .toast-danger .toast-progress {
-            animation-duration: 5.5s;
+        tbody td {
+            color: var(--text-primary) !important;
+            border-bottom: 1px solid var(--border-subtle) !important;
+            padding: 0.75rem 1rem !important;
+            font-size: 0.8125rem;
+            vertical-align: middle;
         }
-        @keyframes toastTimer {
-            from { width: 100%; }
-            to { width: 0%; }
+        tbody tr {
+            transition: background-color 0.15s ease;
         }
-        
-        /* Global Master Print Styles */
-        @media print {
-            @page {
-                size: auto;
-                margin: 5mm 8mm;
-            }
-            
-            html, body {
-                background: #ffffff !important;
-                background-color: #ffffff !important;
-                color: #0f172a !important;
-                height: auto !important;
-                min-height: 100% !important;
-                overflow: visible !important;
-                width: 100% !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                box-shadow: none !important;
-            }
-
-            /* Completely hide all app layout chrome, sidebars, headers, particles, modals, toasts */
-            .no-print,
-            header,
-            nav,
-            aside,
-            #particle-canvas,
-            #toast-container,
-            #custom-confirm-modal,
-            .global-button-spark {
-                display: none !important;
-                visibility: hidden !important;
-                width: 0 !important;
-                height: 0 !important;
-            }
-
-            /* Reset the desktop sidebar margin and layout wrappers */
-            .md\:pl-64,
-            [class*="md:pl-64"],
-            .sidebar-bg {
-                padding-left: 0 !important;
-                margin-left: 0 !important;
-                width: 100% !important;
-                max-width: 100% !important;
-            }
-
-            main {
-                padding: 0 !important;
-                margin: 0 !important;
-                width: 100% !important;
-                max-width: 100% !important;
-                background: #ffffff !important;
-                background-color: #ffffff !important;
-                overflow: visible !important;
-                position: static !important;
-            }
-
-            .print-only {
-                display: block !important;
-            }
-
-            .print-container {
-                width: 100% !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                border: none !important;
-                background: #ffffff !important;
-                box-shadow: none !important;
-            }
-
-            * {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-                color-adjust: exact !important;
-            }
+        tbody tr:hover {
+            background-color: var(--bg-surface-3) !important;
         }
 
-        /* Custom Confirmation Modal styles */
-        #custom-confirm-modal {
-            transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        /* Inputs y formularios */
+        input:not([type="checkbox"]):not([type="radio"]), select, textarea {
+            background-color: var(--bg-input) !important;
+            border: 1px solid var(--border-medium) !important;
+            color: var(--text-primary) !important;
+            border-radius: 0.6rem;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
         }
-        #custom-confirm-modal .glass-card {
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        #custom-confirm-modal.modal-hide {
-            opacity: 0 !important;
-        }
-        #custom-confirm-modal.modal-hide .glass-card {
-            transform: scale(0.9) !important;
-        }
-
-        /* Premium Global Inputs */
-        input[type="text"], 
-        input[type="email"], 
-        input[type="password"], 
-        input[type="number"], 
-        input[type="date"], 
-        select, 
-        textarea {
-            background: rgba(15, 23, 42, 0.45) !important;
-            backdrop-filter: blur(12px) !important;
-            -webkit-backdrop-filter: blur(12px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            border-radius: 10px !important;
-            color: #f8fafc !important;
-            font-family: 'Outfit', sans-serif !important;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
-        }
-        
-        input[type="text"]:focus, 
-        input[type="email"]:focus, 
-        input[type="password"]:focus, 
-        input[type="number"]:focus, 
-        input[type="date"]:focus, 
-        select:focus, 
-        textarea:focus {
+        input:focus, select:focus, textarea:focus {
             outline: none !important;
-            border-color: rgba(245, 158, 11, 0.6) !important;
-            box-shadow: 0 0 14px rgba(245, 158, 11, 0.25) !important;
-            background: rgba(15, 23, 42, 0.65) !important;
-            transform: translateY(-0.5px);
+            border-color: var(--accent-gold) !important;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2) !important;
         }
 
         /* Autofill overrides */
         input:-webkit-autofill,
         input:-webkit-autofill:hover, 
-        input:-webkit-autofill:focus,
-        textarea:-webkit-autofill,
-        textarea:-webkit-autofill:hover,
-        textarea:-webkit-autofill:focus,
-        select:-webkit-autofill,
-        select:-webkit-autofill:hover,
-        select:-webkit-autofill:focus {
-            -webkit-text-fill-color: #f8fafc !important;
-            -webkit-box-shadow: 0 0 0px 1000px rgba(15, 23, 42, 0.65) inset !important;
+        input:-webkit-autofill:focus {
+            -webkit-text-fill-color: var(--text-primary) !important;
+            -webkit-box-shadow: 0 0 0px 1000px var(--bg-surface-1) inset !important;
             transition: background-color 5000s ease-in-out 0s !important;
         }
 
-        /* Sidebar Navigation Hover & Active Structural Styles */
-        .nav-item {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            border-left: none !important;
-            padding-left: 10px !important;
-            font-size: 13px !important;
-            margin: 2px 0;
-            border-radius: 6px !important;
-            display: flex;
-            align-items: center;
+        /* Botones primarios dorados */
+        .btn-gold {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: #0b0f19;
+            font-weight: 700;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+            transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .nav-item:hover {
-            transform: translateX(3px) !important;
+        .btn-gold:hover {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            box-shadow: 0 6px 18px rgba(245, 158, 11, 0.35);
+            transform: translateY(-1px);
         }
-        .nav-item i {
-            transition: transform 0.2s ease, color 0.2s ease !important;
-        }
-        .nav-item:hover i {
-            transform: scale(1.08) !important;
-        }
-        
-        /* Clean minimalist category containers */
-        .sidebar-category-card {
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            padding: 0 !important;
-            margin-top: 24px !important;
-            margin-bottom: 8px !important;
-        }
-        
-        /* Category Header Styles */
-        .category-header-btn {
-            background: transparent !important;
-            border-radius: 0;
-            padding: 4px 8px !important;
-            font-size: 10px !important;
-            font-weight: 700 !important;
-            letter-spacing: 0.1em !important;
-            color: #64748b !important;
-            text-transform: uppercase !important;
-            transition: color 0.2s ease;
-        }
-        .category-header-btn:hover {
-            background: transparent !important;
-            color: #94a3b8 !important;
-        }
-        .light-theme .category-header-btn {
-            color: #64748b !important;
-        }
-        
-        .nav-item.active-nav-item i {
-            filter: none !important;
+        .btn-gold:active {
+            transform: translateY(0);
         }
 
-        /* Clean standardized icons - NO square boxes */
-        .nav-icon-box {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: auto !important;
-            height: auto !important;
-            background: transparent !important;
-            border: none !important;
-            margin-right: 10px !important;
-            color: inherit !important;
+        /* Panoramic Mining Hero Banner */
+        .mining-hero-container {
+            background-color: var(--bg-surface-1);
+            min-height: 180px;
+        }
+        .mining-hero-img {
+            animation: slowMiningPan 35s ease-in-out infinite alternate;
+            transform-origin: center;
+        }
+        @keyframes slowMiningPan {
+            0% { transform: scale(1.0) translate(0, 0); }
+            100% { transform: scale(1.05) translate(-1%, -0.5%); }
+        }
+        .ambient-mining-lantern {
+            position: absolute;
+            right: 8%;
+            top: 25%;
+            width: 320px;
+            height: 320px;
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.22) 0%, rgba(217, 119, 6, 0.08) 45%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(40px);
+            animation: lanternPulse 7s ease-in-out infinite alternate;
+        }
+        @keyframes lanternPulse {
+            0% { opacity: 0.35; transform: scale(0.9); }
+            100% { opacity: 0.85; transform: scale(1.1); }
         }
 
-        /* --- LIGHT THEME (DAY MODE) OVERRIDES --- */
-        .light-theme .text-slate-100 { color: #0f172a !important; }
-        .light-theme .text-slate-200 { color: #1e293b !important; }
-        .light-theme .text-slate-300 { color: #334155 !important; }
-        .light-theme .text-slate-400 { color: #475569 !important; }
-        .light-theme .text-slate-450 { color: #64748b !important; }
-        .light-theme .text-slate-500 { color: #64748b !important; }
-        
-        .light-theme .sidebar-bg {
-            background-color: var(--bg-sidebar) !important;
-            border-right: 1px solid var(--border-sidebar) !important;
-            transition: background-color 0.3s ease, border-color 0.3s ease;
-        }
-        
-        .light-theme .header-bg {
-            background-color: var(--bg-header) !important;
-            border-bottom: 1px solid var(--border-sidebar) !important;
-            transition: background-color 0.3s ease, border-color 0.3s ease;
-        }
-        
-        .light-theme .md\:hidden.fixed.top-0 {
-            background-color: var(--bg-sidebar) !important;
-            border-bottom: 1px solid var(--border-sidebar) !important;
-            transition: background-color 0.3s ease, border-color 0.3s ease;
-        }
-        .light-theme .md\:hidden.fixed.top-0 h1 {
-            color: #ea580c !important;
-        }
-        .light-theme .md\:hidden.fixed.top-0 button {
-            color: #475569 !important;
-        }
-        .light-theme .md\:hidden.fixed.top-0 button:hover {
-            color: #0f172a !important;
-        }
-        
-        .light-theme .md\:hidden.fixed.top-0 div[x-show="open"] {
-            background-color: var(--bg-sidebar) !important;
-            border-bottom: 1px solid var(--border-sidebar) !important;
-        }
-        .light-theme .md\:hidden.fixed.top-0 div[x-show="open"] a {
-            color: #475569 !important;
-        }
-        .light-theme .md\:hidden.fixed.top-0 div[x-show="open"] a:hover {
-            background-color: rgba(15, 23, 42, 0.05) !important;
-            color: #0f172a !important;
-        }
-        
-        .light-theme #particle-canvas {
-            opacity: var(--canvas-opacity) !important;
-            transition: opacity 0.3s ease;
-        }
-        
-        .light-theme .nav-item {
-            color: #475569 !important;
-        }
-        .light-theme .nav-item:hover {
-            color: #1e293b !important;
-        }
-        .light-theme .nav-item.active-nav-item {
-            font-weight: 700 !important;
-        }
-        
-        .light-theme .border-t.border-slate-800\/80 {
-            border-top-color: rgba(15, 23, 42, 0.08) !important;
-        }
-        .light-theme .border-t.border-slate-800\/80 p {
-            color: #0f172a !important;
-        }
-        .light-theme .border-t.border-slate-800\/80 button {
-            color: #4f46e5 !important;
-        }
-        
-        .light-theme #realtime-clock {
-            color: #475569 !important;
-        }
-        
-        .light-theme .bg-slate-900\/40 {
-            background-color: rgba(15, 23, 42, 0.04) !important;
-        }
-        .light-theme th {
-            color: #475569 !important;
-        }
-        .light-theme td {
-            color: #334155 !important;
-        }
-        .light-theme td.text-slate-100 {
-            color: #0f172a !important;
-        }
-        .light-theme td.text-slate-200 {
-            color: #1e293b !important;
-        }
-        .light-theme tr.hover\:bg-slate-900\/10:hover {
-            background-color: rgba(15, 23, 42, 0.03) !important;
-        }
-        
-        .light-theme input[type="text"], 
-        .light-theme input[type="email"], 
-        .light-theme input[type="password"], 
-        .light-theme input[type="number"], 
-        .light-theme input[type="date"], 
-        .light-theme select, 
-        .light-theme textarea {
-            background: rgba(255, 255, 255, 0.95) !important;
-            border: 1px solid rgba(15, 23, 42, 0.15) !important;
-            color: #0f172a !important;
-        }
-        
-        .light-theme input[type="text"]:focus, 
-        .light-theme input[type="email"]:focus, 
-        .light-theme input[type="password"]:focus, 
-        .light-theme input[type="number"]:focus, 
-        .light-theme input[type="date"]:focus, 
-        .light-theme select:focus, 
-        .light-theme textarea:focus {
-            background: #ffffff !important;
-            border-color: #f59e0b !important;
-            box-shadow: 0 0 10px rgba(245, 158, 11, 0.15) !important;
-        }
-        
-        .light-theme .bg-slate-800 {
-            background-color: #e2e8f0 !important;
-            color: #334155 !important;
-        }
-        .light-theme .bg-slate-800:hover {
-            background-color: #cbd5e1 !important;
-        }
-        
-        .light-theme .border-slate-700,
-        .light-theme .border-slate-800,
-        .light-theme .border-slate-700\/80,
-        .light-theme .border-slate-800\/60 {
-            border-color: rgba(15, 23, 42, 0.08) !important;
-        }
-        
-        .light-theme .toast-item {
-            background: rgba(255, 255, 255, 0.95) !important;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
-            border-color: rgba(15, 23, 42, 0.06) !important;
-        }
-        .light-theme .toast-item .text-slate-100 {
-            color: #0f172a !important;
-        }
-        
-        .light-theme #custom-confirm-modal {
-            background: rgba(15, 23, 42, 0.45) !important;
-        }
-        .light-theme #custom-confirm-modal .glass-card {
-            background: #ffffff !important;
-            border-color: rgba(239, 68, 68, 0.3) !important;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
-        }
-        .light-theme #custom-confirm-modal h3 {
-            color: #ef4444 !important;
-        }
-        .light-theme #custom-confirm-modal p {
-            color: #334155 !important;
+        /* Subtle Mineral Rock Texture Accent */
+        .mineral-accent-bg {
+            background-image: url('{{ asset('images/mining/mineral_texture.jpg') }}');
+            background-size: 320px;
         }
 
-        /* --- PREVENT CONFLICTS AND SET PLUS JAKARTA SANS ON SIDEBAR --- */
-        .sidebar-bg,
-        .sidebar-bg button,
-        .sidebar-bg a,
-        .sidebar-bg span,
-        .sidebar-bg p,
-        .sidebar-bg div {
-            font-family: 'Plus Jakarta Sans', sans-serif !important;
-        }
-        .sidebar-bg i, 
-        .sidebar-bg .fa, 
-        .sidebar-bg .fa-solid, 
-        .sidebar-bg .fa-regular, 
-        .sidebar-bg .fa-brands {
-            font-family: 'Font Awesome 6 Free', 'Font Awesome 6 Brands', sans-serif !important;
-        }
-
-        /* --- PREMIUM MODERN ERP SIDEBAR BACKGROUNDS & ACTIVE INDICATORS --- */
-        .sidebar-bg {
-            background-color: #0c101c !important; /* Extremely elegant rich dark blue-slate */
-            background-image: 
-                linear-gradient(135deg, rgba(255, 255, 255, 0.007) 25%, transparent 25%), 
-                linear-gradient(225deg, rgba(255, 255, 255, 0.007) 25%, transparent 25%), 
-                linear-gradient(45deg, rgba(255, 255, 255, 0.007) 25%, transparent 25%), 
-                linear-gradient(315deg, rgba(255, 255, 255, 0.007) 25%, #0c101c 25%) !important;
-            background-position: 20px 0, 20px 0, 0 0, 0 0 !important;
-            background-size: 40px 40px !important;
-            background-repeat: repeat !important;
-            border-right: 1px solid rgba(255, 255, 255, 0.03) !important;
-            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15) !important;
-            padding: 0 !important;
-        }
-        .light-theme .sidebar-bg {
-            background-color: #f6f8fb !important; /* Clean day mode light blue-grey */
-            background-image: 
-                linear-gradient(135deg, rgba(15, 23, 42, 0.006) 25%, transparent 25%), 
-                linear-gradient(225deg, rgba(15, 23, 42, 0.006) 25%, transparent 25%), 
-                linear-gradient(45deg, rgba(15, 23, 42, 0.006) 25%, transparent 25%), 
-                linear-gradient(315deg, rgba(15, 23, 42, 0.006) 25%, #f6f8fb 25%) !important;
-            background-position: 20px 0, 20px 0, 0 0, 0 0 !important;
-            background-size: 40px 40px !important;
-            background-repeat: repeat !important;
-            border-right: 1px solid rgba(0, 0, 0, 0.05) !important;
-            box-shadow: 2px 0 12px rgba(15, 23, 42, 0.02) !important;
-        }
-
-
-
-        /* Main Navigation Scrollbar Styling */
-        #main-nav::-webkit-scrollbar {
-            width: 4px;
-        }
-        #main-nav::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        #main-nav::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 999px;
-        }
-        #main-nav::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.15);
-        }
-        .light-theme #main-nav::-webkit-scrollbar-thumb {
-            background: rgba(0, 0, 0, 0.08);
-        }
-        .light-theme #main-nav::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 0, 0, 0.15);
-        }
-
-        /* --- CATEGORIES & HEADERS HIERARCHY --- */
-        .sidebar-category-card {
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            padding: 0 !important;
-            margin-top: 24px !important;
-            margin-bottom: 8px !important;
-        }
-        .category-header-btn {
-            background: transparent !important;
-            border: none !important;
-            padding: 6px 8px !important;
-            font-size: 11px !important;
-            font-weight: 800 !important;
-            letter-spacing: 0.1em !important;
-            color: #4b5563 !important; /* Elegant slate gray */
-            text-transform: uppercase !important;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            width: 100%;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03) !important;
-            margin-bottom: 12px !important;
-        }
-        .light-theme .category-header-btn {
-            color: #9ca3af !important;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.04) !important;
-        }
-        .sub-group-header {
-            font-size: 11px !important;
-            font-weight: 700 !important;
-            color: #64748b !important;
-            letter-spacing: 0.03em;
-            text-transform: uppercase;
-            padding: 6px 12px !important;
-            margin-top: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-            background: transparent !important;
-        }
-        .light-theme .sub-group-header {
-            color: #64748b !important;
-        }
-
-        /* --- MAIN NAVIGATION ROWS --- */
-        .nav-item {
-            font-size: 13px !important;
-            font-weight: 500 !important;
-            padding: 8px 12px !important;
-            margin: 3px 0;
-            border-radius: 8px !important;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            border-left: none !important;
-            display: flex;
-            align-items: center;
-        }
-
-        /* --- TREE SUB-MENU INDENTATION (Notion/Linear style) --- */
-        .tree-container {
-            margin-left: 18px;
-            padding-left: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            margin-top: 4px;
-            margin-bottom: 8px;
-        }
-        .tree-sub-item {
-            font-size: 12px !important;
-            font-weight: 500 !important;
-            padding: 6px 12px !important;
-            border-radius: 6px !important;
-            color: #64748b !important;
-            border-left: none !important;
-            background: transparent !important;
-        }
-        .light-theme .tree-sub-item {
-            color: #475569 !important;
-        }
-        .tree-sub-item:hover {
-            color: #f8fafc !important;
-        }
-        .light-theme .tree-sub-item:hover {
-            color: #0f172a !important;
-        }
-        .tree-sub-item.active-nav-item {
-            font-weight: 600 !important;
-        }
-
-        /* Prevent layout shift on hover/active */
-        .nav-item {
-            border: 1.2px solid transparent !important;
-            border-radius: 12px !important;
-        }
-
-        /* --- SOPHISTICATED METALLIC/PASTEL NAVIGATION ICONS (NOT LOUD NEON) --- */
-        .sidebar-bg .text-amber-500, .sidebar-bg .text-amber-600 { color: #d4af37 !important; } /* Matte gold */
-        .sidebar-bg .text-emerald-500 { color: #608c76 !important; } /* Sage / Pine green */
-        .sidebar-bg .text-sky-500 { color: #5d81a0 !important; } /* Muted slate blue */
-        .sidebar-bg .text-cyan-500 { color: #5897a0 !important; } /* Muted cyan */
-        .sidebar-bg .text-rose-500 { color: #bf6d7a !important; } /* Dusty rose */
-        .sidebar-bg .text-teal-500 { color: #4b8a85 !important; } /* Soft pine teal */
-        .sidebar-bg .text-violet-500 { color: #87749b !important; } /* Muted amethyst */
-        .sidebar-bg .text-indigo-500 { color: #6c78b0 !important; } /* Slate indigo */
-        .sidebar-bg .text-orange-400, .sidebar-bg .text-orange-500 { color: #cc745c !important; } /* Terracotta copper */
-        .sidebar-bg .text-blue-400 { color: #5c7cb8 !important; } /* Soft steel blue */
-
-        .light-theme .sidebar-bg .text-amber-500, .light-theme .sidebar-bg .text-amber-600 { color: #ad821a !important; }
-        .light-theme .sidebar-bg .text-emerald-500 { color: #416b54 !important; }
-        .light-theme .sidebar-bg .text-sky-500 { color: #436685 !important; }
-        .light-theme .sidebar-bg .text-cyan-500 { color: #3b6d75 !important; }
-        .light-theme .sidebar-bg .text-rose-500 { color: #9c4b58 !important; }
-        .light-theme .sidebar-bg .text-teal-500 { color: #366c67 !important; }
-        .light-theme .sidebar-bg .text-violet-500 { color: #625078 !important; }
-        .light-theme .sidebar-bg .text-indigo-500 { color: #4e598f !important; }
-        .light-theme .sidebar-bg .text-orange-400, .light-theme .sidebar-bg .text-orange-500 { color: #a6513a !important; }
-        .light-theme .sidebar-bg .text-blue-400 { color: #3b5a94 !important; }
-
-        /* --- 3D ELEGANT EMBOSSED TREE LINES ("RAJITAS") --- */
-        .sidebar-bg .border-l {
-            border-left: 1.5px solid rgba(255, 255, 255, 0.08) !important;
-            box-shadow: -1.2px 0 0 rgba(0, 0, 0, 0.45) !important; /* Engraved indentation shadow */
-            transition: border-color 0.3s ease;
-        }
-        .light-theme .sidebar-bg .border-l {
-            border-left: 1.5px solid rgba(0, 0, 0, 0.05) !important;
-            box-shadow: 1.2px 0 0 rgba(255, 255, 255, 0.95) !important; /* Embossed highlight reflection */
-        }
-
-        /* --- MAIN CONTENT AREA LIGHT/DARK THEME BACKGROUND FIX --- */
-        main {
-            background-color: rgba(9, 13, 24, 0.45) !important;
-        }
-        .light-theme main {
-            background-color: #f1f5f9 !important; /* Eliminates muddy gray background in Light Theme! */
-        }
-
-        /* --- ELEGANT CUSTOM CHEVRON FOR SELECT DROPDOWNS & FILTER INPUTS --- */
-        select.premium-filter-input {
-            appearance: none !important;
-            -webkit-appearance: none !important;
-            -moz-appearance: none !important;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") !important;
-            background-position: right 12px center !important;
-            background-repeat: no-repeat !important;
-            background-size: 16px !important;
-            padding-right: 36px !important;
-            border-radius: 12px !important;
-        }
-        .light-theme select.premium-filter-input {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23475569' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") !important;
-            background-color: #ffffff !important;
-            border: 1px solid rgba(15, 23, 42, 0.15) !important;
-            color: #0f172a !important;
-        }
-
-        /* --- GLASS CARD HIGH CONTRAST IN LIGHT MODE --- */
-        .light-theme .glass-card {
-            background: #ffffff !important;
-            border: 1px solid rgba(15, 23, 42, 0.08) !important;
-            box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04) !important;
-        }
-
-        /* --- HIGH ELEGANCE TABLES IN LIGHT THEME --- */
-        .light-theme table th {
-            color: #475569 !important;
-            background-color: #f8fafc !important;
-            border-bottom: 1.5px solid #e2e8f0 !important;
-        }
-        .light-theme table td {
-            color: #1e293b !important;
-            border-bottom: 1px solid #f1f5f9 !important;
-        }
-        .light-theme table tr:hover td {
-            background-color: #f8fafc !important;
-        }
-        /* --- SIDEBAR USER PROFILE TYPOGRAPHY (DARK/LIGHT THEMES) --- */
-        .sidebar-bg .user-name {
-            color: #f8fafc !important; /* Crystal clear white text in Dark Mode */
-        }
-        .light-theme .sidebar-bg .user-name {
-            color: #0f172a !important; /* Crisp slate dark text in Light Mode */
-        }
-        .sidebar-bg .user-role {
-            color: #94a3b8 !important; /* Cool slate text in Dark Mode */
-        }
-        .light-theme .sidebar-bg .user-role {
-            color: #64748b !important; /* Muted slate text in Light Mode */
+        /* Accesibilidad: Respeto a prefers-reduced-motion */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+            .mining-hero-img, .ambient-mining-lantern {
+                animation: none !important;
+                transform: none !important;
+            }
         }
     </style>
 </head>
-<body class="h-full flex overflow-hidden bg-slate-950 relative">
-    
-    <!-- Canvas for Floating Glowing Gold/Fire Sparks -->
-    <canvas id="particle-canvas" class="fixed inset-0 pointer-events-none z-0 opacity-40"></canvas>
+<body class="h-full flex overflow-hidden bg-slate-950" 
+      x-data="{ 
+          sidebarCollapsed: localStorage.getItem('sidebar_collapsed') === 'true',
+          mobileMenuOpen: false,
+          toggleSidebar() {
+              this.sidebarCollapsed = !this.sidebarCollapsed;
+              localStorage.setItem('sidebar_collapsed', this.sidebarCollapsed);
+          }
+      }">
 
-    <!-- Sidebar (no-print) -->
-    <div class="no-print hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 sidebar-bg z-20">
-        <div class="flex flex-col h-full pt-5 pb-4">
-            <!-- Logo area -->
-            <div class="flex items-center flex-shrink-0 px-6 py-3 space-x-3 border-b border-slate-900/10 dark:border-slate-800/10 mb-4">
-                <div class="flex items-center justify-center w-9 h-9 rounded-xl bg-slate-950/60 dark:bg-slate-900 border border-amber-500/30 dark:border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.15)] flex-shrink-0 relative overflow-hidden group">
-                    <div class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                    <i class="fa-solid fa-gem text-amber-500 text-sm drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]"></i>
-                </div>
-                <div>
-                    <div class="flex items-center space-x-1">
-                        <span class="text-xs font-black tracking-widest text-slate-800 dark:text-white uppercase">CONTROL</span>
-                        <span class="text-xs font-black tracking-widest text-amber-500 uppercase">PAGOS</span>
+    <!-- === DESKTOP SIDEBAR === -->
+    <aside class="no-print hidden md:flex md:flex-col fixed inset-y-0 z-30 transition-all duration-200 ease-in-out border-r border-white/5"
+           :class="sidebarCollapsed ? 'w-20' : 'w-64'"
+           style="background-color: var(--bg-surface-1);">
+        
+        <div class="flex flex-col h-full">
+            
+            <!-- Brand / Logo Header -->
+            <div class="flex items-center justify-between px-4 h-16 border-b border-white/5 flex-shrink-0">
+                <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 overflow-hidden group">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-500 shadow-sm flex-shrink-0 group-hover:border-amber-500/60 transition-colors">
+                        <i class="fa-solid fa-gem text-base drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]"></i>
                     </div>
-                    <span class="text-[8px] font-extrabold text-slate-400 dark:text-slate-500 font-mono tracking-[0.2em] block -mt-0.5">MINERÍA</span>
-                </div>
+                    <div x-show="!sidebarCollapsed" x-transition.opacity.duration.150ms class="min-w-0">
+                        <div class="flex items-center space-x-1">
+                            <span class="text-xs font-black tracking-widest text-slate-100 uppercase">TORMAN</span>
+                            <span class="text-xs font-black tracking-widest text-amber-500 uppercase">MINERÍA</span>
+                        </div>
+                        <span class="text-[9px] font-semibold text-slate-400 font-mono tracking-wider block">GESTIÓN Y PAGOS</span>
+                    </div>
+                </a>
+
+                <!-- Collapse / Expand toggle button -->
+                <button @click="toggleSidebar()" 
+                        class="p-1.5 rounded-lg text-slate-400 hover:text-amber-400 hover:bg-white/5 transition-colors focus:outline-none"
+                        :title="sidebarCollapsed ? 'Expandir barra lateral' : 'Plegar barra lateral'">
+                    <i class="fa-solid text-xs transition-transform duration-200" :class="sidebarCollapsed ? 'fa-angles-right' : 'fa-angles-left'"></i>
+                </button>
             </div>
-            <!-- Navigation -->
-            <nav class="flex-1 px-4 space-y-3 relative overflow-y-auto pr-1.5" 
-                 id="main-nav"
-                 x-data="{ 
-                     openPagos: localStorage.getItem('sidebar_open_pagos') !== 'false',
-                     openPersonal: localStorage.getItem('sidebar_open_personal') !== 'false',
-                     openMovimientos: localStorage.getItem('sidebar_open_movimientos') !== 'false',
-                     openAlmacen: localStorage.getItem('sidebar_open_almacen') !== 'false',
-                     openSistema: localStorage.getItem('sidebar_open_sistema') !== 'false',
-                     toggle(key) {
+
+            <!-- Navigation Links -->
+            <nav class="flex-1 px-3 py-4 space-y-4 overflow-y-auto"
+                 x-data="{
+                     openPersonal: localStorage.getItem('nav_open_personal') !== 'false',
+                     openMovimientos: localStorage.getItem('nav_open_movimientos') !== 'false',
+                     openAlmacen: localStorage.getItem('nav_open_almacen') !== 'false',
+                     openSistema: localStorage.getItem('nav_open_sistema') !== 'false',
+                     toggleNav(key) {
                          this[key] = !this[key];
-                         localStorage.setItem('sidebar_' + key.replace('open', '').toLowerCase(), this[key]);
+                         localStorage.setItem('nav_' + key.replace('open', '').toLowerCase(), this[key]);
                      }
                  }"
                  x-init="
-                     if ({{ request()->routeIs('bocaminas.*', 'trabajadores.*', 'fondos-caja.*', 'anticipos.*', 'pagos.*', 'servicios-externos.*', 'reportes.*') ? 'true' : 'false' }}) { openPagos = true; }
                      if ({{ request()->routeIs('bocaminas.*', 'trabajadores.*', 'tipos-trabajo.*') ? 'true' : 'false' }}) { openPersonal = true; }
                      if ({{ request()->routeIs('fondos-caja.*', 'anticipos.*', 'pagos.*', 'servicios-externos.*', 'reportes.*') ? 'true' : 'false' }}) { openMovimientos = true; }
-                     if ({{ request()->routeIs('transacciones-minerales.*') ? 'true' : 'false' }}) { openAlmacen = true; }
+                     if ({{ request()->routeIs('transacciones-minerales.*', 'reportes-comercializacion.*') ? 'true' : 'false' }}) { openAlmacen = true; }
                      if ({{ request()->routeIs('backups.*') ? 'true' : 'false' }}) { openSistema = true; }
                  ">
-                <!-- 1. Tablero Principal -->
-                <a href="{{ route('dashboard') }}" data-theme-color="amber" class="nav-item flex items-center px-3 py-2 text-xs font-bold rounded-lg relative z-10 transition-colors duration-200 {{ request()->routeIs('dashboard') ? 'active-nav-item' : 'text-slate-450 hover:text-slate-200' }}">
-                    <i class="fa-solid fa-chart-simple w-5 text-center mr-3 text-sm"></i>
-                    Tablero Principal
-                </a>
 
-                <!-- 2. PAGOS Y ANTICIPOS (desplegable principal) -->
-                <div class="space-y-1.5">
-                    <button @click="toggle('openPagos')" 
-                            class="w-full flex items-center justify-between px-3 py-2 text-xs font-black uppercase tracking-widest text-slate-450 dark:text-slate-450 hover:text-slate-200 focus:outline-none transition-colors duration-150">
-                        <span class="flex items-center">
-                            <i class="fa-solid fa-sack-dollar w-5 text-center mr-3 text-sm text-amber-500"></i>
-                            PAGOS Y ANTICIPOS
+                <!-- 1. TABLERO PRINCIPAL -->
+                <div>
+                    <a href="{{ route('dashboard') }}" 
+                       class="sidebar-nav-item {{ request()->routeIs('dashboard') ? 'active-item' : '' }}"
+                       :class="sidebarCollapsed ? 'justify-center px-0' : ''"
+                       title="Tablero Principal">
+                        <span class="w-6 h-6 rounded-md flex items-center justify-center bg-amber-500/15 text-amber-400 border border-amber-500/25 flex-shrink-0 transition-transform group-hover:scale-105" :class="sidebarCollapsed ? '' : 'mr-3'">
+                            <i class="fa-solid fa-chart-pie text-xs"></i>
                         </span>
-                        <i class="fa-solid fa-chevron-down text-[8px] text-slate-500 transition-transform duration-200" :class="openPagos ? '' : '-rotate-90'"></i>
-                    </button>
-
-                    <div x-show="openPagos" class="pl-2 space-y-1.5 border-l border-slate-900/10 dark:border-slate-800/60 ml-5" x-collapse>
-                        
-                        <!-- 2.1 PERSONAL (sub-desplegable) -->
-                        <div class="space-y-1">
-                            <button @click="toggle('openPersonal')" 
-                                    class="w-full flex items-center justify-between px-2 py-1.5 text-[11px] font-bold text-slate-350 dark:text-slate-400 hover:text-slate-200 focus:outline-none transition-colors duration-150">
-                                <span class="flex items-center">
-                                    <i class="fa-solid fa-users w-5 text-center mr-3 text-xs text-orange-400"></i>
-                                    PERSONAL
-                                </span>
-                                <i class="fa-solid fa-chevron-down text-[8px] text-slate-500 transition-transform duration-200" :class="openPersonal ? '' : '-rotate-90'"></i>
-                            </button>
-
-                            <div x-show="openPersonal" class="pl-2 space-y-1 border-l border-slate-900/5 dark:border-slate-800/30 ml-4" x-collapse>
-                                <a href="{{ route('bocaminas.index') }}" data-theme-color="emerald" class="nav-item flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg relative z-10 transition-colors duration-200 {{ request()->routeIs('bocaminas.*') ? 'active-nav-item' : 'text-slate-450 hover:text-slate-200' }}">
-                                    <i class="fa-solid fa-mountain-sun w-5 text-center mr-3 text-xs text-emerald-500"></i>
-                                    Bocaminas
-                                </a>
-                                 <a href="{{ route('trabajadores.index') }}" data-theme-color="sky" class="nav-item flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg relative z-10 transition-colors duration-200 {{ request()->routeIs('trabajadores.*') ? 'active-nav-item' : 'text-slate-450 hover:text-slate-200' }}">
-                                    <i class="fa-solid fa-user-gear w-5 text-center mr-3 text-xs text-sky-500"></i>
-                                    Personal y Contratos
-                                </a>
-                                <a href="{{ route('tipos-trabajo.index') }}" data-theme-color="amber" class="nav-item flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg relative z-10 transition-colors duration-200 {{ request()->routeIs('tipos-trabajo.*') ? 'active-nav-item' : 'text-slate-450 hover:text-slate-200' }}">
-                                    <i class="fa-solid fa-hammer w-5 text-center mr-3 text-xs text-amber-500"></i>
-                                    Tipos de Trabajo
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- 2.2 MOVIMIENTOS (sub-desplegable) -->
-                        <div class="space-y-1">
-                            <button @click="toggle('openMovimientos')" 
-                                    class="w-full flex items-center justify-between px-2 py-1.5 text-[11px] font-bold text-slate-350 dark:text-slate-400 hover:text-slate-200 focus:outline-none transition-colors duration-150">
-                                <span class="flex items-center">
-                                    <i class="fa-solid fa-money-bill-transfer w-5 text-center mr-3 text-xs text-blue-400"></i>
-                                    MOVIMIENTOS
-                                </span>
-                                <i class="fa-solid fa-chevron-down text-[8px] text-slate-500 transition-transform duration-200" :class="openMovimientos ? '' : '-rotate-90'"></i>
-                            </button>
-
-                            <div x-show="openMovimientos" class="pl-2 space-y-1 border-l border-slate-900/5 dark:border-slate-800/30 ml-4" x-collapse>
-                                <a href="{{ route('fondos-caja.index') }}" data-theme-color="cyan" class="nav-item flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg relative z-10 transition-colors duration-200 {{ request()->routeIs('fondos-caja.*') ? 'active-nav-item' : 'text-slate-450 hover:text-slate-200' }}">
-                                    <i class="fa-solid fa-cash-register w-5 text-center mr-3 text-xs text-cyan-500"></i>
-                                    Caja del Personal
-                                </a>
-                                <a href="{{ route('anticipos.index') }}" data-theme-color="rose" class="nav-item flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg relative z-10 transition-colors duration-200 {{ request()->routeIs('anticipos.*') ? 'active-nav-item' : 'text-slate-450 hover:text-slate-200' }}">
-                                    <i class="fa-solid fa-hand-holding-dollar w-5 text-center mr-3 text-xs text-rose-500"></i>
-                                    Anticipos
-                                </a>
-                                 <a href="{{ route('pagos.index') }}" data-theme-color="teal" class="nav-item flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg relative z-10 transition-colors duration-200 {{ request()->routeIs('pagos.*') ? 'active-nav-item' : 'text-slate-450 hover:text-slate-200' }}">
-                                    <i class="fa-solid fa-credit-card w-5 text-center mr-3 text-xs text-teal-500"></i>
-                                    Pagos
-                                </a>
-                                <a href="{{ route('servicios-externos.index') }}" data-theme-color="sky" class="nav-item flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg relative z-10 transition-colors duration-200 {{ request()->routeIs('servicios-externos.*') ? 'active-nav-item' : 'text-slate-450 hover:text-slate-200' }}">
-                                    <i class="fa-solid fa-truck-front w-5 text-center mr-3 text-xs text-sky-500"></i>
-                                    Servicios Externos
-                                </a>
-                                <a href="{{ route('reportes.index') }}" data-theme-color="violet" class="nav-item flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg relative z-10 transition-colors duration-200 {{ request()->routeIs('reportes.*') ? 'active-nav-item' : 'text-slate-450 hover:text-slate-200' }}">
-                                    <i class="fa-solid fa-chart-simple w-5 text-center mr-3 text-xs text-violet-500"></i>
-                                    Reportes
-                                </a>
-                            </div>
-                        </div>
-
-                    </div>
+                        <span x-show="!sidebarCollapsed" x-transition.opacity.duration.150ms class="truncate font-semibold">Tablero Principal</span>
+                    </a>
                 </div>
 
-                <!-- 3. ALMACÉN Y VENTAS (desplegable principal) -->
-                <div class="space-y-1.5">
-                    <button @click="toggle('openAlmacen')" 
-                            class="w-full flex items-center justify-between px-3 py-2 text-xs font-black uppercase tracking-widest text-slate-450 dark:text-slate-450 hover:text-slate-200 focus:outline-none transition-colors duration-150">
+                <!-- 2. PERSONAL Y FRENTES -->
+                <div>
+                    <div x-show="!sidebarCollapsed" class="px-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono">
+                        Personal y Mina
+                    </div>
+                    <button @click="toggleNav('openPersonal')" 
+                            class="w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-slate-200 rounded-lg hover:bg-white/5 transition-colors focus:outline-none"
+                            :class="sidebarCollapsed ? 'justify-center px-0' : ''"
+                            title="Personal y Frentes">
                         <span class="flex items-center">
-                            <i class="fa-solid fa-boxes-stacked w-5 text-center mr-3 text-sm text-amber-600 dark:text-amber-500"></i>
-                            ALMACÉN Y VENTAS
+                            <span class="w-6 h-6 rounded-md flex items-center justify-center bg-sky-500/15 text-sky-400 border border-sky-500/25 flex-shrink-0" :class="sidebarCollapsed ? '' : 'mr-3'">
+                                <i class="fa-solid fa-people-carry-box text-xs"></i>
+                            </span>
+                            <span x-show="!sidebarCollapsed" class="truncate">Personal y Mina</span>
                         </span>
-                        <i class="fa-solid fa-chevron-down text-[8px] text-slate-500 transition-transform duration-200" :class="openAlmacen ? '' : '-rotate-90'"></i>
+                        <i x-show="!sidebarCollapsed" class="fa-solid fa-chevron-down text-[8px] text-slate-500 transition-transform duration-200" :class="openPersonal ? '' : '-rotate-90'"></i>
                     </button>
 
-                    <div x-show="openAlmacen" class="pl-2 space-y-1.5 border-l border-slate-900/10 dark:border-slate-800/60 ml-5" x-collapse>
-                        <a href="{{ route('transacciones-minerales.index', ['tab' => 'caja']) }}" data-theme-color="amber" class="nav-item flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg relative z-10 transition-colors duration-200 {{ (request()->routeIs('transacciones-minerales.*') && request('tab') === 'caja') ? 'active-nav-item' : 'text-slate-450 hover:text-slate-200' }}">
-                            <i class="fa-solid fa-vault w-5 text-center mr-3 text-xs text-amber-400"></i>
-                            Caja del Módulo
+                    <div x-show="openPersonal || sidebarCollapsed" class="mt-1 space-y-1" :class="sidebarCollapsed ? '' : 'pl-3 border-l border-white/5 ml-4'">
+                        <a href="{{ route('bocaminas.index') }}" 
+                           class="sidebar-nav-item {{ request()->routeIs('bocaminas.*') ? 'active-item' : '' }}"
+                           :class="sidebarCollapsed ? 'justify-center px-0' : ''"
+                           title="Bocaminas">
+                            <span class="w-5 h-5 rounded flex items-center justify-center bg-orange-500/15 text-orange-400 flex-shrink-0" :class="sidebarCollapsed ? '' : 'mr-2.5'">
+                                <i class="fa-solid fa-mountain text-[10px]"></i>
+                            </span>
+                            <span x-show="!sidebarCollapsed" class="truncate">Bocaminas</span>
                         </a>
-                        <a href="{{ route('transacciones-minerales.index', ['tab' => 'compras']) }}" data-theme-color="amber" class="nav-item flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg relative z-10 transition-colors duration-200 {{ (request()->routeIs('transacciones-minerales.*') && request('tab', 'compras') === 'compras') ? 'active-nav-item' : 'text-slate-450 hover:text-slate-200' }}">
-                            <i class="fa-solid fa-circle-arrow-down w-5 text-center mr-3 text-xs text-amber-500"></i>
-                            Compras
+                        <a href="{{ route('trabajadores.index') }}" 
+                           class="sidebar-nav-item {{ request()->routeIs('trabajadores.*') ? 'active-item' : '' }}"
+                           :class="sidebarCollapsed ? 'justify-center px-0' : ''"
+                           title="Personal y Contratos">
+                            <span class="w-5 h-5 rounded flex items-center justify-center bg-sky-500/15 text-sky-400 flex-shrink-0" :class="sidebarCollapsed ? '' : 'mr-2.5'">
+                                <i class="fa-solid fa-id-card-clip text-[10px]"></i>
+                            </span>
+                            <span x-show="!sidebarCollapsed" class="truncate">Personal y Contratos</span>
                         </a>
-                        <a href="{{ route('transacciones-minerales.index', ['tab' => 'ventas']) }}" data-theme-color="emerald" class="nav-item flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg relative z-10 transition-colors duration-200 {{ (request()->routeIs('transacciones-minerales.*') && request('tab') === 'ventas') ? 'active-nav-item' : 'text-slate-450 hover:text-slate-200' }}">
-                            <i class="fa-solid fa-circle-arrow-up w-5 text-center mr-3 text-xs text-emerald-500"></i>
-                            Ventas
-                        </a>
-                        <a href="{{ route('transacciones-minerales.index', ['tab' => 'stock']) }}" data-theme-color="cyan" class="nav-item flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg relative z-10 transition-colors duration-200 {{ (request()->routeIs('transacciones-minerales.*') && request('tab') === 'stock') ? 'active-nav-item' : 'text-slate-450 hover:text-slate-200' }}">
-                            <i class="fa-solid fa-warehouse w-5 text-center mr-3 text-xs text-cyan-500"></i>
-                            Stock
-                        </a>
-                        <a href="{{ route('transacciones-minerales.index', ['tab' => 'reportes']) }}" data-theme-color="indigo" class="nav-item flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg relative z-10 transition-colors duration-200 {{ (request()->routeIs('transacciones-minerales.*') && request('tab') === 'reportes') ? 'active-nav-item' : 'text-slate-450 hover:text-slate-200' }}">
-                            <i class="fa-solid fa-chart-line w-5 text-center mr-3 text-xs text-indigo-500"></i>
-                            Reportes
+                        <a href="{{ route('tipos-trabajo.index') }}" 
+                           class="sidebar-nav-item {{ request()->routeIs('tipos-trabajo.*') ? 'active-item' : '' }}"
+                           :class="sidebarCollapsed ? 'justify-center px-0' : ''"
+                           title="Tipos de Trabajo">
+                            <span class="w-5 h-5 rounded flex items-center justify-center bg-amber-500/15 text-amber-400 flex-shrink-0" :class="sidebarCollapsed ? '' : 'mr-2.5'">
+                                <i class="fa-solid fa-hammer text-[10px]"></i>
+                            </span>
+                            <span x-show="!sidebarCollapsed" class="truncate">Tipos de Trabajo</span>
                         </a>
                     </div>
                 </div>
 
-                <!-- 4. SISTEMA (desplegable principal) -->
-                <div class="space-y-1.5">
-                    <button @click="toggle('openSistema')" 
-                            class="w-full flex items-center justify-between px-3 py-2 text-xs font-black uppercase tracking-widest text-slate-450 dark:text-slate-450 hover:text-slate-200 focus:outline-none transition-colors duration-150">
+                <!-- 3. CAJA Y LIQUIDACIONES -->
+                <div>
+                    <div x-show="!sidebarCollapsed" class="px-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono">
+                        Caja y Movimientos
+                    </div>
+                    <button @click="toggleNav('openMovimientos')" 
+                            class="w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-slate-200 rounded-lg hover:bg-white/5 transition-colors focus:outline-none"
+                            :class="sidebarCollapsed ? 'justify-center px-0' : ''"
+                            title="Caja y Movimientos">
                         <span class="flex items-center">
-                            <i class="fa-solid fa-sliders w-5 text-center mr-3 text-sm text-slate-500"></i>
-                            SISTEMA
+                            <span class="w-6 h-6 rounded-md flex items-center justify-center bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 flex-shrink-0" :class="sidebarCollapsed ? '' : 'mr-3'">
+                                <i class="fa-solid fa-vault text-xs"></i>
+                            </span>
+                            <span x-show="!sidebarCollapsed" class="truncate">Caja y Movimientos</span>
                         </span>
-                        <i class="fa-solid fa-chevron-down text-[8px] text-slate-500 transition-transform duration-200" :class="openSistema ? '' : '-rotate-90'"></i>
+                        <i x-show="!sidebarCollapsed" class="fa-solid fa-chevron-down text-[8px] text-slate-500 transition-transform duration-200" :class="openMovimientos ? '' : '-rotate-90'"></i>
                     </button>
 
-                    <div x-show="openSistema" class="pl-2 space-y-1.5 border-l border-slate-900/10 dark:border-slate-800/60 ml-5" x-collapse>
-                        <a href="{{ route('backups.index') }}" data-theme-color="orange" class="nav-item flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg relative z-10 transition-colors duration-200 {{ request()->routeIs('backups.*') ? 'active-nav-item' : 'text-slate-450 hover:text-slate-200' }}">
-                            <i class="fa-solid fa-server w-5 text-center mr-3 text-xs text-orange-500"></i>
-                            Respaldos
+                    <div x-show="openMovimientos || sidebarCollapsed" class="mt-1 space-y-1" :class="sidebarCollapsed ? '' : 'pl-3 border-l border-white/5 ml-4'">
+                        <a href="{{ route('fondos-caja.index') }}" 
+                           class="sidebar-nav-item {{ request()->routeIs('fondos-caja.*') ? 'active-item' : '' }}"
+                           :class="sidebarCollapsed ? 'justify-center px-0' : ''"
+                           title="Caja del Personal">
+                            <span class="w-5 h-5 rounded flex items-center justify-center bg-emerald-500/15 text-emerald-400 flex-shrink-0" :class="sidebarCollapsed ? '' : 'mr-2.5'">
+                                <i class="fa-solid fa-cash-register text-[10px]"></i>
+                            </span>
+                            <span x-show="!sidebarCollapsed" class="truncate">Caja del Personal</span>
+                        </a>
+                        <a href="{{ route('anticipos.index') }}" 
+                           class="sidebar-nav-item {{ request()->routeIs('anticipos.*') ? 'active-item' : '' }}"
+                           :class="sidebarCollapsed ? 'justify-center px-0' : ''"
+                           title="Anticipos">
+                            <span class="w-5 h-5 rounded flex items-center justify-center bg-rose-500/15 text-rose-400 flex-shrink-0" :class="sidebarCollapsed ? '' : 'mr-2.5'">
+                                <i class="fa-solid fa-hand-holding-dollar text-[10px]"></i>
+                            </span>
+                            <span x-show="!sidebarCollapsed" class="truncate">Anticipos</span>
+                        </a>
+                        <a href="{{ route('pagos.index') }}" 
+                           class="sidebar-nav-item {{ request()->routeIs('pagos.*') ? 'active-item' : '' }}"
+                           :class="sidebarCollapsed ? 'justify-center px-0' : ''"
+                           title="Pagos y Planillas">
+                            <span class="w-5 h-5 rounded flex items-center justify-center bg-teal-500/15 text-teal-400 flex-shrink-0" :class="sidebarCollapsed ? '' : 'mr-2.5'">
+                                <i class="fa-solid fa-file-invoice-dollar text-[10px]"></i>
+                            </span>
+                            <span x-show="!sidebarCollapsed" class="truncate">Pagos y Planillas</span>
+                        </a>
+                        <a href="{{ route('servicios-externos.index') }}" 
+                           class="sidebar-nav-item {{ request()->routeIs('servicios-externos.*') ? 'active-item' : '' }}"
+                           :class="sidebarCollapsed ? 'justify-center px-0' : ''"
+                           title="Servicios Externos">
+                            <span class="w-5 h-5 rounded flex items-center justify-center bg-indigo-500/15 text-indigo-400 flex-shrink-0" :class="sidebarCollapsed ? '' : 'mr-2.5'">
+                                <i class="fa-solid fa-truck-ramp-box text-[10px]"></i>
+                            </span>
+                            <span x-show="!sidebarCollapsed" class="truncate">Servicios Externos</span>
+                        </a>
+                        <a href="{{ route('reportes.index') }}" 
+                           class="sidebar-nav-item {{ request()->routeIs('reportes.index') ? 'active-item' : '' }}"
+                           :class="sidebarCollapsed ? 'justify-center px-0' : ''"
+                           title="Reportes Consolidados">
+                            <span class="w-5 h-5 rounded flex items-center justify-center bg-blue-500/15 text-blue-400 flex-shrink-0" :class="sidebarCollapsed ? '' : 'mr-2.5'">
+                                <i class="fa-solid fa-chart-column text-[10px]"></i>
+                            </span>
+                            <span x-show="!sidebarCollapsed" class="truncate">Reportes Personal</span>
                         </a>
                     </div>
                 </div>
+
+                <!-- 4. COMERCIALIZACIÓN Y MINERALES (MÓDULO 2) -->
+                <div>
+                    <div x-show="!sidebarCollapsed" class="px-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono">
+                        Minerales y Lotes
+                    </div>
+                    <button @click="toggleNav('openAlmacen')" 
+                            class="w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-slate-200 rounded-lg hover:bg-white/5 transition-colors focus:outline-none"
+                            :class="sidebarCollapsed ? 'justify-center px-0' : ''"
+                            title="Minerales y Lotes">
+                        <span class="flex items-center">
+                            <span class="w-6 h-6 rounded-md flex items-center justify-center bg-purple-500/15 text-purple-400 border border-purple-500/25 flex-shrink-0" :class="sidebarCollapsed ? '' : 'mr-3'">
+                                <i class="fa-solid fa-dolly text-xs"></i>
+                            </span>
+                            <span x-show="!sidebarCollapsed" class="truncate">Minerales y Lotes</span>
+                        </span>
+                        <i x-show="!sidebarCollapsed" class="fa-solid fa-chevron-down text-[8px] text-slate-500 transition-transform duration-200" :class="openAlmacen ? '' : '-rotate-90'"></i>
+                    </button>
+
+                    <div x-show="openAlmacen || sidebarCollapsed" class="mt-1 space-y-1" :class="sidebarCollapsed ? '' : 'pl-3 border-l border-white/5 ml-4'">
+                        <a href="{{ route('transacciones-minerales.index', ['tab' => 'caja']) }}" 
+                           class="sidebar-nav-item {{ (request()->routeIs('transacciones-minerales.*') && request('tab') === 'caja') ? 'active-item' : '' }}"
+                           :class="sidebarCollapsed ? 'justify-center px-0' : ''"
+                           title="Caja del Módulo">
+                            <span class="w-5 h-5 rounded flex items-center justify-center bg-emerald-500/15 text-emerald-400 flex-shrink-0" :class="sidebarCollapsed ? '' : 'mr-2.5'">
+                                <i class="fa-solid fa-scale-balanced text-[10px]"></i>
+                            </span>
+                            <span x-show="!sidebarCollapsed" class="truncate">Caja del Módulo</span>
+                        </a>
+                        <a href="{{ route('transacciones-minerales.index', ['tab' => 'compras']) }}" 
+                           class="sidebar-nav-item {{ (request()->routeIs('transacciones-minerales.*') && request('tab', 'compras') === 'compras') ? 'active-item' : '' }}"
+                           :class="sidebarCollapsed ? 'justify-center px-0' : ''"
+                           title="Compras de Mineral">
+                            <span class="w-5 h-5 rounded flex items-center justify-center bg-purple-500/15 text-purple-400 flex-shrink-0" :class="sidebarCollapsed ? '' : 'mr-2.5'">
+                                <i class="fa-solid fa-arrow-down-to-bracket text-[10px]"></i>
+                            </span>
+                            <span x-show="!sidebarCollapsed" class="truncate">Compras de Lotes</span>
+                        </a>
+                        <a href="{{ route('transacciones-minerales.index', ['tab' => 'ventas']) }}" 
+                           class="sidebar-nav-item {{ (request()->routeIs('transacciones-minerales.*') && request('tab') === 'ventas') ? 'active-item' : '' }}"
+                           :class="sidebarCollapsed ? 'justify-center px-0' : ''"
+                           title="Ventas de Mineral">
+                            <span class="w-5 h-5 rounded flex items-center justify-center bg-cyan-500/15 text-cyan-400 flex-shrink-0" :class="sidebarCollapsed ? '' : 'mr-2.5'">
+                                <i class="fa-solid fa-arrow-up-from-bracket text-[10px]"></i>
+                            </span>
+                            <span x-show="!sidebarCollapsed" class="truncate">Ventas de Mineral</span>
+                        </a>
+                        <a href="{{ route('transacciones-minerales.index', ['tab' => 'stock']) }}" 
+                           class="sidebar-nav-item {{ (request()->routeIs('transacciones-minerales.*') && request('tab') === 'stock') ? 'active-item' : '' }}"
+                           :class="sidebarCollapsed ? 'justify-center px-0' : ''"
+                           title="Stock de Mineral">
+                            <span class="w-5 h-5 rounded flex items-center justify-center bg-amber-500/15 text-amber-400 flex-shrink-0" :class="sidebarCollapsed ? '' : 'mr-2.5'">
+                                <i class="fa-solid fa-boxes-stacked text-[10px]"></i>
+                            </span>
+                            <span x-show="!sidebarCollapsed" class="truncate">Stock de Mineral</span>
+                        </a>
+                        <a href="{{ route('reportes-comercializacion.index') }}" 
+                           class="sidebar-nav-item {{ request()->routeIs('reportes-comercializacion.*') ? 'active-item' : '' }}"
+                           :class="sidebarCollapsed ? 'justify-center px-0' : ''"
+                           title="Reportes Comercialización">
+                            <span class="w-5 h-5 rounded flex items-center justify-center bg-fuchsia-500/15 text-fuchsia-400 flex-shrink-0" :class="sidebarCollapsed ? '' : 'mr-2.5'">
+                                <i class="fa-solid fa-chart-line text-[10px]"></i>
+                            </span>
+                            <span x-show="!sidebarCollapsed" class="truncate">Reportes Comercializ.</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 5. SISTEMA Y RESPALDOS -->
+                <div>
+                    <div x-show="!sidebarCollapsed" class="px-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono">
+                        Sistema
+                    </div>
+                    <button @click="toggleNav('openSistema')" 
+                            class="w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-slate-200 rounded-lg hover:bg-white/5 transition-colors focus:outline-none"
+                            :class="sidebarCollapsed ? 'justify-center px-0' : ''"
+                            title="Sistema">
+                        <span class="flex items-center">
+                            <span class="w-6 h-6 rounded-md flex items-center justify-center bg-slate-500/15 text-slate-300 border border-slate-500/25 flex-shrink-0" :class="sidebarCollapsed ? '' : 'mr-3'">
+                                <i class="fa-solid fa-gear text-xs"></i>
+                            </span>
+                            <span x-show="!sidebarCollapsed" class="truncate">Sistema</span>
+                        </span>
+                        <i x-show="!sidebarCollapsed" class="fa-solid fa-chevron-down text-[8px] text-slate-500 transition-transform duration-200" :class="openSistema ? '' : '-rotate-90'"></i>
+                    </button>
+
+                    <div x-show="openSistema || sidebarCollapsed" class="mt-1 space-y-1" :class="sidebarCollapsed ? '' : 'pl-3 border-l border-white/5 ml-4'">
+                        <a href="{{ route('backups.index') }}" 
+                           class="sidebar-nav-item {{ request()->routeIs('backups.*') ? 'active-item' : '' }}"
+                           :class="sidebarCollapsed ? 'justify-center px-0' : ''"
+                           title="Respaldos">
+                            <span class="w-5 h-5 rounded flex items-center justify-center bg-blue-500/15 text-blue-400 flex-shrink-0" :class="sidebarCollapsed ? '' : 'mr-2.5'">
+                                <i class="fa-solid fa-database text-[10px]"></i>
+                            </span>
+                            <span x-show="!sidebarCollapsed" class="truncate">Copias de Seguridad</span>
+                        </a>
+                        <a href="{{ route('profile.edit') }}" 
+                           class="sidebar-nav-item {{ request()->routeIs('profile.*') ? 'active-item' : '' }}"
+                           :class="sidebarCollapsed ? 'justify-center px-0' : ''"
+                           title="Mi Perfil">
+                            <span class="w-5 h-5 rounded flex items-center justify-center bg-indigo-500/15 text-indigo-400 flex-shrink-0" :class="sidebarCollapsed ? '' : 'mr-2.5'">
+                                <i class="fa-solid fa-user-shield text-[10px]"></i>
+                            </span>
+                            <span x-show="!sidebarCollapsed" class="truncate">Configuración / Perfil</span>
+                        </a>
+                    </div>
+                </div>
+
             </nav>
-            
-            <!-- User Section / Footer Card -->
-            <div class="mt-auto pt-4 px-4 border-t border-slate-900/60 dark:border-slate-800/40">
-                <div class="p-3 rounded-2xl bg-slate-900/40 dark:bg-slate-900/60 border border-slate-800/60 shadow-inner flex flex-col space-y-3">
-                    <a href="{{ route('profile.edit') }}" class="flex items-center space-x-3 hover:bg-slate-800/50 p-2 rounded-xl transition duration-150 group" title="Ver mi Perfil">
-                        <div class="relative w-10 h-10 flex-shrink-0">
-                            @if(Auth::user() && Auth::user()->avatar)
-                                <div class="w-10 h-10 rounded-xl bg-slate-900 border border-amber-500/30 overflow-hidden shadow-[0_0_12px_rgba(245,158,11,0.15)] flex items-center justify-center">
-                                    <img src="{{ asset(Auth::user()->avatar) }}" class="w-full h-full object-cover">
-                                </div>
-                            @else
-                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-600/10 border border-amber-500/30 flex items-center justify-center shadow-[0_0_12px_rgba(245,158,11,0.15)]">
-                                    <i class="fa-solid fa-user-tie text-amber-500 text-sm"></i>
-                                </div>
-                            @endif
-                            <span class="block h-3.5 w-3.5 rounded-full bg-emerald-500 ring-2 ring-slate-900 shadow-sm" style="position: absolute; bottom: 0px; right: 0px; left: auto; top: auto; z-index: 20;"></span>
+
+            <!-- Bottom User Section -->
+            <div class="p-3 border-t border-white/5 mt-auto flex-shrink-0" style="background-color: var(--bg-surface-2);">
+                <div class="flex items-center justify-between" :class="sidebarCollapsed ? 'flex-col space-y-2' : ''">
+                    <a href="{{ route('profile.edit') }}" 
+                       class="flex items-center space-x-2.5 min-w-0 group p-1 rounded-lg hover:bg-white/5 transition-colors"
+                       title="Ver Perfil de Usuario">
+                        <div class="relative w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center flex-shrink-0 text-amber-500 font-bold text-xs shadow-sm">
+                            {{ substr(Auth::user()->name ?? 'A', 0, 1) }}
+                            <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-slate-900"></span>
                         </div>
-                        <div class="flex-1 min-w-0 pl-2">
-                            <p class="user-name text-sm font-extrabold leading-tight truncate">
+                        <div x-show="!sidebarCollapsed" x-transition.opacity.duration.150ms class="min-w-0">
+                            <p class="text-xs font-semibold text-slate-100 truncate group-hover:text-amber-400 transition-colors">
                                 {{ Auth::user()->name ?? 'Administrador' }}
                             </p>
-                            <p class="user-role text-[9px] font-black uppercase tracking-wider mt-0.5">
-                                ADMINISTRADOR
+                            <p class="text-[9px] font-mono text-slate-400 uppercase tracking-wider">
+                                ADMIN MINERO
                             </p>
                         </div>
                     </a>
-                    
-                    <form action="{{ route('logout') }}" method="POST" class="w-full">
+
+                    <form action="{{ route('logout') }}" method="POST" class="flex-shrink-0">
                         @csrf
-                        <button type="submit" class="w-full flex items-center justify-center space-x-2 py-2.5 px-4 rounded-xl font-extrabold text-xs uppercase tracking-wider transition-all duration-200 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 border border-rose-500/25 hover:border-rose-500/50 shadow-[0_0_12px_rgba(244,63,94,0.1)] active:scale-95">
+                        <button type="submit" 
+                                class="p-2 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all focus:outline-none"
+                                title="Cerrar Sesión">
                             <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
-                            <span>Salir</span>
                         </button>
                     </form>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Mobile Header & Navigation (no-print) -->
-    <div x-data="{ open: false }" class="no-print md:hidden fixed top-0 w-full bg-slate-900 border-b border-slate-800 z-30">
-        <div class="flex items-center justify-between h-16 px-4">
-            <div class="flex items-center space-x-3">
-                <div class="flex items-center justify-center w-8 h-8 rounded bg-slate-950/60 border border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.15)]">
-                    <i class="fa-solid fa-gem text-amber-500 text-xs"></i>
-                </div>
-                <h1 class="text-md font-bold tracking-wider text-slate-100 uppercase">SCP <span class="text-amber-500/90 font-extrabold">Minero</span></h1>
-            </div>
-            <div class="flex items-center space-x-2">
-                <button onclick="toggleTheme()" class="p-2 rounded text-amber-500 hover:text-amber-400 focus:outline-none" title="Cambiar Modo (Día/Noche)">
-                    <i id="theme-toggle-icon-mobile" class="fa-solid fa-sun text-lg"></i>
-                </button>
-                <button @click="open = !open" class="text-slate-400 hover:text-slate-200 focus:outline-none">
-                    <i class="fa-solid fa-bars text-xl"></i>
-                </button>
-            </div>
         </div>
+    </aside>
+
+    <!-- === MAIN APPLICATION WRAPPER === -->
+    <div class="flex flex-col flex-1 w-full overflow-hidden transition-all duration-200 ease-in-out"
+         :class="sidebarCollapsed ? 'md:pl-20' : 'md:pl-64'">
         
-        <!-- Mobile menu list -->
-        <div x-show="open" @click.away="open = false" class="px-2 pt-2 pb-4 space-y-1 bg-slate-900 border-b border-slate-800">
-            <a href="{{ route('dashboard') }}" class="block px-3 py-2 rounded-md text-base font-medium {{ request()->routeIs('dashboard') ? 'bg-amber-500/10 text-amber-500' : 'text-slate-300 hover:bg-slate-800' }}">Tablero Principal</a>
+        <!-- === TOPBAR === -->
+        <header class="no-print h-16 border-b border-white/5 px-4 md:px-8 flex items-center justify-between flex-shrink-0 relative z-20"
+                style="background-color: var(--bg-surface-1);">
             
-            <div class="px-3 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono">Pagos y Anticipos al Personal</div>
-            <div class="pl-2 border-l border-slate-800 ml-2 space-y-1">
-                <div class="px-3 py-1 text-xs font-semibold text-slate-400 uppercase tracking-wider font-mono">👷 Personal</div>
-                <a href="{{ route('bocaminas.index') }}" class="block px-6 py-1.5 rounded-md text-sm font-medium {{ request()->routeIs('bocaminas.*') ? 'bg-emerald-500/10 text-emerald-400' : 'text-slate-450 hover:bg-slate-800' }}">Bocaminas</a>
-                <a href="{{ route('trabajadores.index') }}" class="block px-6 py-1.5 rounded-md text-sm font-medium {{ request()->routeIs('trabajadores.*') ? 'bg-sky-500/10 text-sky-400' : 'text-slate-450 hover:bg-slate-800' }}">Personal y Contratos</a>
-                
-                <div class="px-3 py-1 text-xs font-semibold text-slate-400 uppercase tracking-wider font-mono mt-2">💰 Movimientos</div>
-                <a href="{{ route('fondos-caja.index') }}" class="block px-6 py-1.5 rounded-md text-sm font-medium {{ request()->routeIs('fondos-caja.*') ? 'bg-cyan-500/10 text-cyan-400' : 'text-slate-450 hover:bg-slate-800' }}">Caja del Personal</a>
-                <a href="{{ route('anticipos.index') }}" class="block px-6 py-1.5 rounded-md text-sm font-medium {{ request()->routeIs('anticipos.*') ? 'bg-rose-500/10 text-rose-455' : 'text-slate-450 hover:bg-slate-800' }}">Anticipos</a>
-                <a href="{{ route('pagos.index') }}" class="block px-6 py-1.5 rounded-md text-sm font-medium {{ request()->routeIs('pagos.*') ? 'bg-teal-500/10 text-teal-400' : 'text-slate-450 hover:bg-slate-800' }}">Pagos</a>
-                
-                <a href="{{ route('reportes.index') }}" class="block px-3 py-2 rounded-md text-sm font-medium mt-2 {{ request()->routeIs('reportes.*') ? 'bg-violet-500/10 text-violet-400' : 'text-slate-350 hover:bg-slate-800' }}">📊 Reportes</a>
-            </div>
-            
-            <div class="px-3 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono">📦 Compra y Venta de Minerales</div>
-            <a href="{{ route('transacciones-minerales.index', ['tab' => 'caja']) }}" class="block px-6 py-1.5 rounded-md text-sm font-medium {{ (request()->routeIs('transacciones-minerales.*') && request('tab') === 'caja') ? 'bg-amber-500/10 text-amber-400' : 'text-slate-350 hover:bg-slate-800' }}">Caja del Módulo</a>
-            <a href="{{ route('transacciones-minerales.index', ['tab' => 'compras']) }}" class="block px-6 py-1.5 rounded-md text-sm font-medium {{ (request()->routeIs('transacciones-minerales.*') && request('tab', 'compras') === 'compras') ? 'bg-amber-500/10 text-amber-500' : 'text-slate-350 hover:bg-slate-800' }}">Compras</a>
-            <a href="{{ route('transacciones-minerales.index', ['tab' => 'ventas']) }}" class="block px-6 py-1.5 rounded-md text-sm font-medium {{ (request()->routeIs('transacciones-minerales.*') && request('tab') === 'ventas') ? 'bg-emerald-500/10 text-emerald-400' : 'text-slate-350 hover:bg-slate-800' }}">Ventas</a>
-            <a href="{{ route('transacciones-minerales.index', ['tab' => 'stock']) }}" class="block px-6 py-1.5 rounded-md text-sm font-medium {{ (request()->routeIs('transacciones-minerales.*') && request('tab') === 'stock') ? 'bg-cyan-500/10 text-cyan-400' : 'text-slate-350 hover:bg-slate-800' }}">Stock</a>
-            <a href="{{ route('transacciones-minerales.index', ['tab' => 'reportes']) }}" class="block px-6 py-1.5 rounded-md text-sm font-medium {{ (request()->routeIs('transacciones-minerales.*') && request('tab') === 'reportes') ? 'bg-indigo-500/10 text-indigo-400' : 'text-slate-350 hover:bg-slate-800' }}">Reportes</a>
-            
-            <div class="px-3 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono">⚙️ Sistema</div>
-            <a href="{{ route('backups.index') }}" class="block px-6 py-1.5 rounded-md text-sm font-medium {{ request()->routeIs('backups.*') ? 'bg-orange-500/10 text-orange-400' : 'text-slate-350 hover:bg-slate-800' }}">Respaldos</a>
-
-            <form action="{{ route('logout') }}" method="POST" class="block w-full">
-                @csrf
-                <button type="submit" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-red-400 hover:bg-slate-800">Cerrar Sesión</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Main Content Area -->
-    <div class="flex flex-col flex-1 w-full md:pl-64 overflow-hidden">
-        <!-- Top bar (only for desktop, no-print) -->
-        <header class="no-print hidden md:flex items-center justify-between h-16 header-bg px-8 flex-shrink-0 relative z-10 border-b border-slate-900/10 dark:border-slate-800/40">
-            <!-- Left Side: System Quick Status Badge -->
-            <div class="flex items-center space-x-2">
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-slate-900/40 dark:bg-slate-800/40 text-slate-400 border border-slate-800/50">
-                    <i class="fa-solid fa-microchip text-amber-500 mr-2 text-xs"></i> SCPM &middot; v2.5
-                </span>
-            </div>
-
-            <!-- Right Side: Theme Toggle, Connection Status & Real-time Clock -->
+            <!-- Left Side: Mobile Menu Button & Context Breadcrumb -->
             <div class="flex items-center space-x-3">
-                <!-- Theme Toggle Capsule Button -->
-                <button onclick="toggleTheme()" 
-                        class="w-9 h-9 rounded-xl bg-slate-900/60 dark:bg-slate-900/80 hover:bg-slate-800 border border-amber-500/25 hover:border-amber-500/50 text-amber-500 hover:text-amber-400 transition-all duration-200 flex items-center justify-center shadow-[0_0_12px_rgba(245,158,11,0.1)] active:scale-95 no-print" 
-                        title="Cambiar Modo (Día/Noche)">
-                    <i id="theme-toggle-icon" class="fa-solid fa-sun text-sm"></i>
+                <button @click="mobileMenuOpen = true" 
+                        class="md:hidden p-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 focus:outline-none">
+                    <i class="fa-solid fa-bars text-lg"></i>
                 </button>
 
-                <div class="h-4 w-px bg-slate-800/60 dark:bg-slate-800/80"></div>
-
-                <!-- Server Status Badge -->
-                <div class="inline-flex items-center px-3 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-semibold shadow-[0_0_10px_rgba(16,185,129,0.08)]">
-                    <span class="relative flex h-2 w-2 mr-2">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                    </span>
-                    <span>Servidor Local Conectado</span>
-                </div>
-
-                <div class="h-4 w-px bg-slate-800/60 dark:bg-slate-800/80"></div>
-
-                <!-- Realtime Date & Clock Widget -->
-                <div class="inline-flex items-center px-3 py-1 rounded-xl bg-slate-900/40 dark:bg-slate-900/60 border border-slate-800/60 text-xs font-medium text-slate-300 space-x-2">
-                    <i class="fa-regular fa-calendar-days text-amber-500 text-xs"></i>
-                    <span id="realtime-clock" class="font-mono text-slate-200 flex items-center"></span>
+                <!-- Breadcrumbs -->
+                <div class="flex items-center space-x-2 text-xs">
+                    <a href="{{ route('dashboard') }}" class="text-slate-400 hover:text-amber-400 transition-colors flex items-center">
+                        <i class="fa-solid fa-house-chimney text-[11px] mr-1.5 text-amber-500/80"></i>
+                        <span>SCPM</span>
+                    </a>
+                    <i class="fa-solid fa-chevron-right text-[8px] text-slate-600"></i>
+                    <span class="font-medium text-slate-200">@yield('title', 'Tablero')</span>
                 </div>
             </div>
+
+            <!-- Right Side: Theme Toggle & Clock -->
+            <div class="flex items-center space-x-3 md:space-x-4">
+
+                <!-- Live Spanish Clock -->
+                <div class="hidden sm:inline-flex items-center px-3 py-1 rounded-lg text-xs font-mono bg-white/5 border border-white/5 text-slate-300">
+                    <i class="fa-regular fa-clock text-amber-500 mr-2 text-[11px]"></i>
+                    <span id="realtime-clock">--:--:--</span>
+                </div>
+
+                <!-- Theme Toggle Button -->
+                <button onclick="toggleTheme()" 
+                        class="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-amber-400 hover:text-amber-300 transition-all flex items-center justify-center focus:outline-none shadow-sm active:scale-95" 
+                        title="Alternar Modo Oscuro / Modo Claro">
+                    <i id="theme-toggle-icon" class="fa-solid fa-sun text-xs"></i>
+                </button>
+            </div>
+
         </header>
 
-        <!-- Main Body -->
-        <main class="flex-1 relative overflow-y-auto focus:outline-none p-4 md:p-8 pt-20 md:pt-8 bg-slate-950/40 z-30">
+        <!-- === MAIN PAGE CONTENT AREA === -->
+        <main class="flex-1 relative overflow-y-auto p-4 md:p-6 lg:p-8 z-10 focus:outline-none page-fade-in">
             
-            <!-- Floating Toast Notifications (no-print) -->
-            <div id="toast-container" class="no-print fixed top-6 right-6 z-50 flex flex-col space-y-4 max-w-sm w-full">
+            <!-- Toast Feedback Notifications -->
+            <div id="toast-container" class="no-print fixed top-5 right-5 z-50 flex flex-col space-y-3 max-w-sm w-full pointer-events-none">
                 @if(session('success'))
-                    <div class="toast-item toast-success" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => { show = false }, 4500)">
-                        <div class="flex items-start p-4">
-                            <div class="flex-shrink-0 text-emerald-400">
-                                <i class="fa-solid fa-circle-check text-xl animate-bounce"></i>
-                            </div>
-                            <div class="ml-3 flex-1">
-                                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-450">Operación Exitosa</p>
-                                <p class="text-sm text-slate-100 font-semibold mt-1">{{ session('success') }}</p>
-                            </div>
-                            <button @click="show = false" class="ml-4 text-slate-500 hover:text-slate-300 transition duration-150">
-                                <i class="fa-solid fa-xmark"></i>
-                            </button>
+                    <div class="pointer-events-auto p-4 rounded-xl border border-emerald-500/30 bg-slate-900/95 shadow-xl text-slate-100 flex items-start space-x-3 transition-all duration-300"
+                         x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4500)" x-transition>
+                        <i class="fa-solid fa-circle-check text-emerald-400 text-lg flex-shrink-0 mt-0.5"></i>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold uppercase tracking-wider text-emerald-400">Operación Exitosa</p>
+                            <p class="text-xs text-slate-200 mt-0.5 leading-relaxed">{{ session('success') }}</p>
                         </div>
-                        <div class="toast-progress bg-emerald-500"></div>
+                        <button @click="show = false" class="text-slate-500 hover:text-slate-300"><i class="fa-solid fa-xmark text-xs"></i></button>
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div class="pointer-events-auto p-4 rounded-xl border border-rose-500/30 bg-slate-900/95 shadow-xl text-slate-100 flex items-start space-x-3 transition-all duration-300"
+                         x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5500)" x-transition>
+                        <i class="fa-solid fa-circle-exclamation text-rose-400 text-lg flex-shrink-0 mt-0.5"></i>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold uppercase tracking-wider text-rose-400">Error de Operación</p>
+                            <p class="text-xs text-slate-200 mt-0.5 leading-relaxed">{{ session('error') }}</p>
+                        </div>
+                        <button @click="show = false" class="text-slate-500 hover:text-slate-300"><i class="fa-solid fa-xmark text-xs"></i></button>
                     </div>
                 @endif
 
                 @if($errors->any())
-                    <div class="toast-item toast-danger" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => { show = false }, 5500)">
-                        <div class="flex items-start p-4">
-                            <div class="flex-shrink-0 text-rose-500">
-                                <i class="fa-solid fa-circle-exclamation text-xl animate-pulse"></i>
-                            </div>
-                            <div class="ml-3 flex-1">
-                                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-450">Error en Operación</p>
-                                <p class="text-sm text-slate-100 font-semibold mt-1">{{ $errors->first() }}</p>
-                            </div>
-                            <button @click="show = false" class="ml-4 text-slate-500 hover:text-slate-300 transition duration-150">
-                                <i class="fa-solid fa-xmark"></i>
-                            </button>
+                    <div class="pointer-events-auto p-4 rounded-xl border border-rose-500/30 bg-slate-900/95 shadow-xl text-slate-100 flex items-start space-x-3 transition-all duration-300"
+                         x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5500)" x-transition>
+                        <i class="fa-solid fa-circle-exclamation text-rose-400 text-lg flex-shrink-0 mt-0.5"></i>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold uppercase tracking-wider text-rose-400">Atención / Error</p>
+                            <p class="text-xs text-slate-200 mt-0.5 leading-relaxed">{{ $errors->first() }}</p>
                         </div>
-                        <div class="toast-progress bg-rose-500"></div>
+                        <button @click="show = false" class="text-slate-500 hover:text-slate-300"><i class="fa-solid fa-xmark text-xs"></i></button>
                     </div>
                 @endif
             </div>
 
             @yield('content')
-            
+
         </main>
     </div>
 
-    <!-- Real-time Spanish Clock -->
+    <!-- === MOBILE SLIDE-OVER DRAWER === -->
+    <div x-show="mobileMenuOpen" 
+         x-cloak
+         class="no-print fixed inset-0 z-50 md:hidden" 
+         style="background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);">
+        
+        <div class="fixed inset-y-0 left-0 w-72 p-4 flex flex-col shadow-2xl overflow-y-auto"
+             style="background-color: var(--bg-surface-1);"
+             @click.away="mobileMenuOpen = false"
+             x-show="mobileMenuOpen"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="-translate-x-full"
+             x-transition:enter-end="translate-x-0"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="translate-x-0"
+             x-transition:leave-end="-translate-x-full">
+            
+            <div class="flex items-center justify-between pb-4 border-b border-white/5">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-gem text-amber-500 text-lg"></i>
+                    <span class="font-bold text-sm text-slate-100">TORMAN MINERÍA</span>
+                </div>
+                <button @click="mobileMenuOpen = false" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <nav class="flex-1 py-4 space-y-1 text-sm">
+                <a href="{{ route('dashboard') }}" class="sidebar-nav-item {{ request()->routeIs('dashboard') ? 'active-item' : '' }}">
+                    <i class="fa-solid fa-chart-pie w-5 mr-3"></i> Tablero Principal
+                </a>
+                <div class="pt-3 pb-1 text-[10px] font-mono font-bold uppercase text-slate-500">Personal y Bocaminas</div>
+                <a href="{{ route('bocaminas.index') }}" class="sidebar-nav-item {{ request()->routeIs('bocaminas.*') ? 'active-item' : '' }}">
+                    <i class="fa-solid fa-mountain w-5 mr-3"></i> Bocaminas
+                </a>
+                <a href="{{ route('trabajadores.index') }}" class="sidebar-nav-item {{ request()->routeIs('trabajadores.*') ? 'active-item' : '' }}">
+                    <i class="fa-solid fa-id-card-clip w-5 mr-3"></i> Personal y Contratos
+                </a>
+                <a href="{{ route('tipos-trabajo.index') }}" class="sidebar-nav-item {{ request()->routeIs('tipos-trabajo.*') ? 'active-item' : '' }}">
+                    <i class="fa-solid fa-hammer w-5 mr-3"></i> Tipos de Trabajo
+                </a>
+
+                <div class="pt-3 pb-1 text-[10px] font-mono font-bold uppercase text-slate-500">Caja y Pagos</div>
+                <a href="{{ route('fondos-caja.index') }}" class="sidebar-nav-item {{ request()->routeIs('fondos-caja.*') ? 'active-item' : '' }}">
+                    <i class="fa-solid fa-cash-register w-5 mr-3"></i> Caja del Personal
+                </a>
+                <a href="{{ route('anticipos.index') }}" class="sidebar-nav-item {{ request()->routeIs('anticipos.*') ? 'active-item' : '' }}">
+                    <i class="fa-solid fa-hand-holding-dollar w-5 mr-3"></i> Anticipos
+                </a>
+                <a href="{{ route('pagos.index') }}" class="sidebar-nav-item {{ request()->routeIs('pagos.*') ? 'active-item' : '' }}">
+                    <i class="fa-solid fa-file-invoice-dollar w-5 mr-3"></i> Pagos y Planillas
+                </a>
+                <a href="{{ route('servicios-externos.index') }}" class="sidebar-nav-item {{ request()->routeIs('servicios-externos.*') ? 'active-item' : '' }}">
+                    <i class="fa-solid fa-truck-ramp-box w-5 mr-3"></i> Servicios Externos
+                </a>
+                <a href="{{ route('reportes.index') }}" class="sidebar-nav-item {{ request()->routeIs('reportes.index') ? 'active-item' : '' }}">
+                    <i class="fa-solid fa-chart-column w-5 mr-3"></i> Reportes
+                </a>
+
+                <div class="pt-3 pb-1 text-[10px] font-mono font-bold uppercase text-slate-500">Comercialización Mineral</div>
+                <a href="{{ route('transacciones-minerales.index', ['tab' => 'caja']) }}" class="sidebar-nav-item {{ (request()->routeIs('transacciones-minerales.*') && request('tab') === 'caja') ? 'active-item' : '' }}">
+                    <i class="fa-solid fa-scale-balanced w-5 mr-3"></i> Caja del Módulo
+                </a>
+                <a href="{{ route('transacciones-minerales.index', ['tab' => 'compras']) }}" class="sidebar-nav-item {{ (request()->routeIs('transacciones-minerales.*') && request('tab', 'compras') === 'compras') ? 'active-item' : '' }}">
+                    <i class="fa-solid fa-arrow-down-to-bracket w-5 mr-3"></i> Compras de Lotes
+                </a>
+                <a href="{{ route('transacciones-minerales.index', ['tab' => 'ventas']) }}" class="sidebar-nav-item {{ (request()->routeIs('transacciones-minerales.*') && request('tab') === 'ventas') ? 'active-item' : '' }}">
+                    <i class="fa-solid fa-arrow-up-from-bracket w-5 mr-3"></i> Ventas de Mineral
+                </a>
+                <a href="{{ route('transacciones-minerales.index', ['tab' => 'stock']) }}" class="sidebar-nav-item {{ (request()->routeIs('transacciones-minerales.*') && request('tab') === 'stock') ? 'active-item' : '' }}">
+                    <i class="fa-solid fa-boxes-stacked w-5 mr-3"></i> Stock de Mineral
+                </a>
+                <a href="{{ route('reportes-comercializacion.index') }}" class="sidebar-nav-item {{ request()->routeIs('reportes-comercializacion.*') ? 'active-item' : '' }}">
+                    <i class="fa-solid fa-chart-line w-5 mr-3"></i> Reportes Comercializ.
+                </a>
+
+                <div class="pt-3 pb-1 text-[10px] font-mono font-bold uppercase text-slate-500">Sistema</div>
+                <a href="{{ route('backups.index') }}" class="sidebar-nav-item {{ request()->routeIs('backups.*') ? 'active-item' : '' }}">
+                    <i class="fa-solid fa-database w-5 mr-3"></i> Respaldos
+                </a>
+                <a href="{{ route('profile.edit') }}" class="sidebar-nav-item {{ request()->routeIs('profile.*') ? 'active-item' : '' }}">
+                    <i class="fa-solid fa-user-shield w-5 mr-3"></i> Perfil
+                </a>
+            </nav>
+
+            <form action="{{ route('logout') }}" method="POST" class="pt-3 border-t border-white/5">
+                @csrf
+                <button type="submit" class="w-full py-2 px-3 rounded-lg text-rose-400 bg-rose-500/10 text-xs font-bold text-center block">
+                    Cerrar Sesión
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- === GLOBAL CORE SCRIPTS === -->
     <script>
+        // 1. Reloj en tiempo real
         function updateClock() {
-            const now = new Date();
-            const days = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
-            const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-            
-            const dayName = days[now.getDay()];
-            const day = now.getDate();
-            const monthName = months[now.getMonth()];
-            const year = now.getFullYear();
-            
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            
-            const dateStr = `${dayName.charAt(0).toUpperCase() + dayName.slice(1)}, ${day} de ${monthName} de ${year}`;
-            const timeStr = `${hours}:${minutes}:${seconds}`;
-            
             const clockEl = document.getElementById('realtime-clock');
-            if (clockEl) {
-                clockEl.innerHTML = `<span>${dateStr}</span><span class="text-amber-500 font-mono font-bold ml-2 bg-amber-500/10 px-2 py-0.5 rounded-lg border border-amber-500/20 text-xs shadow-[0_0_10px_rgba(245,158,11,0.15)]">${timeStr}</span>`;
-            }
+            if (!clockEl) return;
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('es-BO', { hour12: false });
+            clockEl.textContent = timeStr;
         }
         setInterval(updateClock, 1000);
         updateClock();
 
-        // --- GLOBAL PARTICLE CANVAS FOR MINING SPARKS ---
-        const canvas = document.getElementById('particle-canvas');
-        if (canvas) {
-            const ctx = canvas.getContext('2d');
-            let width = canvas.width = window.innerWidth;
-            let height = canvas.height = window.innerHeight;
-            
-            let mouse = { x: -1000, y: -1000, active: false };
-            
-            window.addEventListener('resize', () => {
-                width = canvas.width = window.innerWidth;
-                height = canvas.height = window.innerHeight;
-            });
-            
-            window.addEventListener('mousemove', (e) => {
-                mouse.x = e.clientX;
-                mouse.y = e.clientY;
-                mouse.active = true;
-            });
-            
-            window.addEventListener('mouseleave', () => {
-                mouse.active = false;
-            });
-            
-            const particles = [];
-            const maxParticles = 55; // Balanced for dashboard viewability
-            
-            class Spark {
-                constructor() {
-                    this.reset(true);
-                }
-                
-                reset(initial = false) {
-                    this.x = Math.random() * width;
-                    this.y = initial ? Math.random() * height : height + 15;
-                    this.size = Math.random() * 2.2 + 0.8;
-                    this.speedY = Math.random() * 1.3 + 0.5;
-                    this.speedX = (Math.random() - 0.5) * 0.5;
-                    this.life = Math.random() * 0.7 + 0.3;
-                    this.decay = Math.random() * 0.0025 + 0.0015;
-                    this.opacity = Math.random() * 0.75 + 0.15;
-                    this.wiggleFreq = Math.random() * 0.01 + 0.003;
-                    this.wiggleAmp = Math.random() * 1.5 + 0.2;
-                }
-                
-                update() {
-                    this.y -= this.speedY;
-                    this.life -= this.decay;
-                    this.x += Math.sin(this.y * this.wiggleFreq) * 0.15 * this.wiggleAmp;
-                    
-                    if (mouse.active) {
-                        const dx = this.x - mouse.x;
-                        const dy = this.y - mouse.y;
-                        const dist = Math.sqrt(dx * dx + dy * dy);
-                        if (dist < 120) {
-                            const force = (120 - dist) / 120;
-                            this.x += (dx / dist) * force * 3;
-                            this.y += (dy / dist) * force * 1;
-                        }
-                    }
-                    
-                    if (this.life <= 0 || this.x < 0 || this.x > width || this.y < -15) {
-                        this.reset();
-                    }
-                }
-                
-                draw() {
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                    
-                    let r, g, b;
-                    if (this.life > 0.7) {
-                        r = 254; g = 240; b = 138; // yellow
-                    } else if (this.life > 0.4) {
-                        r = 249; g = 115; b = 22;  // orange
-                    } else if (this.life > 0.18) {
-                        r = 239; g = 68; b = 68;   // red
-                    } else {
-                        r = 100; g = 116; b = 139;  // gray ash
-                    }
-                    
-                    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${this.life * this.opacity})`;
-                    ctx.shadowBlur = this.life > 0.55 ? this.size * 3.0 : 0;
-                    ctx.shadowColor = 'rgb(249, 115, 22)';
-                    ctx.fill();
-                    ctx.shadowBlur = 0;
-                }
-            }
-            
-            for (let i = 0; i < maxParticles; i++) {
-                particles.push(new Spark());
-            }
-            
-            function animate() {
-                ctx.clearRect(0, 0, width, height);
-                for (let i = 0; i < particles.length; i++) {
-                    particles[i].update();
-                    particles[i].draw();
-                }
-                requestAnimationFrame(animate);
-            }
-            animate();
-        }
+        // 2. Modal de confirmación nativo del sistema (evita alertas del navegador "127.0.0.1:8000 dice")
+        function createCustomConfirmModal(message, reportUrl, onConfirm) {
+            const existing = document.getElementById('scpm-custom-confirm-modal');
+            if (existing) existing.remove();
 
-        // --- GLOBAL BUTTON SPARK GENERATOR ON CLICK/HOVER ---
-        document.addEventListener('DOMContentLoaded', () => {
-            // 1. Dynamic styles injection for card animations
-            const animStyle = document.createElement("style");
-            animStyle.innerText = `
-                @keyframes slideUpFade {
-                    from { opacity: 0; transform: translateY(18px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-            `;
-            document.head.appendChild(animStyle);
-
-            // Stagger page card loads
-            const cards = document.querySelectorAll('.glass-card');
-            cards.forEach((card, index) => {
-                card.style.opacity = '0';
-                card.style.animation = 'slideUpFade 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards';
-                card.style.animationDelay = `${index * 65}ms`;
-            });
-
-
-
-            // 3. Global buttons interaction (including nav items for premium sparks hover)
-            const buttons = document.querySelectorAll('button, .btn, [type="submit"], [type="button"], a.btn, a.inline-flex, .nav-item');
-            buttons.forEach(btn => {
-                if (btn.id && btn.id.includes('eye')) return;
-                
-                const style = window.getComputedStyle(btn);
-                if (style.position === 'static') {
-                    btn.style.position = 'relative';
-                }
-                if (btn.classList.contains('nav-item')) {
-                    btn.style.overflow = 'visible';
-                } else if (style.overflow !== 'hidden') {
-                    btn.style.overflow = 'hidden';
-                }
-                
-                let hoverInterval;
-                btn.addEventListener('mouseenter', (e) => {
-                    spawnGlobalSparks(btn, 3);
-                    hoverInterval = setInterval(() => spawnGlobalSparks(btn, 1), 300);
-                });
-                btn.addEventListener('mouseleave', () => {
-                    clearInterval(hoverInterval);
-                });
-                
-                btn.addEventListener('click', () => {
-                    spawnGlobalSparks(btn, 10);
-                });
-            });
-        });
-
-        // 4. Form submit glass processing overlay & Global confirm modal handler
-        window.hideProcessingOverlay = function() {
-            document.querySelectorAll('.processing-overlay').forEach(el => {
-                el.style.opacity = '0';
-                setTimeout(() => { if (el.parentNode) el.remove(); }, 200);
-            });
-        };
-
-        // Ensure print dialog closing or window regaining focus clears any stuck overlay or print state
-        window.addEventListener('afterprint', () => {
-            if (typeof window.hideProcessingOverlay === 'function') window.hideProcessingOverlay();
-            document.body.classList.remove('thermal-print-mode');
-        });
-        window.addEventListener('focus', () => {
-            if (typeof window.hideProcessingOverlay === 'function') window.hideProcessingOverlay();
-            document.body.classList.remove('thermal-print-mode');
-        });
-
-        function showProcessingOverlay(form) {
-            if (!form || !(form instanceof HTMLFormElement)) return;
-            if (form.action && form.action.includes('logout')) return;
-            if (form.target === '_blank') return;
-            if (form.hasAttribute('data-no-overlay')) return;
-            if ((form.method || '').toUpperCase() === 'GET') return;
-            if (form.action && (
-                form.action.includes('export') || 
-                form.action.includes('excel') || 
-                form.action.includes('ticket') || 
-                form.action.includes('pdf') ||
-                form.action.includes('download')
-            )) return;
-            if (form.checkValidity && !form.checkValidity()) return;
-            
-            const card = form.closest('.glass-card') || form.closest('main') || document.body;
-            
-            // Prevent duplicate overlays
-            if (card.querySelector('.processing-overlay')) return;
-            
-            const overlay = document.createElement('div');
-            overlay.className = 'processing-overlay';
-            overlay.style.position = 'absolute';
-            overlay.style.inset = '0';
-            overlay.style.background = 'rgba(10, 12, 18, 0.84)';
-            overlay.style.backdropFilter = 'blur(10px)';
-            overlay.style.webkitBackdropFilter = 'blur(10px)';
-            overlay.style.borderRadius = '16px';
-            overlay.style.zIndex = '50';
-            overlay.style.display = 'flex';
-            overlay.style.flexDirection = 'column';
-            overlay.style.alignItems = 'center';
-            overlay.style.justifyContent = 'center';
-            overlay.style.opacity = '0';
-            overlay.style.transition = 'opacity 0.25s ease';
-            overlay.style.cursor = 'pointer';
-            overlay.title = 'Haga click para cerrar si tarda demasiado';
-            
-            // Click to dismiss in case of slow or blocked server response
-            overlay.addEventListener('click', () => {
-                window.hideProcessingOverlay();
-            });
-
-            overlay.innerHTML = `
-                <div style="position: relative; display: flex; align-items: center; justify-content: center; pointer-events: none;">
-                    <div class="w-14 h-14 rounded-full border-2 border-amber-500/20 border-t-amber-500 animate-spin"></div>
-                    <i class="fa-solid fa-gem text-amber-500 absolute text-base animate-pulse"></i>
-                </div>
-                <span class="text-xs text-amber-500 font-mono tracking-widest uppercase mt-4 animate-pulse pointer-events-none">Procesando...</span>
-            `;
-            
-            card.appendChild(overlay);
-            overlay.offsetHeight; // force reflow
-            overlay.style.opacity = '1';
-
-            // Safety cleanup: dismiss automatically so page NEVER stays stuck/frozen
-            setTimeout(() => {
-                if (overlay && overlay.parentNode) {
-                    overlay.style.opacity = '0';
-                    setTimeout(() => { if (overlay.parentNode) overlay.remove(); }, 250);
-                }
-            }, 3500);
-        }
-
-        // Global Custom Confirmation Modal
-        function showCustomConfirmModal(message, reportUrl, onConfirm) {
-            const existingModal = document.getElementById('custom-confirm-modal');
-            if (existingModal) existingModal.remove();
-            
             const modalContainer = document.createElement('div');
-            modalContainer.id = 'custom-confirm-modal';
-            modalContainer.className = 'fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md';
+            modalContainer.id = 'scpm-custom-confirm-modal';
+            modalContainer.className = 'fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md transition-opacity duration-200';
             modalContainer.style.opacity = '0';
-            modalContainer.style.transition = 'opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
-            
-            let reportButtonHtml = '';
-            if (reportUrl) {
-                reportButtonHtml = `
-                    <a href="${reportUrl}" target="_blank" id="confirm-report-btn" class="px-4 py-2.5 text-xs font-bold uppercase tracking-wider rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 shadow-lg shadow-amber-500/10 hover:from-amber-600 hover:to-orange-600 transition-all duration-150 inline-flex items-center">
-                        <i class="fa-solid fa-file-pdf mr-1.5 text-sm"></i> Generar Reporte
-                    </a>
-                `;
-            }
-            
-            const modalContentHtml = `
-                <div class="glass-card w-full max-w-md rounded-2xl overflow-hidden shadow-2xl border border-red-500/35 relative transform scale-90 transition-all duration-300 ease-out" style="background: rgba(15, 23, 42, 0.92);">
-                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #ef4444, #f59e0b, #ef4444); opacity: 0.9;"></div>
-                    
-                    <div class="p-6 space-y-5 text-center font-sans">
-                        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-500/10 border border-red-500/30 text-red-500 animate-pulse mt-2">
-                            <i class="fa-solid fa-trash-can text-2xl animate-bounce" style="animation-duration: 2s;"></i>
+
+            const reportBtnHtml = reportUrl ? `
+                <a href="${reportUrl}" class="px-4 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-400 border border-amber-500/30 transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-file-lines"></i> Ver Reporte
+                </a>
+            ` : '';
+
+            modalContainer.innerHTML = `
+                <div class="scpm-modal-card relative w-full max-w-md rounded-2xl bg-slate-900 border border-slate-700/80 shadow-2xl overflow-hidden transform scale-95 transition-transform duration-200">
+                    <div class="h-1 w-full bg-gradient-to-r from-amber-500 via-rose-500 to-red-600"></div>
+                    <div class="p-6 text-center space-y-4">
+                        <div class="mx-auto w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 shadow-inner">
+                            <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
                         </div>
-                        
-                        <div class="space-y-3">
-                            <h3 class="text-lg font-bold tracking-wider text-red-500 uppercase font-mono">Advertencia de Eliminación</h3>
-                            <p class="text-sm text-slate-200 font-semibold px-2 leading-relaxed">${message}</p>
-                            <p class="text-xs text-slate-400 px-3 leading-relaxed">Se recomienda generar o revisar un reporte de este historial antes de eliminar el registro de forma permanente.</p>
+                        <div class="space-y-2">
+                            <h3 class="text-lg font-extrabold text-white tracking-tight">Confirmar Acción</h3>
+                            <p class="text-sm text-slate-200 font-medium leading-relaxed px-2">${message}</p>
                         </div>
                     </div>
-                    
-                    <div class="px-6 py-4 border-t border-slate-800/80 bg-slate-900/40 flex flex-wrap justify-center gap-3">
-                        <button type="button" id="confirm-cancel-btn" class="px-4 py-2.5 text-xs font-bold uppercase tracking-wider rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/60 hover:border-slate-650 transition-all duration-200">
+                    <div class="px-6 py-4 border-t border-slate-800 bg-slate-950/60 flex flex-wrap justify-center gap-3">
+                        <button type="button" id="scpm-confirm-cancel" class="px-4 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all cursor-pointer">
                             Cancelar
                         </button>
-                        
-                        ${reportButtonHtml}
-                        
-                        <button type="button" id="confirm-ok-btn" class="px-4 py-2.5 text-xs font-bold uppercase tracking-wider rounded-lg bg-gradient-to-r from-red-650 to-rose-500 text-white shadow-lg shadow-red-500/20 hover:from-red-550 hover:to-rose-450 transition-all duration-300">
-                            Eliminar de todas formas
+                        ${reportBtnHtml}
+                        <button type="button" id="scpm-confirm-ok" class="px-5 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white shadow-lg shadow-rose-600/25 transition-all cursor-pointer">
+                            Confirmar
                         </button>
                     </div>
                 </div>
             `;
-            
-            modalContainer.innerHTML = modalContentHtml;
+
             document.body.appendChild(modalContainer);
-            
-            const card = modalContainer.querySelector('.glass-card');
-            
-            setTimeout(() => {
+            const card = modalContainer.querySelector('.scpm-modal-card');
+            requestAnimationFrame(() => {
                 modalContainer.style.opacity = '1';
-                card.style.transform = 'scale(1)';
-            }, 10);
-            
+                if (card) card.style.transform = 'scale(1)';
+            });
+
             const closeModal = () => {
-                modalContainer.classList.add('modal-hide');
-                setTimeout(() => {
-                    modalContainer.remove();
-                }, 250);
+                modalContainer.style.opacity = '0';
+                if (card) card.style.transform = 'scale(0.95)';
+                setTimeout(() => modalContainer.remove(), 180);
             };
-            
-            const cancelBtn = modalContainer.querySelector('#confirm-cancel-btn');
-            const okBtn = modalContainer.querySelector('#confirm-ok-btn');
-            
-            if (typeof spawnGlobalSparks === 'function') {
-                cancelBtn.addEventListener('mouseenter', () => spawnGlobalSparks(cancelBtn, 2));
-                cancelBtn.addEventListener('click', () => spawnGlobalSparks(cancelBtn, 6));
-                okBtn.addEventListener('mouseenter', () => spawnGlobalSparks(okBtn, 3));
-                okBtn.addEventListener('click', () => spawnGlobalSparks(okBtn, 12));
-            }
-            
-            cancelBtn.addEventListener('click', closeModal);
-            okBtn.addEventListener('click', () => {
+
+            modalContainer.querySelector('#scpm-confirm-cancel').addEventListener('click', closeModal);
+            modalContainer.querySelector('#scpm-confirm-ok').addEventListener('click', () => {
                 closeModal();
                 if (onConfirm) onConfirm();
             });
-            
-            modalContainer.addEventListener('click', (e) => {
-                if (e.target === modalContainer) {
-                    closeModal();
-                }
+            modalContainer.addEventListener('click', (ev) => {
+                if (ev.target === modalContainer) closeModal();
             });
         }
 
-        // Intercept click events in the capturing phase to prevent inline confirm() browser alerts
-        document.addEventListener('click', (e) => {
-            const button = e.target.closest('button[type="submit"]');
+        // Interceptar todos los formularios con onsubmit="return confirm(...)" antes del navegador
+        document.addEventListener('click', function (e) {
+            const button = e.target.closest('button[type="submit"], input[type="submit"]');
             if (!button) return;
-            
             const form = button.closest('form');
             if (!form) return;
-            
+
             const onsubmitAttr = form.getAttribute('onsubmit');
             if (onsubmitAttr && onsubmitAttr.includes('confirm(')) {
-                // Prevent the submission before the browser executes onsubmit!
                 e.preventDefault();
                 e.stopImmediatePropagation();
-                
-                // Extract message
-                const match = onsubmitAttr.match(/confirm\(\s*['"](.*?)['"]\s*\)/);
-                const message = match ? match[1] : '¿Estás seguro de continuar?';
-                
-                // Extract report URL from form action route dynamically
-                let reportUrl = '/reportes';
+
+                const match = onsubmitAttr.match(/confirm\(\s*['"]([\s\S]*?)['"]\s*\)/);
+                const message = match ? match[1] : '¿Está seguro de realizar esta operación?';
+
+                let reportUrl = null;
                 if (form.action) {
                     if (form.action.includes('/trabajadores/')) {
                         const idMatch = form.action.match(/\/trabajadores\/(\d+)/);
@@ -1824,175 +1028,78 @@
                     } else if (form.action.includes('/bocaminas/')) {
                         const idMatch = form.action.match(/\/bocaminas\/(\d+)/);
                         if (idMatch) reportUrl = `/reportes?tab=bocamina&bocamina_id=${idMatch[1]}`;
-                    } else if (form.action.includes('/contratos/')) {
-                        reportUrl = '/reportes?tab=general';
                     } else if (form.action.includes('/anticipos/')) {
                         reportUrl = '/reportes?tab=anticipos';
-                    } else if (form.action.includes('/trabajos/')) {
-                        reportUrl = '/reportes?tab=general';
                     }
                 }
-                
-                showCustomConfirmModal(message, reportUrl, () => {
-                    showProcessingOverlay(form);
+
+                createCustomConfirmModal(message, reportUrl, () => {
                     form.removeAttribute('onsubmit');
                     form.submit();
                 });
             }
         }, true);
 
-        // Intercept all submit events in the capturing phase
-        document.addEventListener('submit', (e) => {
-            const form = e.target;
-            if (!form || !(form instanceof HTMLFormElement)) return;
-            
-            // Check if this form uses confirm() inline
-            const onsubmitAttr = form.getAttribute('onsubmit');
-            if (onsubmitAttr && onsubmitAttr.includes('confirm(')) {
-                // Prevent form execution immediately
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                
-                // Extract message
-                const match = onsubmitAttr.match(/confirm\(\s*['"](.*?)['"]\s*\)/);
-                const message = match ? match[1] : '¿Estás seguro de continuar?';
-                
-                let reportUrl = '/reportes';
-                if (form.action) {
-                    if (form.action.includes('/trabajadores/')) {
-                        const idMatch = form.action.match(/\/trabajadores\/(\d+)/);
-                        if (idMatch) reportUrl = `/reportes?tab=trabajador&trabajador_id=${idMatch[1]}`;
-                    } else if (form.action.includes('/bocaminas/')) {
-                        const idMatch = form.action.match(/\/bocaminas\/(\d+)/);
-                        if (idMatch) reportUrl = `/reportes?tab=bocamina&bocamina_id=${idMatch[1]}`;
-                    } else if (form.action.includes('/contratos/')) {
-                        reportUrl = '/reportes?tab=general';
-                    } else if (form.action.includes('/anticipos/')) {
-                        reportUrl = '/reportes?tab=anticipos';
-                    } else if (form.action.includes('/trabajos/')) {
-                        reportUrl = '/reportes?tab=general';
-                    }
-                }
+        // Reemplazar window.alert para nunca mostrar "127.0.0.1:8000 dice"
+        window.alert = function (msg) {
+            createCustomConfirmModal(String(msg), null, null);
+            const cancelBtn = document.getElementById('scpm-confirm-cancel');
+            if (cancelBtn) cancelBtn.style.display = 'none';
+            const okBtn = document.getElementById('scpm-confirm-ok');
+            if (okBtn) okBtn.textContent = 'Entendido';
+        };
 
-                showCustomConfirmModal(message, reportUrl, () => {
-                    showProcessingOverlay(form);
-                    form.removeAttribute('onsubmit');
-                    form.submit();
-                });
-            } else {
-                // Don't show overlay on export, blank target, GET filter or cancelled events
-                if (e.defaultPrevented) return;
-                if (form.target === '_blank') return;
-                if ((form.method || '').toUpperCase() === 'GET') return;
-                if (form.action && (
-                    form.action.includes('export') || 
-                    form.action.includes('excel') || 
-                    form.action.includes('ticket') || 
-                    form.action.includes('pdf') ||
-                    form.action.includes('download')
-                )) return;
-                
-                // Standard submission, show overlay
-                showProcessingOverlay(form);
-            }
-        }, true);
-
-        function spawnGlobalSparks(element, count) {
-            const rect = element.getBoundingClientRect();
-            
-            let colorGrad = 'radial-gradient(circle, #fcd34d 0%, #f97316 60%, #ef4444 100%)';
-            let shadow = '#f59e0b';
-            
-            if (element.classList.contains('bg-red-600') || 
-                element.classList.contains('bg-red-500') || 
-                element.className.includes('bg-red-') || 
-                element.textContent.toLowerCase().includes('eliminar') || 
-                element.textContent.toLowerCase().includes('borrar')) {
-                colorGrad = 'radial-gradient(circle, #fecaca 0%, #ef4444 60%, #b91c1c 100%)';
-                shadow = '#ef4444';
-            } 
-            else if (element.classList.contains('bg-emerald-600') || 
-                     element.classList.contains('bg-emerald-500') || 
-                     element.className.includes('bg-emerald-') || 
-                     element.textContent.toLowerCase().includes('guardar') || 
-                     element.textContent.toLowerCase().includes('crear') || 
-                     element.textContent.toLowerCase().includes('procesar') ||
-                     element.textContent.toLowerCase().includes('éxito')) {
-                colorGrad = 'radial-gradient(circle, #a7f3d0 0%, #10b981 60%, #047857 100%)';
-                shadow = '#10b981';
-            }
-            
-            for (let i = 0; i < count; i++) {
-                const spark = document.createElement('span');
-                spark.className = 'global-button-spark';
-                const size = Math.random() * 3.0 + 1.6;
-                spark.style.width = `${size}px`;
-                spark.style.height = `${size}px`;
-                spark.style.background = colorGrad;
-                spark.style.boxShadow = `0 0 5px ${shadow}`;
-                
-                const x = Math.random() * rect.width;
-                const y = rect.height - Math.random() * 3;
-                spark.style.left = `${x}px`;
-                spark.style.top = `${y}px`;
-                
-                const vx = (Math.random() - 0.5) * 45;
-                const vy = -(Math.random() * 45 + 25);
-                
-                element.appendChild(spark);
-                
-                spark.animate([
-                    { transform: 'translate(0, 0) scale(1)', opacity: 1 },
-                    { transform: `translate(${vx}px, ${vy}px) scale(0)`, opacity: 0 }
-                ], {
-                    duration: Math.random() * 500 + 400,
-                    easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)'
-                }).onfinish = () => spark.remove();
-            }
-        }
-
-        // --- DYNAMIC DAY/NIGHT MODE TOGGLER ---
+        // 3. Alternador de tema día / noche
         function toggleTheme() {
             const html = document.documentElement;
-            const icons = [document.getElementById('theme-toggle-icon'), document.getElementById('theme-toggle-icon-mobile')];
+            const icon = document.getElementById('theme-toggle-icon');
             if (html.classList.contains('light-theme')) {
                 html.classList.remove('light-theme');
                 localStorage.setItem('theme', 'dark');
-                icons.forEach(icon => {
-                    if (icon) {
-                        icon.classList.remove('fa-moon');
-                        icon.classList.add('fa-sun');
-                    }
-                });
+                if (icon) {
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                }
             } else {
                 html.classList.add('light-theme');
                 localStorage.setItem('theme', 'light');
-                icons.forEach(icon => {
-                    if (icon) {
-                        icon.classList.remove('fa-sun');
-                        icon.classList.add('fa-moon');
-                    }
-                });
+                if (icon) {
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                }
             }
-            
-            // Dispatch a global event so views (like dashboard charts) can adapt dynamically
             window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: localStorage.getItem('theme') } }));
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const html = document.documentElement;
-            const icons = [document.getElementById('theme-toggle-icon'), document.getElementById('theme-toggle-icon-mobile')];
-            icons.forEach(icon => {
-                if (icon) {
-                    if (html.classList.contains('light-theme')) {
-                        icon.classList.remove('fa-sun');
-                        icon.classList.add('fa-moon');
-                    } else {
-                        icon.classList.remove('fa-moon');
-                        icon.classList.add('fa-sun');
-                    }
+            const icon = document.getElementById('theme-toggle-icon');
+            if (icon && document.documentElement.classList.contains('light-theme')) {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
+        });
+
+        // 4. Protección frente a doble envío en formularios
+        document.addEventListener('submit', function (e) {
+            const form = e.target;
+            if (form && form instanceof HTMLFormElement) {
+                if (form.getAttribute('data-submitting') === 'true') {
+                    e.preventDefault();
+                    return;
                 }
-            });
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn && !submitBtn.disabled) {
+                    form.setAttribute('data-submitting', 'true');
+                    const originalHtml = submitBtn.innerHTML;
+                    submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+                    submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-1.5"></i> Procesando...';
+                    setTimeout(() => {
+                        form.removeAttribute('data-submitting');
+                        submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                        submitBtn.innerHTML = originalHtml;
+                    }, 4000);
+                }
+            }
         });
     </script>
     @stack('scripts')

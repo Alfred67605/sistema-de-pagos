@@ -596,23 +596,23 @@
             <p class="text-sm text-slate-400 mt-1">Registra y administra los datos personales, contratos, tarifas y bocaminas del personal minero.</p>
         </div>
         <div class="flex flex-wrap gap-2.5">
-            <a href="{{ route('reportes.index', ['tab' => 'trabajador']) }}" class="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm font-bold text-slate-200 transition duration-155 shadow-lg">
+            <a href="{{ route('reportes.index', ['tab' => 'trabajador']) }}" class="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold uppercase tracking-wider text-slate-200 transition-colors shadow-sm">
                 <i class="fa-solid fa-file-export mr-2 text-amber-500"></i> Exportar a Reportes
             </a>
-            <button @click="openCreate()" class="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-650 hover:from-indigo-650 hover:to-violet-650 text-sm font-bold text-white transition duration-155 shadow-lg shadow-indigo-500/10">
+            <button @click="openCreate()" class="btn-gold px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider inline-flex items-center shadow-md">
                 <i class="fa-solid fa-user-plus mr-2"></i> Nuevo Personal
             </button>
         </div>
     </div>
 
     <!-- Filters Section -->
-    <div class="glass-card rounded-xl p-6 no-print">
+    <div class="mining-card rounded-xl p-5 no-print">
         <form action="{{ route('trabajadores.index') }}" method="GET" onsubmit="event.preventDefault(); submitFilterRealTime(this);" class="grid grid-cols-1 gap-4 sm:grid-cols-5 items-end">
             <div>
                 <label for="buscar" class="block text-xs font-semibold uppercase tracking-wider text-slate-400">Buscar por Nombre o CI</label>
                 <input type="text" name="buscar" id="buscar" value="{{ request('buscar') }}" 
                        oninput="clearTimeout(searchDebounceTimeout); searchDebounceTimeout = setTimeout(() => submitFilterRealTime(this.form), 250)"
-                       class="premium-filter-input mt-1 block w-full px-3.5 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                       class="mt-1 block w-full px-3.5 py-2 bg-slate-900 border border-white/10 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-sm"
                        placeholder="Ej. Juan Pérez">
             </div>
 
@@ -620,7 +620,7 @@
                 <label for="bocamina_id_filter" class="block text-xs font-semibold uppercase tracking-wider text-slate-400">Bocamina</label>
                 <select name="bocamina_id" id="bocamina_id_filter" 
                         onchange="submitFilterRealTime(this.form)"
-                        class="premium-filter-input mt-1 block w-full px-3.5 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-slate-100 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                        class="mt-1 block w-full px-3.5 py-2 bg-slate-900 border border-white/10 rounded-xl text-slate-100 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-sm">
                     <option value="">Todas las Bocaminas</option>
                     @foreach($bocaminas as $bocamina)
                         <option value="{{ $bocamina->id }}" {{ request('bocamina_id') == $bocamina->id ? 'selected' : '' }}>{{ $bocamina->nombre }}</option>
@@ -632,7 +632,7 @@
                 <label for="rol_filter" class="block text-xs font-semibold uppercase tracking-wider text-slate-400">Cargo / Función</label>
                 <select name="rol" id="rol_filter" 
                         onchange="submitFilterRealTime(this.form)"
-                        class="premium-filter-input mt-1 block w-full px-3.5 py-2 bg-slate-900 border border-slate-700/80 rounded-xl text-slate-100 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                        class="mt-1 block w-full px-3.5 py-2 bg-slate-900 border border-white/10 rounded-xl text-slate-100 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-sm">
                     <option value="">Todos los Cargos</option>
                     <option value="contratista" {{ request('rol') === 'contratista' ? 'selected' : '' }}>Contratista</option>
                     <option value="chofer" {{ request('rol') === 'chofer' ? 'selected' : '' }}>Chofer</option>
@@ -647,7 +647,7 @@
                 <label for="estado_filter" class="block text-xs font-semibold uppercase tracking-wider text-slate-400">Estado</label>
                 <select name="estado" id="estado_filter" 
                         onchange="submitFilterRealTime(this.form)"
-                        class="premium-filter-input mt-1 block w-full px-3.5 py-2 bg-slate-950 border border-slate-700/80 rounded-xl text-slate-100 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                        class="mt-1 block w-full px-3.5 py-2 bg-slate-950 border border-white/10 rounded-xl text-slate-100 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-sm">
                     <option value="">Todos los Estados</option>
                     <option value="activo" {{ request('estado') === 'activo' ? 'selected' : '' }}>Activo</option>
                     <option value="inactivo" {{ request('estado') === 'inactivo' ? 'selected' : '' }}>Inactivo</option>
@@ -655,15 +655,13 @@
             </div>
 
             <div class="flex space-x-2">
-                <button type="button" onclick="document.getElementById('buscar').value = ''; document.getElementById('bocamina_id_filter').value = ''; document.getElementById('rol_filter').value = ''; document.getElementById('estado_filter').value = ''; submitFilterRealTime(this.form);" class="btn-vibrant-warm flex-1 inline-flex items-center justify-center px-4 py-2 text-sm font-bold rounded-lg shadow-lg" title="Limpiar Filtros">
+                <button type="button" onclick="document.getElementById('buscar').value = ''; document.getElementById('bocamina_id_filter').value = ''; document.getElementById('rol_filter').value = ''; document.getElementById('estado_filter').value = ''; submitFilterRealTime(this.form);" class="flex-1 inline-flex items-center justify-center px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 transition-colors" title="Limpiar Filtros">
                     <i class="fa-solid fa-rotate-left mr-2"></i> Limpiar
                 </button>
             </div>
         </form>
-    </div>
-
-    <!-- Table Section -->
-    <div id="table-container" class="glass-card rounded-xl overflow-hidden">
+    </div>    <!-- Table Section -->
+    <div id="table-container" class="glass-card shimmer-card rounded-2xl overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-800">
                 <thead>
@@ -682,7 +680,7 @@
                 </thead>
                 <tbody class="divide-y divide-slate-800/40 text-sm text-slate-300">
                     @forelse($trabajadores as $trabajador)
-                        <tr class="hover:bg-slate-900/10 transition duration-150">
+                        <tr class="interactive-table-row">
                             <td class="px-6 py-4 font-mono text-xs font-bold text-sky-400">{{ $trabajador->codigo ?: '-' }}</td>
                             <td class="px-6 py-4 font-medium text-slate-100 text-sm">{{ $trabajador->nombre }}</td>
                             <td class="px-6 py-4 font-mono text-slate-350 text-xs">{{ $trabajador->ci ?: '-' }}</td>
@@ -724,38 +722,34 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-center">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold {{ $trabajador->estado === 'activo' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/25' : 'bg-slate-850 text-slate-450 border border-slate-700' }}">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $trabajador->estado === 'activo' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/25' : 'bg-slate-850 text-slate-450 border border-slate-700' }}">
+                                    @if($trabajador->estado === 'activo')
+                                        <span class="w-1.5 h-1.5 rounded-full mr-1.5 bg-emerald-400 pulse-dot"></span>
+                                    @endif
                                     {{ ucfirst($trabajador->estado) }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 no-print text-center">
-                                <div class="flex items-center justify-center gap-2">
-                                    <div class="relative group/hist">
-                                        <a href="{{ route('reportes.index', ['tab' => 'trabajador', 'trabajador_id' => $trabajador->id]) }}" 
-                                           class="w-8 h-8 rounded-xl flex items-center justify-center bg-gradient-to-br from-emerald-500 to-teal-650 hover:from-emerald-400 hover:to-teal-550 text-white shadow-md shadow-emerald-500/25 hover:shadow-emerald-500/50 hover:scale-110 active:scale-95 transition-all duration-200"
-                                           title="Ver Historial en Reportes">
-                                            <i class="fa-solid fa-clock-rotate-left text-xs"></i>
-                                        </a>
-                                        <span class="absolute -bottom-7 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-lg bg-slate-900 text-[10px] font-bold text-emerald-400 whitespace-nowrap opacity-0 group-hover/hist:opacity-100 transition-all duration-150 pointer-events-none border border-emerald-500/30 shadow-xl z-50">Historial</span>
-                                    </div>
-                                    <div class="relative group/btn">
-                                        <button @click='openEdit(@json($trabajador))' 
-                                            class="w-8 h-8 rounded-xl flex items-center justify-center bg-gradient-to-br from-indigo-500 to-violet-650 hover:from-indigo-400 hover:to-violet-550 text-white shadow-md shadow-indigo-500/25 hover:shadow-indigo-500/50 hover:scale-110 active:scale-95 transition-all duration-200">
-                                            <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <a href="{{ route('reportes.index', ['tab' => 'trabajador', 'trabajador_id' => $trabajador->id]) }}" 
+                                       class="w-8 h-8 rounded-lg flex items-center justify-center bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-all hover:scale-105 active:scale-95 shadow-sm"
+                                       title="Ver Historial en Reportes">
+                                        <i class="fa-solid fa-clock-rotate-left text-xs"></i>
+                                    </a>
+                                    <button @click='openEdit(@json($trabajador))' 
+                                        class="w-8 h-8 rounded-lg flex items-center justify-center bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 transition-all hover:scale-105 active:scale-95 shadow-sm"
+                                        title="Editar Personal">
+                                        <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                    </button>
+                                    <form action="{{ route('trabajadores.destroy', $trabajador->id) }}" method="POST" class="inline" onsubmit="return confirm('¿Estás seguro de eliminar a este trabajador?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" 
+                                            class="w-8 h-8 rounded-lg flex items-center justify-center bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-all hover:scale-105 active:scale-95 shadow-sm"
+                                            title="Eliminar Personal">
+                                            <i class="fa-solid fa-trash text-xs"></i>
                                         </button>
-                                        <span class="absolute -bottom-7 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-lg bg-slate-900 text-[10px] font-bold text-slate-200 whitespace-nowrap opacity-0 group-hover/btn:opacity-100 transition-all duration-150 pointer-events-none border border-slate-700/60 shadow-xl z-50">Editar</span>
-                                    </div>
-                                    <div class="relative group/del">
-                                        <form action="{{ route('trabajadores.destroy', $trabajador->id) }}" method="POST" class="inline" onsubmit="return confirm('¿Estás seguro?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" 
-                                                class="w-8 h-8 rounded-xl flex items-center justify-center bg-gradient-to-br from-rose-500 to-red-650 hover:from-rose-400 hover:to-red-550 text-white shadow-md shadow-rose-500/25 hover:shadow-rose-500/50 hover:scale-110 active:scale-95 transition-all duration-200">
-                                                <i class="fa-solid fa-trash text-xs"></i>
-                                            </button>
-                                        </form>
-                                        <span class="absolute -bottom-7 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-lg bg-slate-900 text-[10px] font-bold text-rose-400 whitespace-nowrap opacity-0 group-hover/del:opacity-100 transition-all duration-150 pointer-events-none border border-rose-500/30 shadow-xl z-50">Eliminar</span>
-                                    </div>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
@@ -822,6 +816,9 @@
                                        @blur="nombre = (nombre || '').trim().toLowerCase().replace(/(^|[^a-záéíóúüñ\'])([a-záéíóúüñ\'])/gi, (m, separator, letter) => separator + letter.toUpperCase())"
                                        placeholder="Ej. Juan Carlos Pérez">
                                 <span class="help-text">El sistema capitaliza al salir del campo.</span>
+                                <div x-show="!nombre || !nombre.trim()" class="text-[11px] text-amber-500 font-medium mt-1 flex items-center gap-1.5" x-cloak>
+                                    <i class="fa-solid fa-circle-exclamation text-xs"></i> Campo obligatorio: escriba el nombre completo del trabajador.
+                                </div>
                             </div>
                         </div>
 
@@ -861,6 +858,9 @@
                                         <option value="{{ $bocamina->id }}">{{ $bocamina->nombre }}</option>
                                     @endforeach
                                 </select>
+                                <div x-show="!bocamina_id" class="text-[11px] text-amber-500 font-medium mt-1 flex items-center gap-1.5" x-cloak>
+                                    <i class="fa-solid fa-circle-exclamation text-xs"></i> Campo obligatorio: seleccione la bocamina de asignación.
+                                </div>
                             </div>
 
                             <div>
@@ -880,6 +880,9 @@
                                            :required="rol === 'otro'"
                                            class="!border-indigo-500/50 focus:!border-indigo-500 focus:!ring-2 focus:!ring-indigo-500/20 font-bold"
                                            placeholder="Escriba cargo personalizado aquí...">
+                                    <div x-show="rol === 'otro' && (!rol_otro || !rol_otro.trim())" class="text-[11px] text-amber-500 font-medium mt-1 flex items-center gap-1.5" x-cloak>
+                                        <i class="fa-solid fa-circle-exclamation text-xs"></i> Especifique el cargo o función personalizado.
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -895,6 +898,9 @@
                                     @endforeach
                                     <option value="otro">Otro (Escribir personalizado)</option>
                                 </select>
+                                <div x-show="!tipo_contrato_id" class="text-[11px] text-amber-500 font-medium mt-1 flex items-center gap-1.5" x-cloak>
+                                    <i class="fa-solid fa-circle-exclamation text-xs"></i> Campo obligatorio: seleccione el tipo de contrato.
+                                </div>
 
                                 <!-- Custom Text input directly below dropdown in the same column grid -->
                                 <div x-show="tipo_contrato_id === 'otro'" x-cloak class="mt-3 transition duration-150">
@@ -902,6 +908,9 @@
                                            :required="tipo_contrato_id === 'otro'"
                                            class="!border-indigo-500/50 focus:!border-indigo-500 focus:!ring-2 focus:!ring-indigo-500/20 font-bold"
                                            placeholder="Escriba tipo de contrato aquí...">
+                                    <div x-show="tipo_contrato_id === 'otro' && (!tipo_contrato_otro || !tipo_contrato_otro.trim())" class="text-[11px] text-amber-500 font-medium mt-1 flex items-center gap-1.5" x-cloak>
+                                        <i class="fa-solid fa-circle-exclamation text-xs"></i> Especifique el nombre del contrato personalizado.
+                                    </div>
                                 </div>
                             </div>
 
@@ -909,6 +918,9 @@
                             <div>
                                 <label for="modal_fecha_contrato">Fecha del Contrato <span class="text-red-500 font-bold">*</span></label>
                                 <input id="modal_fecha_contrato" name="fecha_contrato" type="date" required x-model="fecha_contrato">
+                                <div x-show="!fecha_contrato" class="text-[11px] text-amber-500 font-medium mt-1 flex items-center gap-1.5" x-cloak>
+                                    <i class="fa-solid fa-circle-exclamation text-xs"></i> Campo obligatorio: indique la fecha de inicio del contrato.
+                                </div>
                             </div>
                         </div>
 
@@ -960,15 +972,21 @@
                 </div>
 
                 <!-- Modal Footer -->
-                <div class="modal-footer flex justify-end space-x-4">
-                    <button type="button" @click="openModal = false" class="btn-3d-cancel px-5 py-3 text-xs font-bold uppercase tracking-wider rounded-xl transition-all duration-150 border border-slate-200 dark:border-slate-800">
-                        Cancelar
-                    </button>
-                    <button type="submit" 
-                            :disabled="!isFormValido()"
-                            class="btn-3d-save inline-flex items-center justify-center px-6 py-3 rounded-xl text-xs font-extrabold uppercase tracking-wider text-white transition duration-150">
-                        Guardar Personal
-                    </button>
+                <div class="modal-footer flex items-center justify-between">
+                    <div x-show="!isFormValido()" class="text-[11px] text-amber-500 font-semibold flex items-center gap-1.5" x-cloak>
+                        <i class="fa-solid fa-circle-info text-amber-400"></i>
+                        <span>Complete los campos requeridos (*) para habilitar el guardado.</span>
+                    </div>
+                    <div class="flex items-center space-x-3 ml-auto">
+                        <button type="button" @click="openModal = false" class="btn-3d-cancel px-5 py-3 text-xs font-bold uppercase tracking-wider rounded-xl transition-all duration-150 border border-slate-200 dark:border-slate-800">
+                            Cancelar
+                        </button>
+                        <button type="submit" 
+                                :disabled="!isFormValido()"
+                                class="btn-3d-save inline-flex items-center justify-center px-6 py-3 rounded-xl text-xs font-extrabold uppercase tracking-wider text-white transition duration-150">
+                            Guardar Personal
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>

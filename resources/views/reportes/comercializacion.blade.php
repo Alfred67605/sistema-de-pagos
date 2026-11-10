@@ -106,7 +106,7 @@
             <div class="relative z-10">
                 <p class="text-xs font-bold uppercase tracking-widest text-emerald-100/80 mb-1">Ingresos (Ventas)</p>
                 <p class="text-2xl font-black text-white">Bs {{ number_format($totalVentas, 2) }}</p>
-                <p class="text-xs text-emerald-100/70 mt-1">{{ $transacciones->where('tipo','venta')->count() }} transacciones</p>
+                <p class="text-xs text-emerald-100/70 mt-1">{{ number_format($totalCountVentas) }} transacciones</p>
             </div>
             <div class="absolute top-4 right-4 w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
                 <i class="fa-solid fa-arrow-trend-up text-white text-base"></i>
@@ -120,7 +120,7 @@
             <div class="relative z-10">
                 <p class="text-xs font-bold uppercase tracking-widest text-rose-100/80 mb-1">Egresos (Compras)</p>
                 <p class="text-2xl font-black text-white">Bs {{ number_format($totalCompras, 2) }}</p>
-                <p class="text-xs text-rose-100/70 mt-1">{{ $transacciones->where('tipo','compra')->count() }} transacciones</p>
+                <p class="text-xs text-rose-100/70 mt-1">{{ number_format($totalCountCompras) }} transacciones</p>
             </div>
             <div class="absolute top-4 right-4 w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
                 <i class="fa-solid fa-arrow-trend-down text-white text-base"></i>
@@ -206,7 +206,7 @@
             <h3 class="text-sm font-bold uppercase tracking-wider text-slate-300">
                 <i class="fa-solid fa-list-check mr-2 text-orange-500"></i>
                 Registro de Transacciones
-                <span class="ml-2 text-[10px] font-normal text-slate-500 normal-case">({{ $transacciones->count() }} registros)</span>
+                <span class="ml-2 text-[10px] font-normal text-slate-500 normal-case">({{ number_format($transacciones->total()) }} registros · Pág. {{ $transacciones->currentPage() }} de {{ $transacciones->lastPage() }})</span>
             </h3>
         </div>
 
@@ -276,6 +276,11 @@
                     </tfoot>
                 </table>
             </div>
+            @if($transacciones->hasPages())
+                <div class="px-6 py-4 border-t border-slate-800/60 bg-slate-900/40">
+                    {{ $transacciones->links() }}
+                </div>
+            @endif
         @endif
     </div>
 </div>
@@ -466,64 +471,8 @@ function doExportPDF(btn) {
 }
 
 function doExportExcel() {
-    const activeTable = document.querySelector('table:not(.no-print)');
-    if (!activeTable) {
-        alert('No hay datos en la tabla para exportar.');
-        return;
-    }
-
-    let rowsHtml = '';
-    const rows = activeTable.querySelectorAll('tr');
-    rows.forEach((tr, index) => {
-        const isHeader = tr.parentElement.tagName === 'THEAD';
-        const cells = tr.querySelectorAll(isHeader ? 'th' : 'td');
-        let rowStr = '<tr>';
-        cells.forEach((td, cellIndex) => {
-            if (cellIndex === cells.length - 1 && td.classList.contains('no-print')) return;
-            
-            const txt = td.textContent.replace(/\s+/g, ' ').trim();
-            if (isHeader) {
-                rowStr += `<th style="background-color:#d97706; color:#ffffff; font-weight:bold; padding:8px; border:1px solid #b45309; text-align:center;">${txt}</th>`;
-            } else {
-                const isNum = txt.startsWith('Bs.') || txt.includes('Kg') || !isNaN(parseFloat(txt));
-                rowStr += `<td style="border:1px solid #cbd5e1; padding:7px 10px; ${isNum ? 'text-align:right; font-family:Consolas,monospace;' : ''}">${txt}</td>`;
-            }
-        });
-        rowStr += '</tr>';
-        rowsHtml += rowStr;
-    });
-
-    const htmlContent = `
-        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-        <head>
-            <meta charset="utf-8">
-            <style>
-                body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 11px; color: #1e293b; }
-                .header-banner { background-color: #0f172a; color: #fbbf24; font-size: 16px; font-weight: bold; text-align: center; padding: 14px; }
-                .info-sub { background-color: #1e293b; color: #ffffff; font-size: 11px; font-weight: bold; padding: 8px 12px; }
-            </style>
-        </head>
-        <body>
-            <table style="width:100%; border-collapse:collapse;">
-                <tr><td colspan="8" class="header-banner">EMPRESA MINERA — REPORTE DE COMERCIALIZACIÓN DE MINERALES</td></tr>
-                <tr><td colspan="8" class="info-sub">FECHA DE GENERACIÓN: ${new Date().toLocaleDateString('es-BO')} ${new Date().toLocaleTimeString('es-BO')}</td></tr>
-                <tr><td colspan="8">&nbsp;</td></tr>
-                ${rowsHtml}
-            </table>
-        </body>
-        </html>
-    `;
-
-    const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'Reporte_Comercializacion_' + new Date().toISOString().slice(0,10) + '.xls';
-    document.body.appendChild(link);
-    link.click();
-    setTimeout(() => {
-        if (link.parentNode) document.body.removeChild(link);
-        if (typeof window.hideProcessingOverlay === 'function') window.hideProcessingOverlay();
-    }, 200);
+    const params = new URLSearchParams(window.location.search);
+    window.location.href = "{{ route('reportes-comercializacion.exportar-excel') }}?" + params.toString();
 }
 </script>
 @endpush

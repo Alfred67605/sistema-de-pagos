@@ -23,6 +23,20 @@ class AppServiceProvider extends ServiceProvider
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
 
+        if (\Illuminate\Support\Facades\DB::getDriverName() === 'sqlite') {
+            \Illuminate\Support\Facades\DB::statement('PRAGMA foreign_keys = ON;');
+        }
+
+        // Enforce foreign keys on every newly established SQLite connection or reconnection
+        \Illuminate\Support\Facades\Event::listen(
+            \Illuminate\Database\Events\ConnectionEstablished::class,
+            function (\Illuminate\Database\Events\ConnectionEstablished $event) {
+                if ($event->connection->getDriverName() === 'sqlite') {
+                    $event->connection->statement('PRAGMA foreign_keys = ON;');
+                }
+            }
+        );
+
         // Auto-run pending migrations if any schema update is missing in production
         try {
             if (\Illuminate\Support\Facades\Schema::hasTable('anticipos')) {

@@ -43,99 +43,150 @@
 
 <div class="space-y-6" x-data="{ openResetModal: false, pdfExported: false, showRangeInput: '{{ request('rango') === 'personalizado' ? '1' : '0' }}' }">
 
-    {{-- ══ HEADER ══ --}}
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/30 flex-shrink-0">
-                <i class="fa-solid fa-vault text-white text-lg"></i>
-            </div>
-            <div>
-                <h1 class="text-2xl font-black tracking-tight text-slate-100">
-                    Caja Chica del Personal <span class="text-cyan-400 font-extrabold">/</span> Recargas
-                </h1>
-                <p class="text-xs text-slate-400 mt-0.5">Gestión de inyecciones del banco, saldos sobrantes acumulados y cierre de períodos</p>
-            </div>
-        </div>
+    {{-- ══ HEADER CON BANNER MINERO CONTEXTUAL ══ --}}
+    <div class="relative overflow-hidden rounded-2xl glass-card border border-slate-700/60 p-6 shadow-2xl">
+        <!-- Background contextual image -->
+        <div class="absolute inset-0 bg-cover bg-center opacity-20 mix-blend-luminosity pointer-events-none" style="background-image: url('{{ asset('images/mining/caja_chica_banner.jpg') }}');"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/90 to-slate-950/85 pointer-events-none"></div>
 
-        <div class="flex items-center gap-2 flex-wrap">
-            <button @click="openResetModal = true" type="button"
-                    class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold text-xs shadow-lg shadow-amber-500/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 cursor-pointer">
-                <i class="fa-solid fa-rotate-left text-xs"></i> Reiniciar Caja (Empezar de cero)
-            </button>
-            <button onclick="window.doExportExcelCaja()" type="button"
-                    class="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-emerald-400 font-bold text-xs transition flex items-center gap-1.5 cursor-pointer">
-                <i class="fa-solid fa-file-excel"></i> Excel
-            </button>
-            <button onclick="window.doExportPDFCaja()" type="button"
-                    class="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-rose-400 font-bold text-xs transition flex items-center gap-1.5 cursor-pointer">
-                <i class="fa-solid fa-file-pdf"></i> PDF
-            </button>
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/30 flex-shrink-0 border border-cyan-400/40">
+                    <i class="fa-solid fa-vault text-white text-xl"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">
+                            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 pulse-dot mr-1.5"></span>
+                            TESORERÍA OPERATIVA
+                        </span>
+                        <span class="text-xs text-slate-500">•</span>
+                        <span class="text-[11px] text-slate-400 font-mono">Bóveda & Inyecciones</span>
+                    </div>
+                    <h1 class="text-2xl md:text-3xl font-black tracking-tight text-slate-100">
+                        Caja Chica del Personal <span class="text-cyan-400 font-extrabold">/</span> Recargas
+                    </h1>
+                    <p class="text-xs text-slate-400 mt-0.5">Gestión de inyecciones del banco, saldos sobrantes acumulados y liquidaciones de nómina</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 flex-wrap">
+                <button @click="openResetModal = true" type="button"
+                        class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold text-xs shadow-lg shadow-amber-500/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-rotate-left text-xs"></i> Reiniciar Caja (Empezar de cero)
+                </button>
+                <button onclick="window.doExportExcelCaja()" type="button"
+                        class="px-3.5 py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 border border-slate-700 text-emerald-400 font-bold text-xs transition flex items-center gap-1.5 cursor-pointer backdrop-blur-sm shadow-md">
+                    <i class="fa-solid fa-file-excel"></i> Excel
+                </button>
+                <button onclick="window.doExportPDFCaja()" type="button"
+                        class="px-3.5 py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 border border-slate-700 text-rose-400 font-bold text-xs transition flex items-center gap-1.5 cursor-pointer backdrop-blur-sm shadow-md">
+                    <i class="fa-solid fa-file-pdf"></i> PDF
+                </button>
+            </div>
         </div>
     </div>
 
-    {{-- ══ SUMMARY CARDS (ESTILO EXACTO TABLERO PRINCIPAL - 4 TARJETAS) ══ --}}
+    {{-- ══ SUMMARY CARDS CON IMÁGENES DE FONDO CONTEXTUALES ══ --}}
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
 
-        {{-- Card 1: Total Inyectado (Banco) --}}
-        <div class="relative overflow-hidden rounded-2xl p-5 bg-gradient-to-br from-cyan-500 to-blue-650 text-white shadow-lg transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl">
-            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-white/10 rounded-full pointer-events-none"></div>
-            <div class="absolute right-8 -top-8 w-16 h-16 bg-white/10 rounded-full pointer-events-none"></div>
-            <div class="flex items-center justify-between mb-4">
-                <span class="text-[10px] font-bold uppercase tracking-wider text-cyan-100/90">Total Inyectado (Banco)</span>
-                <div class="flex items-center justify-center w-8 h-8 rounded-full bg-white/20">
-                    <i class="fa-solid fa-building-columns text-xs text-white"></i>
+        {{-- Card 1: Total Inyectado (Banco) -> Contexto: Bóveda bancaria / Inyecciones de capital --}}
+        <div class="group relative overflow-hidden rounded-2xl p-5 border border-cyan-400/40 shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:shadow-cyan-500/25 hover:shadow-2xl">
+            <!-- Contextual background photo -->
+            <div class="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-luminosity group-hover:scale-110 group-hover:opacity-40 transition-all duration-700 pointer-events-none" style="background-image: url('{{ asset('images/mining/bank_vault.jpg') }}');"></div>
+            <!-- Atmospheric gradient mask -->
+            <div class="absolute inset-0 bg-gradient-to-br from-cyan-950/85 via-cyan-900/75 to-blue-950/95 pointer-events-none"></div>
+            <!-- Decorative circle glow -->
+            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-cyan-400/10 rounded-full blur-md pointer-events-none"></div>
+
+            <div class="relative z-10">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-cyan-200">Total Inyectado (Banco)</span>
+                    <div class="flex items-center justify-center w-8 h-8 rounded-full bg-cyan-500/30 border border-cyan-400/50 backdrop-blur-sm shadow-md">
+                        <i class="fa-solid fa-building-columns text-xs text-cyan-200"></i>
+                    </div>
                 </div>
+                <h2 class="text-2xl font-extrabold tracking-tight font-mono text-white drop-shadow">Bs. {{ number_format($total_recargado, 2) }}</h2>
+                <p class="text-[10px] text-cyan-200/90 font-medium mt-2 flex items-center gap-1.5">
+                    <i class="fa-solid fa-circle-check text-[9px] text-cyan-400"></i> Sumatoria de fondos registrados
+                </p>
             </div>
-            <h2 class="text-2xl font-extrabold tracking-tight font-mono">Bs. {{ number_format($total_recargado, 2) }}</h2>
-            <p class="text-[10px] text-cyan-100/80 font-medium mt-2">Sumatoria de fondos registrados</p>
         </div>
 
-        {{-- Card 2: Gastado en Pagos Totales (Planillas) --}}
-        <div class="relative overflow-hidden rounded-2xl p-5 bg-gradient-to-br from-indigo-500 to-purple-650 text-white shadow-lg transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl">
-            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-white/10 rounded-full pointer-events-none"></div>
-            <div class="absolute right-8 -top-8 w-16 h-16 bg-white/10 rounded-full pointer-events-none"></div>
-            <div class="flex items-center justify-between mb-4">
-                <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-100/90">Gastado en Pagos Totales</span>
-                <div class="flex items-center justify-center w-8 h-8 rounded-full bg-white/20">
-                    <i class="fa-solid fa-receipt text-xs text-white"></i>
+        {{-- Card 2: Gastado en Pagos Totales (Planillas) -> Contexto: Nómina y sobres de pago de mineros --}}
+        <div class="group relative overflow-hidden rounded-2xl p-5 border border-purple-400/40 shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:shadow-purple-500/25 hover:shadow-2xl">
+            <!-- Contextual background photo -->
+            <div class="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-luminosity group-hover:scale-110 group-hover:opacity-40 transition-all duration-700 pointer-events-none" style="background-image: url('{{ asset('images/mining/mining_payroll.jpg') }}');"></div>
+            <!-- Atmospheric gradient mask -->
+            <div class="absolute inset-0 bg-gradient-to-br from-indigo-950/85 via-purple-900/75 to-slate-950/95 pointer-events-none"></div>
+            <!-- Decorative circle glow -->
+            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-purple-400/10 rounded-full blur-md pointer-events-none"></div>
+
+            <div class="relative z-10">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-purple-200">Gastado en Pagos Totales</span>
+                    <div class="flex items-center justify-center w-8 h-8 rounded-full bg-purple-500/30 border border-purple-400/50 backdrop-blur-sm shadow-md">
+                        <i class="fa-solid fa-receipt text-xs text-purple-200"></i>
+                    </div>
                 </div>
+                <h2 class="text-2xl font-extrabold tracking-tight font-mono text-white drop-shadow">Bs. {{ number_format($total_gastado_pagos, 2) }}</h2>
+                <p class="text-[10px] text-purple-200/90 font-medium mt-2 flex items-center gap-1.5">
+                    <i class="fa-solid fa-file-invoice-dollar text-[9px] text-purple-400"></i> Liquidación final de planillas
+                </p>
             </div>
-            <h2 class="text-2xl font-extrabold tracking-tight font-mono">Bs. {{ number_format($total_gastado_pagos, 2) }}</h2>
-            <p class="text-[10px] text-indigo-100/80 font-medium mt-2">Liquidación final de planillas</p>
         </div>
 
-        {{-- Card 3: Gastado en Anticipos --}}
-        <div class="relative overflow-hidden rounded-2xl p-5 bg-gradient-to-br from-rose-500 to-red-650 text-white shadow-lg transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl">
-            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-white/10 rounded-full pointer-events-none"></div>
-            <div class="absolute right-8 -top-8 w-16 h-16 bg-white/10 rounded-full pointer-events-none"></div>
-            <div class="flex items-center justify-between mb-4">
-                <span class="text-[10px] font-bold uppercase tracking-wider text-rose-100/90">Gastado en Anticipos</span>
-                <div class="flex items-center justify-center w-8 h-8 rounded-full bg-white/20">
-                    <i class="fa-solid fa-hand-holding-dollar text-xs text-white"></i>
+        {{-- Card 3: Gastado en Anticipos -> Contexto: Ventanilla de caja y recibos de anticipo a mineros --}}
+        <div class="group relative overflow-hidden rounded-2xl p-5 border border-rose-400/40 shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:shadow-rose-500/25 hover:shadow-2xl">
+            <!-- Contextual background photo -->
+            <div class="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-luminosity group-hover:scale-110 group-hover:opacity-40 transition-all duration-700 pointer-events-none" style="background-image: url('{{ asset('images/mining/cash_advance.jpg') }}');"></div>
+            <!-- Atmospheric gradient mask -->
+            <div class="absolute inset-0 bg-gradient-to-br from-rose-950/85 via-red-900/75 to-slate-950/95 pointer-events-none"></div>
+            <!-- Decorative circle glow -->
+            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-rose-400/10 rounded-full blur-md pointer-events-none"></div>
+
+            <div class="relative z-10">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-rose-200">Gastado en Anticipos</span>
+                    <div class="flex items-center justify-center w-8 h-8 rounded-full bg-rose-500/30 border border-rose-400/50 backdrop-blur-sm shadow-md">
+                        <i class="fa-solid fa-hand-holding-dollar text-xs text-rose-200"></i>
+                    </div>
                 </div>
+                <h2 class="text-2xl font-extrabold tracking-tight font-mono text-white drop-shadow">Bs. {{ number_format($total_gastado_anticipos, 2) }}</h2>
+                <p class="text-[10px] text-rose-200/90 font-medium mt-2 flex items-center gap-1.5">
+                    <i class="fa-solid fa-handshake-simple text-[9px] text-rose-400"></i> Adelantos a trabajadores
+                </p>
             </div>
-            <h2 class="text-2xl font-extrabold tracking-tight font-mono">Bs. {{ number_format($total_gastado_anticipos, 2) }}</h2>
-            <p class="text-[10px] text-rose-100/80 font-medium mt-2">Adelantos a trabajadores</p>
         </div>
 
-        {{-- Card 4: Saldo Sobrante en Caja --}}
+        {{-- Card 4: Saldo Sobrante en Caja -> Contexto: Bóveda blindada de reserva de efectivo --}}
         @php
-            $saldoGradient = $positivo ? 'from-emerald-500 to-teal-600' : 'from-amber-500 to-orange-650';
-            $saldoText = $positivo ? 'text-emerald-100/80' : 'text-amber-100/80';
+            $saldoBorder = $positivo ? 'border-emerald-400/40 hover:shadow-emerald-500/25' : 'border-amber-400/40 hover:shadow-amber-500/25';
+            $saldoGradient = $positivo ? 'from-emerald-950/85 via-teal-900/75 to-slate-950/95' : 'from-amber-950/85 via-orange-900/75 to-slate-950/95';
+            $saldoIconBg = $positivo ? 'bg-emerald-500/30 border-emerald-400/50 text-emerald-200' : 'bg-amber-500/30 border-amber-400/50 text-amber-200';
+            $saldoLabel = $positivo ? 'text-emerald-200' : 'text-amber-200';
         @endphp
-        <div class="relative overflow-hidden rounded-2xl p-5 bg-gradient-to-br {{ $saldoGradient }} text-white shadow-lg transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl">
-            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-white/10 rounded-full pointer-events-none"></div>
-            <div class="absolute right-8 -top-8 w-16 h-16 bg-white/10 rounded-full pointer-events-none"></div>
-            <div class="flex items-center justify-between mb-4">
-                <span class="text-[10px] font-bold uppercase tracking-wider text-white/90">Saldo Sobrante en Caja</span>
-                <div class="flex items-center justify-center w-8 h-8 rounded-full bg-white/20">
-                    <i class="fa-solid fa-vault text-xs text-white"></i>
+        <div class="group relative overflow-hidden rounded-2xl p-5 border {{ $saldoBorder }} shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:shadow-2xl">
+            <!-- Contextual background photo -->
+            <div class="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-luminosity group-hover:scale-110 group-hover:opacity-40 transition-all duration-700 pointer-events-none" style="background-image: url('{{ asset('images/mining/vault_safe.jpg') }}');"></div>
+            <!-- Atmospheric gradient mask -->
+            <div class="absolute inset-0 bg-gradient-to-br {{ $saldoGradient }} pointer-events-none"></div>
+            <!-- Decorative circle glow -->
+            <div class="absolute -right-6 -bottom-6 w-24 h-24 {{ $positivo ? 'bg-emerald-400/10' : 'bg-amber-400/10' }} rounded-full blur-md pointer-events-none"></div>
+
+            <div class="relative z-10">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-[10px] font-bold uppercase tracking-wider {{ $saldoLabel }}">Saldo Sobrante en Caja</span>
+                    <div class="flex items-center justify-center w-8 h-8 rounded-full {{ $saldoIconBg }} border backdrop-blur-sm shadow-md">
+                        <i class="fa-solid fa-vault text-xs"></i>
+                    </div>
                 </div>
+                <h2 class="text-2xl font-extrabold tracking-tight font-mono text-white drop-shadow">Bs. {{ number_format(abs($saldo_caja), 2) }}</h2>
+                <p class="text-[10px] {{ $saldoLabel }} font-medium mt-2 flex items-center gap-1.5">
+                    <i class="fa-solid {{ $positivo ? 'fa-circle-check text-emerald-400' : 'fa-triangle-exclamation text-amber-400' }} text-[9px]"></i>
+                    {{ $positivo ? 'Efectivo disponible para planillas' : 'Caja en déficit' }}
+                </p>
             </div>
-            <h2 class="text-2xl font-extrabold tracking-tight font-mono">Bs. {{ number_format(abs($saldo_caja), 2) }}</h2>
-            <p class="text-[10px] {{ $saldoText }} font-medium mt-2">
-                {{ $positivo ? '● Efectivo disponible para planillas' : '▲ Caja en déficit' }}
-            </p>
         </div>
     </div>
 
@@ -184,8 +235,12 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 
         {{-- ── Formulario Nueva Recarga ── --}}
-        <div class="glass-card rounded-2xl overflow-hidden">
-            <div class="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border-b border-slate-800/60 px-5 py-4 flex items-center gap-3">
+        <div class="relative overflow-hidden glass-card rounded-2xl border border-slate-700/60 shadow-xl">
+            <!-- Background contextual image -->
+            <div class="absolute inset-0 bg-cover bg-center opacity-10 mix-blend-luminosity pointer-events-none" style="background-image: url('{{ asset('images/mining/bank_vault.jpg') }}');"></div>
+            <div class="absolute inset-0 bg-gradient-to-b from-slate-900/60 via-slate-950/95 to-slate-950 pointer-events-none"></div>
+
+            <div class="relative z-10 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border-b border-slate-800/60 px-5 py-4 flex items-center gap-3">
                 <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-md shadow-cyan-500/25 flex-shrink-0">
                     <i class="fa-solid fa-money-bill-trend-up text-white text-xs"></i>
                 </div>
@@ -195,7 +250,7 @@
                 </div>
             </div>
 
-            <form action="{{ route('fondos-pagos.store') }}" method="POST" class="p-5 space-y-4">
+            <form action="{{ route('fondos-pagos.store') }}" method="POST" class="relative z-10 p-5 space-y-4">
                 @csrf
 
                 <div>
@@ -203,7 +258,7 @@
                         <i class="fa-regular fa-calendar mr-1"></i> Fecha de Inyección
                     </label>
                     <input id="fecha" name="fecha" type="date" required value="{{ now()->toDateString() }}"
-                           class="block w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:ring-1 focus:ring-cyan-500 text-sm font-mono">
+                           class="block w-full px-3 py-2.5 bg-slate-800/90 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:ring-1 focus:ring-cyan-500 text-sm font-mono backdrop-blur-sm">
                 </div>
 
                 <div>
@@ -212,8 +267,8 @@
                     </label>
                     <div class="relative">
                         <input id="monto" name="monto" type="number" step="0.01" required min="0.01"
-                               placeholder="0.00"
-                               class="block w-full pl-3 pr-12 py-3 bg-slate-800 border border-cyan-500/40 rounded-xl text-slate-100 focus:outline-none focus:border-cyan-500 text-sm font-mono font-bold">
+                                placeholder="0.00"
+                                class="block w-full pl-3 pr-12 py-3 bg-slate-800/90 border border-cyan-500/40 rounded-xl text-slate-100 focus:outline-none focus:border-cyan-500 text-sm font-mono font-bold backdrop-blur-sm">
                         <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-black text-cyan-400 pointer-events-none font-mono">Bs.</span>
                     </div>
                 </div>
@@ -224,7 +279,7 @@
                     </label>
                     <input id="observacion" name="observacion" type="text"
                            placeholder="Ej. Retiro Banco - Fondeo quincenal"
-                           class="block w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:ring-1 focus:ring-cyan-500 text-sm">
+                           class="block w-full px-3 py-2.5 bg-slate-800/90 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:ring-1 focus:ring-cyan-500 text-sm backdrop-blur-sm">
                 </div>
 
                 <button type="submit"
@@ -233,7 +288,7 @@
                     Confirmar Recarga
                 </button>
 
-                <div class="flex gap-2 bg-cyan-500/5 border border-cyan-500/15 rounded-xl px-3 py-2.5 text-[10px] text-slate-500 leading-relaxed">
+                <div class="flex gap-2 bg-cyan-500/5 border border-cyan-500/15 rounded-xl px-3 py-2.5 text-[10px] text-slate-500 leading-relaxed backdrop-blur-sm">
                     <i class="fa-solid fa-circle-info text-cyan-500 mt-0.5 flex-shrink-0"></i>
                     <span>El saldo sobrante de recargas anteriores se acumula automáticamente al nuevo disponible.</span>
                 </div>
@@ -241,8 +296,12 @@
         </div>
 
         {{-- ── Tabla Historial con Remanentes ── --}}
-        <div id="caja-chica-report-output" class="glass-card rounded-2xl overflow-hidden lg:col-span-2">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-800/60 bg-gradient-to-r from-slate-800/20 to-transparent">
+        <div id="caja-chica-report-output" class="relative overflow-hidden glass-card rounded-2xl border border-slate-700/60 shadow-xl lg:col-span-2">
+            <!-- Background contextual image -->
+            <div class="absolute inset-0 bg-cover bg-center opacity-8 mix-blend-luminosity pointer-events-none" style="background-image: url('{{ asset('images/mining/caja_chica_banner.jpg') }}');"></div>
+            <div class="absolute inset-0 bg-gradient-to-b from-slate-900/60 via-slate-950/95 to-slate-950 pointer-events-none"></div>
+
+            <div class="relative z-10 flex items-center justify-between px-6 py-4 border-b border-slate-800/60 bg-gradient-to-r from-slate-800/40 to-transparent">
                 <div class="flex items-center gap-3">
                     <i class="fa-solid fa-clock-rotate-left text-cyan-400 text-sm"></i>
                     <div>
@@ -250,13 +309,13 @@
                         <p class="text-[10px] text-slate-500">Monto inyectado + Sobrante acumulado del período</p>
                     </div>
                 </div>
-                <span class="text-[10px] font-bold text-slate-400 bg-slate-800/60 border border-slate-700/40 px-3 py-1 rounded-full">
+                <span class="text-[10px] font-bold text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-3 py-1 rounded-full font-mono">
                     {{ count($fondos) }} {{ count($fondos) === 1 ? 'recarga' : 'recargas' }}
                 </span>
             </div>
 
             @if(count($fondos) === 0)
-                <div class="flex flex-col items-center justify-center py-14 text-slate-500 gap-3">
+                <div class="relative z-10 flex flex-col items-center justify-center py-14 text-slate-500 gap-3">
                     <div class="w-14 h-14 rounded-2xl bg-slate-800/50 flex items-center justify-center">
                         <i class="fa-solid fa-building-columns text-2xl text-slate-600"></i>
                     </div>
@@ -266,10 +325,10 @@
                     </div>
                 </div>
             @else
-                <div class="overflow-x-auto">
+                <div class="relative z-10 overflow-x-auto">
                     <table class="w-full text-xs">
                         <thead>
-                            <tr class="border-b border-slate-800/40 bg-slate-900/50 text-slate-400">
+                            <tr class="border-b border-slate-800/60 bg-slate-900/70 text-slate-400">
                                 <th class="px-4 py-3 text-left font-bold uppercase tracking-wider text-[10px]">Fecha</th>
                                 <th class="px-4 py-3 text-right font-bold uppercase tracking-wider text-[10px]">Inyección (Banco)</th>
                                 <th class="px-4 py-3 text-right font-bold uppercase tracking-wider text-[10px]">Sobró Anterior</th>
@@ -279,9 +338,9 @@
                                 <th class="px-4 py-3 text-center font-bold uppercase tracking-wider text-[10px] no-print">Acción</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-800/20">
+                        <tbody class="divide-y divide-slate-800/30">
                             @foreach($fondos as $i => $fondo)
-                            <tr class="hover:bg-slate-800/10 transition-colors duration-150">
+                            <tr class="interactive-table-row">
                                 <td class="px-4 py-3.5 font-mono text-slate-300 whitespace-nowrap">
                                     <div class="font-bold">{{ $fondo->fecha->format('d/m/Y') }}</div>
                                     <div class="text-[9px] text-slate-500 font-normal truncate max-w-[120px]">{{ $fondo->observacion ?: 'Fondeo de Caja' }}</div>

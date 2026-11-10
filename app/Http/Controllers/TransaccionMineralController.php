@@ -84,38 +84,44 @@ class TransaccionMineralController extends Controller
             });
         }
 
-        $transacciones = $query->orderBy('fecha', 'desc')->orderBy('id', 'desc')->get();
-
-        // Calculate totals dynamically based on filters
-        $total_ingresos = $transacciones->where('tipo', 'venta')->sum('monto_total');
-        $total_egresos = $transacciones->where('tipo', 'compra')->sum('monto_total');
+        // Calcular totales del conjunto filtrado completo directamente en la base de datos
+        $totalsQuery = clone $query;
+        $total_ingresos = (float)((clone $totalsQuery)->where('tipo', 'venta')->sum('monto_total') ?: 0);
+        $total_egresos = (float)((clone $totalsQuery)->where('tipo', 'compra')->sum('monto_total') ?: 0);
         $balance = $total_ingresos - $total_egresos;
+        $totalComprasCount = (int)((clone $totalsQuery)->where('tipo', 'compra')->count());
+        $totalVentasCount = (int)((clone $totalsQuery)->where('tipo', 'venta')->count());
+
+        // Paginación determinista en base de datos por fecha e id
+        $transacciones = $query->orderBy('fecha', 'desc')->orderBy('id', 'desc')->paginate(25)->withQueryString();
 
         $bocaminas = Bocamina::orderBy('nombre')->get();
 
-        // Load all active purchases (Lotes) with remaining stock for sales drop-down
-        $lotesDisponibles = TransaccionMineral::with('analisis')
+        // Cargar lotes activos para formulario de venta limitando columnas y registros
+        $lotesDisponibles = TransaccionMineral::with('analisis:id,transaccion_mineral_id,mineral,ley')
             ->where('tipo', 'compra')
             ->where(function($q) {
                 $q->where('peso_disponible', '>', 0)
                   ->orWhere('cantidad_disponible', '>', 0);
             })
             ->orderBy('fecha', 'desc')
-            ->get();
+            ->orderBy('id', 'desc')
+            ->take(100)
+            ->get(['id', 'fecha', 'cliente_proveedor', 'peso_disponible', 'cantidad_disponible', 'presentacion', 'precio_unidad']);
 
-        // Calculate Stock Metrics for the Stock Tab
+        // Métricas de Stock calculadas directamente en BD
         $lotesDisponiblesCount = TransaccionMineral::where('tipo', 'compra')
             ->where('peso_disponible', '>', 0)
             ->count();
 
-        $pesoDisponibleSum = TransaccionMineral::where('tipo', 'compra')
+        $pesoDisponibleSum = (float)TransaccionMineral::where('tipo', 'compra')
             ->sum('peso_disponible');
 
-        $valorTotalStock = TransaccionMineral::where('tipo', 'compra')
+        $valorTotalStock = (float)(TransaccionMineral::where('tipo', 'compra')
             ->where('peso_disponible', '>', 0)
             ->select(DB::raw('SUM(peso_disponible * precio_unidad) as total_valor'))
             ->first()
-            ->total_valor ?? 0;
+            ->total_valor ?? 0);
 
         $comprasDelMes = TransaccionMineral::where('tipo', 'compra')
             ->whereMonth('fecha', now()->month)
@@ -127,81 +133,136 @@ class TransaccionMineralController extends Controller
             ->whereYear('fecha', now()->year)
             ->count();
 
-        // Load all purchases (Lotes) for Stock list
+        // Paginación en pestaña de Stock para evitar cargar miles de filas
         $todosLosLotes = TransaccionMineral::with(['analisis', 'bocamina', 'ventas.analisis'])
             ->where('tipo', 'compra')
             ->orderBy('fecha', 'desc')
-            ->get();
+            ->orderBy('id', 'desc')
+            ->paginate(25, ['*'], 'stock_page')
+            ->withQueryString();
 
-        // Caja del Módulo 2 Metrics & Unified Ledger (Independiente de la caja de personal)
-        $totalRecargadoCaja = \App\Models\CajaMineralRecarga::sum('monto');
-        $cajaRecargas = \App\Models\CajaMineralRecarga::orderBy('fecha', 'desc')->orderBy('id', 'desc')->get();
-        $totalComprasModulo = TransaccionMineral::where('tipo', 'compra')->sum('monto_total');
-        $totalVentasModulo = TransaccionMineral::where('tipo', 'venta')->sum('monto_total');
+        // Métricas de Caja Módulo 2 calculadas directamente en BD sobre el conjunto completo
+        $totalRecargadoCaja = (float)\App\Models\CajaMineralRecarga::sum('monto');
+        $totalComprasModulo = (float)TransaccionMineral::where('tipo', 'compra')->sum('monto_total');
+        $totalVentasModulo = (float)TransaccionMineral::where('tipo', 'venta')->sum('monto_total');
         $saldoCajaModulo = ($totalRecargadoCaja + $totalVentasModulo) - $totalComprasModulo;
 
-        // Unified Financial Ledger Movimientos for Caja del Módulo 2
-        $movsList = collect();
+        // Historial de Caja con soporte de paginación unificada y saldo histórico (50 movimientos por página)
+        $cajaPage = max(1, (int)$request->input('caja_page', 1));
+        $cajaPerPage = 50;
+        $cajaTipo = $request->input('caja_tipo');
+        $cajaFechaDesde = $request->input('caja_fecha_desde');
+        $cajaFechaHasta = $request->input('caja_fecha_hasta');
 
-        foreach ($cajaRecargas as $rec) {
-            $movsList->push((object)[
-                'id' => 'rec_' . $rec->id,
-                'db_id' => $rec->id,
-                'fecha' => \Carbon\Carbon::parse($rec->fecha),
-                'tipo' => 'recarga',
-                'glosa' => $rec->observacion ?: 'Recarga de fondo operativo de caja',
-                'monto' => (float)$rec->monto,
-                'es_ingreso' => true,
-                'delete_route' => route('caja-minerales.destroy-recarga', $rec->id),
-                'created_at' => $rec->created_at,
-            ]);
+        $whereClauses = [];
+        $bindings = [];
+
+        if ($cajaTipo) {
+            $whereClauses[] = "tipo = ?";
+            $bindings[] = $cajaTipo;
+        }
+        if ($cajaFechaDesde) {
+            $whereClauses[] = "fecha >= ?";
+            $bindings[] = $cajaFechaDesde;
+        }
+        if ($cajaFechaHasta) {
+            $whereClauses[] = "fecha <= ?";
+            $bindings[] = $cajaFechaHasta;
         }
 
-        $comprasAll = TransaccionMineral::where('tipo', 'compra')->get();
-        foreach ($comprasAll as $comp) {
-            $movsList->push((object)[
-                'id' => 'comp_' . $comp->id,
-                'db_id' => $comp->id,
-                'fecha' => \Carbon\Carbon::parse($comp->fecha),
-                'tipo' => 'compra',
-                'glosa' => 'Compra Lote LOT-' . str_pad($comp->id, 5, '0', STR_PAD_LEFT) . ' (' . $comp->cliente_proveedor . ')',
-                'monto' => (float)$comp->monto_total,
-                'es_ingreso' => false,
-                'delete_route' => null,
-                'created_at' => $comp->created_at,
-            ]);
-        }
+        $whereSql = count($whereClauses) > 0 ? "WHERE " . implode(" AND ", $whereClauses) : "";
 
-        $ventasAll = TransaccionMineral::where('tipo', 'venta')->get();
-        foreach ($ventasAll as $vent) {
-            $movsList->push((object)[
-                'id' => 'vent_' . $vent->id,
-                'db_id' => $vent->id,
-                'fecha' => \Carbon\Carbon::parse($vent->fecha),
-                'tipo' => 'venta',
-                'glosa' => 'Venta de Mineral a ' . $vent->cliente_proveedor,
-                'monto' => (float)$vent->monto_total,
-                'es_ingreso' => true,
-                'delete_route' => null,
-                'created_at' => $vent->created_at,
-            ]);
-        }
+        // Conteo total unificado sobre el conjunto filtrado
+        $countSql = "
+            WITH all_movs AS (
+                SELECT 'recarga' as tipo, fecha FROM caja_minerales_recargas
+                UNION ALL
+                SELECT 'compra' as tipo, fecha FROM transacciones_minerales WHERE tipo = 'compra'
+                UNION ALL
+                SELECT 'venta' as tipo, fecha FROM transacciones_minerales WHERE tipo = 'venta'
+            )
+            SELECT COUNT(*) as total FROM all_movs $whereSql
+        ";
+        $totalCajaMovements = (int)\Illuminate\Support\Facades\DB::select($countSql, $bindings)[0]->total;
+        $cajaLastPage = max(1, (int)ceil($totalCajaMovements / $cajaPerPage));
+        $offset = ($cajaPage - 1) * $cajaPerPage;
 
-        $movsSortedAsc = $movsList->sortBy(function($m) {
-            return $m->fecha->format('Y-m-d') . '_' . $m->created_at->format('H:i:s') . '_' . $m->id;
-        })->values();
+        // Paginación unificada con cálculo de saldo histórico continuo
+        $pageSql = "
+            WITH all_movs AS (
+                SELECT 
+                    'rec_' || id as id,
+                    id as db_id,
+                    'recarga' as tipo,
+                    fecha,
+                    created_at,
+                    coalesce(observacion, 'Recarga de fondo operativo de caja') as glosa,
+                    CAST(monto as REAL) as monto,
+                    1 as es_ingreso
+                FROM caja_minerales_recargas
 
-        $runningSaldo = 0;
-        foreach ($movsSortedAsc as $m) {
-            if ($m->es_ingreso) {
-                $runningSaldo += $m->monto;
-            } else {
-                $runningSaldo -= $m->monto;
-            }
-            $m->saldo_resultante = $runningSaldo;
-        }
+                UNION ALL
 
-        $movimientosCaja = $movsSortedAsc->reverse()->values();
+                SELECT 
+                    'comp_' || id as id,
+                    id as db_id,
+                    'compra' as tipo,
+                    fecha,
+                    created_at,
+                    ('Compra Lote LOT-' || substr('00000' || id, -5, 5) || ' (' || coalesce(cliente_proveedor, '') || ')') as glosa,
+                    CAST(monto_total as REAL) as monto,
+                    0 as es_ingreso
+                FROM transacciones_minerales
+                WHERE tipo = 'compra'
+
+                UNION ALL
+
+                SELECT 
+                    'vent_' || id as id,
+                    id as db_id,
+                    'venta' as tipo,
+                    fecha,
+                    created_at,
+                    ('Venta de Mineral a ' || coalesce(cliente_proveedor, '')) as glosa,
+                    CAST(monto_total as REAL) as monto,
+                    1 as es_ingreso
+                FROM transacciones_minerales
+                WHERE tipo = 'venta'
+            ),
+            with_saldo AS (
+                SELECT 
+                    id, db_id, tipo, fecha, created_at, glosa, monto, es_ingreso,
+                    SUM(CASE WHEN es_ingreso = 1 THEN monto ELSE -monto END) OVER (
+                        ORDER BY fecha ASC, created_at ASC, tipo ASC, db_id ASC
+                        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+                    ) AS saldo_resultante
+                FROM all_movs
+            )
+            SELECT * FROM with_saldo
+            $whereSql
+            ORDER BY fecha DESC, created_at DESC, tipo DESC, db_id DESC
+            LIMIT ? OFFSET ?
+        ";
+
+        $pageBindings = array_merge($bindings, [$cajaPerPage, $offset]);
+        $rawRows = \Illuminate\Support\Facades\DB::select($pageSql, $pageBindings);
+
+        $movimientosCaja = collect($rawRows)->map(function($r) {
+            return (object)[
+                'id' => $r->id,
+                'db_id' => $r->db_id,
+                'fecha' => \Carbon\Carbon::parse($r->fecha),
+                'tipo' => $r->tipo,
+                'glosa' => $r->glosa,
+                'monto' => (float)$r->monto,
+                'es_ingreso' => (bool)$r->es_ingreso,
+                'saldo_resultante' => (float)$r->saldo_resultante,
+                'delete_route' => $r->tipo === 'recarga' ? route('caja-minerales.destroy-recarga', $r->db_id) : null,
+                'created_at' => \Carbon\Carbon::parse($r->created_at),
+            ];
+        });
+
+        $cajaRecargas = collect();
 
         $totalFondosDisponibles = $totalRecargadoCaja + $totalVentasModulo;
         $porcentajeUsoCaja = $totalFondosDisponibles > 0 
@@ -213,6 +274,8 @@ class TransaccionMineralController extends Controller
             'total_ingresos',
             'total_egresos',
             'balance',
+            'totalComprasCount',
+            'totalVentasCount',
             'bocaminas',
             'lotesDisponibles',
             'lotesDisponiblesCount',
@@ -227,7 +290,13 @@ class TransaccionMineralController extends Controller
             'totalVentasModulo',
             'saldoCajaModulo',
             'movimientosCaja',
-            'porcentajeUsoCaja'
+            'porcentajeUsoCaja',
+            'cajaPage',
+            'cajaLastPage',
+            'totalCajaMovements',
+            'cajaTipo',
+            'cajaFechaDesde',
+            'cajaFechaHasta'
         ));
     }
 
@@ -568,5 +637,79 @@ class TransaccionMineralController extends Controller
 
             return redirect()->route('transacciones-minerales.index')->with('success', 'Transacción eliminada con éxito.');
         });
+    }
+
+    public function buscarLotes(Request $request)
+    {
+        $q = trim($request->input('q', ''));
+        $perPage = min(50, max(1, (int)$request->input('per_page', 25)));
+
+        $query = TransaccionMineral::with('analisis:id,transaccion_mineral_id,mineral,ley')
+            ->where('tipo', 'compra')
+            ->where(function($sub) {
+                $sub->where('peso_disponible', '>', 0)
+                    ->orWhere('cantidad_disponible', '>', 0);
+            });
+
+        if ($q !== '') {
+            $num = preg_replace('/[^0-9]/', '', $q);
+            $query->where(function($sub) use ($q, $num) {
+                if ($num !== '') {
+                    $sub->where('id', (int)$num);
+                }
+                $sub->orWhere('cliente_proveedor', 'like', "%{$q}%")
+                    ->orWhere('presentacion', 'like', "%{$q}%");
+            });
+        }
+
+        $lotes = $query->orderBy('fecha', 'desc')
+            ->orderBy('id', 'desc')
+            ->paginate($perPage, ['id', 'fecha', 'cliente_proveedor', 'peso_disponible', 'cantidad_disponible', 'presentacion', 'precio_unidad']);
+
+        return response()->json($lotes);
+    }
+
+    public function exportarExcel(Request $request)
+    {
+        $query = TransaccionMineral::with('bocamina');
+        if ($request->filled('tipo')) $query->where('tipo', $request->tipo);
+        if ($request->filled('cliente_proveedor')) $query->where('cliente_proveedor', 'like', "%{$request->cliente_proveedor}%");
+        if ($request->filled('bocamina_id')) $query->where('bocamina_id', $request->bocamina_id);
+        if ($request->filled('fecha_desde')) $query->where('fecha', '>=', $request->fecha_desde);
+        if ($request->filled('fecha_hasta')) $query->where('fecha', '<=', $request->fecha_hasta);
+
+        $query->orderBy('fecha', 'desc')->orderBy('id', 'desc');
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="Transacciones_Minerales_' . date('Y-m-d_H-i') . '.csv"',
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0'
+        ];
+
+        return response()->stream(function() use ($query) {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF");
+            fputcsv($handle, ['ID', 'Fecha', 'Tipo', 'Cliente/Proveedor', 'Bocamina', 'Presentación', 'Cantidad', 'Peso Neto Seco (Kg)', 'Precio Unitario (Bs)', 'Monto Total (Bs)', 'Observación']);
+
+            foreach ($query->cursor() as $row) {
+                fputcsv($handle, [
+                    $row->tipo === 'compra' ? 'LOT-' . str_pad($row->id, 5, '0', STR_PAD_LEFT) : 'SLD-' . str_pad($row->id, 5, '0', STR_PAD_LEFT),
+                    $row->fecha ? $row->fecha->format('d/m/Y') : '',
+                    strtoupper($row->tipo),
+                    $row->cliente_proveedor,
+                    $row->bocamina->nombre ?? 'N/A',
+                    $row->presentacion === 'Otro' ? ($row->presentacion_otro ?: 'Otro') : $row->presentacion,
+                    number_format($row->cantidad, 2, '.', ''),
+                    number_format($row->peso_neto_seco, 2, '.', ''),
+                    number_format($row->precio_unidad, 2, '.', ''),
+                    number_format($row->monto_total, 2, '.', ''),
+                    $row->observacion ?? ''
+                ]);
+            }
+
+            fclose($handle);
+        }, 200, $headers);
     }
 }

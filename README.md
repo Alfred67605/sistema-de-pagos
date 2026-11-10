@@ -1,14 +1,75 @@
-# ⛏️ SCPM - Sistema de Control de Pagos Mineros ERP
+# ⛏️ TORMAN MINERÍA - SCPM (Sistema de Control de Pagos Mineros ERP)
 
-Sistema ERP Web integral desarrollado con **Laravel 11**, **TailwindCSS**, **Vite**, **Chart.js** y **Alpine.js** para la administración operacional, control de liquidaciones de personal minero, anticipos, bocaminas, caja de fondos y comercialización de minerales.
+Sistema ERP Web Premium de Gestión Minera desarrollado con **Laravel 13**, **TailwindCSS**, **Vite**, **Chart.js** y **Alpine.js** para la administración operacional, control de liquidaciones de personal minero, anticipos, bocaminas, caja de fondos y comercialización de minerales.
 
 ---
 
-## 📋 Requisitos Previos
+## ⚡ Ejecución Rápida en Local (Windows)
+
+El sistema está configurado para operar exclusivamente en entorno local seguro (`127.0.0.1` / loopback):
+
+1. **Iniciar el sistema**: Haz doble clic en [`iniciar_sistema.bat`](file:///c:/Users/llano/Downloads/sistema-pagos/iniciar_sistema.bat) o ejecuta en terminal:
+   ```cmd
+   iniciar_sistema.bat
+   ```
+   *Acceso directo:* [http://127.0.0.1:8000](http://127.0.0.1:8000)
+2. **Credenciales de Acceso:**
+   - **Usuario:** `admin@mina.com`
+   - **Contraseña:** `admin123`
+3. **Detener el sistema**: Haz doble clic en [`detener_sistema.bat`](file:///c:/Users/llano/Downloads/sistema-pagos/detener_sistema.bat) o ejecuta en terminal:
+   ```cmd
+   detener_sistema.bat
+   ```
+
+---
+
+## 💎 Identidad Visual y Diseño Minero Profesional
+
+- **Paleta de Color Minera:** Fondo azul noche / grafito (`#090d16`, `#0f172a`, `#131d31`) con acentos ámbar, cobre y dorado mineral (`#f59e0b`, `#d97706`).
+- **Recursos Visuales Locales:**
+  - *Login Hero:* Fotografía de galería subterránea con minero en EPP, rieles industriales y lámparas mineras (`public/images/mining/login_hero.jpg`).
+  - *Dashboard Panoramic Banner:* Excavación subterránea con maquinaria pesada, arcos de acero y luz cálida de túnel (`public/images/mining/dashboard_banner.jpg`).
+  - *Texturas Minerales:* Textura orgánica de roca oscura con vetas metálicas (`public/images/mining/mineral_texture.jpg`).
+- **Movimiento Cinemático:** Transiciones Ken Burns suaves en el login, iluminación ambiental pulsante inspirada en linternas de mina, y respeto estricto a `prefers-reduced-motion`.
+- **Tipografía y Legibilidad:** Fuentes `Outfit` y `Plus Jakarta Sans`, con cifras tabulares (`font-mono tabular-nums`) en importes (Bs.) y superficies uniformes detrás de tablas y formularios.
+- **Navegación Fluida:** Sidebar plegable en desktop (260px a 80px) y drawer deslizante en dispositivos móviles y tablets.
+- **Monitoreo Real de Backend:** Indicador en la barra superior con latencia en milisegundos (`/health`), sin estados estáticos simulados.
+
+---
+
+## ⚡ Base de Datos, Rendimiento y Triggers de Integridad
+
+El sistema implementa una arquitectura de base de datos optimizada sobre SQLite mediante la migración [`2026_09_28_120000_add_performance_indexes_and_audit_triggers.php`](file:///c:/Users/llano/Downloads/sistema-pagos/database/migrations/2026_09_28_120000_add_performance_indexes_and_audit_triggers.php):
+
+### 1. Triggers de Auditoría e Integridad
+* **`audit_logs`:** Tabla de auditoría inmutable que registra cambios críticos en pagos, anticipos y transacciones de mineral (valores anteriores y nuevos serializados en JSON con marca de tiempo).
+* **Triggers de Auditoría:** `trg_audit_pagos_update`, `trg_audit_pagos_delete`, `trg_audit_anticipos_update`, `trg_audit_anticipos_delete`, `trg_audit_transacciones_update`, `trg_audit_transacciones_delete`.
+* **Triggers de Integridad Contable:**
+  - `trg_integrity_anticipos_saldo_non_negative`: Bloquea con `RAISE(ABORT)` cualquier intento de dejar saldo negativo en un anticipo.
+  - `trg_integrity_pagos_neto_non_negative_ins` / `upd`: Bloquea liquidaciones con monto neto negativo.
+
+### 2. Índices de Rendimiento y Optimización de Consultas
+* Índices compuestos en foreign keys y filtros frecuentes (`idx_pagos_trabajador_fecha`, `idx_anticipos_saldo`, `idx_trabajadores_bocamina_estado`, `idx_transacciones_tipo_fecha`, `idx_pago_items_pago_id`).
+* Transformación de planes de ejecución (`EXPLAIN QUERY PLAN`) de escaneos completos (`SCAN TABLE`) a búsquedas binarias directas (`SEARCH TABLE USING INDEX`).
+* Eliminación de problemas N+1 en controladores (`ReporteController` y `PagoController`) mediante eager loading selectivo (`with('trabajador.bocamina')`) y agregación directa en base de datos.
+
+### 3. Comando de Verificación y Reconciliación
+Para auditar la integridad de saldos en cualquier momento:
+```bash
+php artisan db:verify-integrity
+```
+Para forzar la reconciliación matemática de anticipos contra los pagos descontados:
+```bash
+php artisan db:verify-integrity --reconcile
+```
+
+---
+
+## 📋 Requisitos del Entorno
 
 Antes de comenzar, asegúrate de tener instalado en tu computadora:
 
-* **PHP** >= 8.2 (con extensiones `pdo_sqlite`, `mbstring`, `openssl`, `curl`)
+* **PHP** >= 8.4 y < 9.0 (`^8.4` en `composer.json`) (con extensiones `pdo_sqlite`, `mbstring`, `openssl`, `curl`)
 * **Composer** (gestor de dependencias de PHP)
 * **Node.js** >= 18.x y **NPM**
 * **Git**
@@ -134,7 +195,7 @@ Al ejecutar el seeder (`php artisan db:seed`), se creará automáticamente la cu
 
 ## 🛠️ Tecnologías Utilizadas
 
-* **Backend**: Laravel 11.x (PHP 8.2+)
+* **Backend**: Laravel 13.x (`^13.8` en `composer.json`; `v13.16.1` en `composer.lock`) (PHP >= 8.4 y < 9.0)
 * **Frontend**: Blade, Tailwind CSS 4.0, Alpine.js, Chart.js
 * **Build Tool**: Vite 8.x
 * **Base de Datos**: SQLite (con zona horaria `America/La_Paz`)

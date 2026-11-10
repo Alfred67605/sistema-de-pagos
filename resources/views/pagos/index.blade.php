@@ -11,73 +11,94 @@
             <h1 class="text-3xl font-bold tracking-tight text-slate-100">Control de Caja y Pagos</h1>
             <p class="text-sm text-slate-400 mt-1">Monitorea los fondos retirados del banco, gestiona los pagos semanales y consulta el saldo disponible.</p>
         </div>
-        <div class="flex flex-wrap gap-3 self-start">
-            <a href="{{ route('fondos-caja.index') }}" class="inline-flex items-center justify-center px-4 py-2.5 rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-750 text-sm font-bold text-slate-200 transition duration-150">
-                <i class="fa-solid fa-money-bill-trend-up mr-2 text-cyan-500"></i> Gestionar Fondos / Recargas
+        <div class="flex flex-wrap gap-2.5 self-start">
+            <a href="{{ route('fondos-caja.index') }}" class="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold uppercase tracking-wider text-slate-200 transition-colors shadow-sm">
+                <i class="fa-solid fa-money-bill-trend-up mr-2 text-amber-500"></i> Gestionar Fondos / Recargas
             </a>
-            <a href="{{ route('pagos.create') }}" class="inline-flex items-center justify-center px-4 py-2.5 rounded-lg bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-sm font-bold text-slate-950 transition duration-150 shadow-lg shadow-teal-500/10">
-                <i class="fa-solid fa-receipt mr-2"></i> Procesar Nuevo Pago
+            <a href="{{ route('pagos.create') }}" class="btn-gold px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider inline-flex items-center shadow-md">
+                <i class="fa-solid fa-receipt mr-2 text-xs"></i> Procesar Nuevo Pago
             </a>
         </div>
     </div>
 
-    <!-- Summary Cards (3 Tarjetas Estilo Tablero Principal) -->
-    <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
+    <!-- Summary Cards (3 Tarjetas con Fondos Fotográficos Contextuales) -->
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <!-- Card 1: Gastado en Pagos Totales (Planillas) -->
-        <div class="relative overflow-hidden rounded-2xl p-5 bg-gradient-to-br from-indigo-500 to-purple-650 text-white shadow-lg transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl">
-            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-white/10 rounded-full pointer-events-none"></div>
-            <div class="absolute right-8 -top-8 w-16 h-16 bg-white/10 rounded-full pointer-events-none"></div>
-            <div class="flex items-center justify-between mb-4">
-                <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-100/90">Gastado en Pagos Totales</span>
-                <div class="flex items-center justify-center w-8 h-8 rounded-full bg-white/20">
-                    <i class="fa-solid fa-receipt text-xs text-white"></i>
+        <div class="group relative overflow-hidden mining-card interactive shimmer-card accent-border-gold glow-gold p-5">
+            <!-- Contextual photo -->
+            <div class="absolute inset-0 bg-cover bg-center opacity-25 mix-blend-luminosity group-hover:scale-110 group-hover:opacity-35 transition-all duration-700 pointer-events-none" style="background-image: url('{{ asset('images/mining/mining_payroll.jpg') }}');"></div>
+            <div class="absolute inset-0 bg-gradient-to-br from-slate-950/85 via-amber-950/40 to-slate-950/90 pointer-events-none"></div>
+
+            <div class="relative z-10">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-amber-200/90">Total Liquidaciones</span>
+                    <div class="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300 shadow-sm backdrop-blur-sm">
+                        <i class="fa-solid fa-receipt text-xs"></i>
+                    </div>
                 </div>
+                <div class="text-2xl font-extrabold tracking-tight font-mono text-white tabular-nums drop-shadow">
+                    Bs. {{ number_format($total_gastado_pagos, 2) }}
+                </div>
+                <p class="text-[11px] text-amber-200/80 mt-2 flex items-center">
+                    <i class="fa-solid fa-check-double text-[9px] mr-1.5 text-emerald-400"></i> Liquidación final de planillas
+                </p>
             </div>
-            <h2 class="text-2xl font-extrabold tracking-tight font-mono">Bs. {{ number_format($total_gastado_pagos, 2) }}</h2>
-            <p class="text-[10px] text-indigo-100/80 font-medium mt-2">Liquidación final de planillas</p>
         </div>
 
         <!-- Card 2: Gastado en Anticipos -->
-        <div class="relative overflow-hidden rounded-2xl p-5 bg-gradient-to-br from-rose-500 to-red-650 text-white shadow-lg transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl">
-            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-white/10 rounded-full pointer-events-none"></div>
-            <div class="absolute right-8 -top-8 w-16 h-16 bg-white/10 rounded-full pointer-events-none"></div>
-            <div class="flex items-center justify-between mb-4">
-                <span class="text-[10px] font-bold uppercase tracking-wider text-rose-100/90">Gastado en Anticipos</span>
-                <div class="flex items-center justify-center w-8 h-8 rounded-full bg-white/20">
-                    <i class="fa-solid fa-hand-holding-dollar text-xs text-white"></i>
+        <div class="group relative overflow-hidden mining-card interactive shimmer-card accent-border-rose glow-rose p-5">
+            <!-- Contextual photo -->
+            <div class="absolute inset-0 bg-cover bg-center opacity-25 mix-blend-luminosity group-hover:scale-110 group-hover:opacity-35 transition-all duration-700 pointer-events-none" style="background-image: url('{{ asset('images/mining/cash_advance.jpg') }}');"></div>
+            <div class="absolute inset-0 bg-gradient-to-br from-slate-950/85 via-rose-950/40 to-slate-950/90 pointer-events-none"></div>
+
+            <div class="relative z-10">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-rose-200/90">Total Anticipos</span>
+                    <div class="w-8 h-8 rounded-lg bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-300 shadow-sm backdrop-blur-sm">
+                        <i class="fa-solid fa-hand-holding-dollar text-xs"></i>
+                    </div>
                 </div>
+                <div class="text-2xl font-extrabold tracking-tight font-mono text-rose-300 tabular-nums drop-shadow">
+                    Bs. {{ number_format($total_gastado_anticipos, 2) }}
+                </div>
+                <p class="text-[11px] text-rose-200/80 mt-2 flex items-center">
+                    <i class="fa-solid fa-arrow-down text-[9px] mr-1.5 text-rose-400"></i> Adelantos entregados a cuenta
+                </p>
             </div>
-            <h2 class="text-2xl font-extrabold tracking-tight font-mono">Bs. {{ number_format($total_gastado_anticipos, 2) }}</h2>
-            <p class="text-[10px] text-rose-100/80 font-medium mt-2">Adelantos a trabajadores</p>
         </div>
 
         <!-- Card 3: Saldo Sobrante en Caja -->
         @php
             $positivoIndex = $saldo_caja >= 0;
-            $saldoGradientIndex = $positivoIndex ? 'from-emerald-500 to-teal-600' : 'from-amber-500 to-orange-650';
-            $saldoTextIndex = $positivoIndex ? 'text-emerald-100/80' : 'text-amber-100/80';
         @endphp
-        <div class="relative overflow-hidden rounded-2xl p-5 bg-gradient-to-br {{ $saldoGradientIndex }} text-white shadow-lg transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl">
-            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-white/10 rounded-full pointer-events-none"></div>
-            <div class="absolute right-8 -top-8 w-16 h-16 bg-white/10 rounded-full pointer-events-none"></div>
-            <div class="flex items-center justify-between mb-4">
-                <span class="text-[10px] font-bold uppercase tracking-wider text-white/90">Saldo Sobrante en Caja</span>
-                <div class="flex items-center justify-center w-8 h-8 rounded-full bg-white/20">
-                    <i class="fa-solid fa-vault text-xs text-white"></i>
+        <div class="group relative overflow-hidden mining-card interactive shimmer-card {{ $positivoIndex ? 'accent-border-emerald glow-emerald' : 'accent-border-rose glow-rose' }} p-5">
+            <!-- Contextual photo -->
+            <div class="absolute inset-0 bg-cover bg-center opacity-25 mix-blend-luminosity group-hover:scale-110 group-hover:opacity-35 transition-all duration-700 pointer-events-none" style="background-image: url('{{ asset('images/mining/vault_safe.jpg') }}');"></div>
+            <div class="absolute inset-0 bg-gradient-to-br {{ $positivoIndex ? 'from-slate-950/85 via-emerald-950/40 to-slate-950/90' : 'from-slate-950/85 via-rose-950/40 to-slate-950/90' }} pointer-events-none"></div>
+
+            <div class="relative z-10">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-[11px] font-bold uppercase tracking-wider {{ $positivoIndex ? 'text-emerald-200/90' : 'text-rose-200/90' }}">Saldo en Caja Chica</span>
+                    <div class="w-8 h-8 rounded-lg {{ $positivoIndex ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-300 border border-rose-500/40' }} flex items-center justify-center shadow-sm backdrop-blur-sm">
+                        <i class="fa-solid fa-vault text-xs"></i>
+                    </div>
                 </div>
+                <div class="text-2xl font-extrabold tracking-tight font-mono tabular-nums text-white drop-shadow">
+                    Bs. {{ number_format(abs($saldo_caja), 2) }}
+                </div>
+                <p class="text-[11px] font-medium mt-2 flex items-center {{ $positivoIndex ? 'text-emerald-300' : 'text-rose-300' }}">
+                    <i class="fa-solid {{ $positivoIndex ? 'fa-circle-check text-emerald-400' : 'fa-triangle-exclamation text-rose-400' }} text-[10px] mr-1.5"></i>
+                    {{ $positivoIndex ? 'Efectivo disponible en caja' : 'Caja con saldo deudor' }}
+                </p>
             </div>
-            <h2 class="text-2xl font-extrabold tracking-tight font-mono">Bs. {{ number_format(abs($saldo_caja), 2) }}</h2>
-            <p class="text-[10px] {{ $saldoTextIndex }} font-medium mt-2">
-                {{ $positivoIndex ? '● Efectivo físico disponible' : '▲ Caja en déficit' }}
-            </p>
         </div>
     </div>
 
     <!-- Payouts List Table -->
-    <div class="glass-card rounded-xl overflow-hidden">
+    <div class="glass-card shimmer-card rounded-2xl overflow-hidden">
         <div class="px-6 py-4 bg-slate-900/40 border-b border-slate-800 flex items-center justify-between">
-            <h3 class="text-lg font-bold text-slate-100 flex items-center">
-                <i class="fa-solid fa-receipt mr-2 text-teal-500"></i> Historial de Liquidaciones de Pago
+            <h3 class="text-base font-bold text-slate-100 flex items-center">
+                <i class="fa-solid fa-receipt mr-2 text-emerald-400"></i> Historial de Liquidaciones de Pago
             </h3>
         </div>
         <div class="overflow-x-auto">
@@ -98,7 +119,7 @@
                 </thead>
                 <tbody class="divide-y divide-slate-800/40 text-sm text-slate-300">
                     @forelse($pagos as $pago)
-                        <tr class="hover:bg-slate-900/10 transition duration-150">
+                        <tr class="interactive-table-row">
                             <td class="px-6 py-4 font-mono text-xs">{{ $pago->id }}</td>
                             <td class="px-6 py-4 font-mono text-xs">{{ $pago->fecha->format('d/m/Y') }}</td>
                             <td class="px-6 py-4 font-medium text-slate-100">{{ $pago->trabajador->nombre }}</td>

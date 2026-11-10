@@ -25,3 +25,13 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+/runtime
+/desktop/payload.zip
+/desktop/*.log
+/desktop/*.txt
+/*.exe
+/*.lnk
+/storage/app/backups/*.zip
+/storage/app/backup_settings.json
+/storage/app/webview2_profile
+/storage/app/desktop_profile

@@ -13,6 +13,15 @@ use App\Http\Controllers\TransaccionMineralController;
 use App\Http\Controllers\TipoTrabajoController;
 use App\Http\Controllers\ServicioExternoController;
 
+// Health check endpoint for real-time local backend latency badge
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'ok',
+        'db' => 'connected',
+        'timestamp' => now()->toIso8601String(),
+    ]);
+})->name('health');
+
 // Public routes / Authentication
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -70,6 +79,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/fondos-caja/limpiar-anteriores', [PagoController::class, 'limpiarAnteriores'])->name('fondos-caja.limpiar-anteriores');
 
     // Compra y Venta de Concentrados/Sacos & Caja del Módulo 2
+    Route::get('/transacciones-minerales/buscar-lotes', [TransaccionMineralController::class, 'buscarLotes'])->name('transacciones-minerales.buscar-lotes');
+    Route::get('/transacciones-minerales/exportar-excel', [TransaccionMineralController::class, 'exportarExcel'])->name('transacciones-minerales.exportar-excel');
     Route::get('/transacciones-minerales/{id}/ticket', [TransaccionMineralController::class, 'ticket'])->name('transacciones-minerales.ticket');
     Route::post('/caja-minerales/recarga', [TransaccionMineralController::class, 'storeRecarga'])->name('caja-minerales.store-recarga');
     Route::delete('/caja-minerales/recarga/{id}', [TransaccionMineralController::class, 'destroyRecarga'])->name('caja-minerales.destroy-recarga');
@@ -77,6 +88,7 @@ Route::middleware('auth')->group(function () {
 
     // Reportes
     Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
+    Route::get('/reportes-comercializacion/exportar-excel', [ReporteController::class, 'exportarExcel'])->name('reportes-comercializacion.exportar-excel');
     Route::get('/reportes-comercializacion', [ReporteController::class, 'comercializacion'])->name('reportes-comercializacion.index');
 
     // Copias de Seguridad (Backups)
