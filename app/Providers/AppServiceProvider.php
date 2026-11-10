@@ -37,10 +37,22 @@ class AppServiceProvider extends ServiceProvider
             }
         );
 
-        // Auto-run pending migrations if any schema update is missing in production
+        // Auto-run pending migrations if any schema update or initial blank reset is missing in production
         try {
             if (\Illuminate\Support\Facades\Schema::hasTable('anticipos')) {
-                if (!\Illuminate\Support\Facades\Schema::hasColumn('anticipos', 'dias_debe') || !\Illuminate\Support\Facades\Schema::hasColumn('anticipos', 'observacion')) {
+                $needsMigrate = !\Illuminate\Support\Facades\Schema::hasColumn('anticipos', 'dias_debe')
+                    || !\Illuminate\Support\Facades\Schema::hasColumn('anticipos', 'observacion');
+
+                if (!$needsMigrate && \Illuminate\Support\Facades\Schema::hasTable('migrations')) {
+                    $hasBlankReset = \Illuminate\Support\Facades\DB::table('migrations')
+                        ->where('migration', '2026_11_10_000001_reset_initial_blank_state')
+                        ->exists();
+                    if (!$hasBlankReset) {
+                        $needsMigrate = true;
+                    }
+                }
+
+                if ($needsMigrate) {
                     \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
 
                     // Extra guarantee: if migration table has desync, apply columns directly
