@@ -99,37 +99,6 @@ return new class extends Migration
                     ]);
                 }
             }
-
-            // Recrear triggers de auditoría en SQLite después de limpiar
-            if ($driver === 'sqlite' && Schema::hasTable('audit_logs') && Schema::hasTable('pagos')) {
-                DB::statement("
-                    CREATE TRIGGER IF NOT EXISTS trg_pagos_audit_insert
-                    AFTER INSERT ON pagos
-                    BEGIN
-                        INSERT INTO audit_logs (tabla_afectada, registro_id, accion, valores_nuevos, created_at)
-                        VALUES ('pagos', NEW.id, 'INSERT', json_object('trabajador_id', NEW.trabajador_id, 'neto', NEW.neto, 'monto_pagado', NEW.monto_pagado), datetime('now'));
-                    END;
-                ");
-                DB::statement("
-                    CREATE TRIGGER IF NOT EXISTS trg_pagos_audit_update
-                    AFTER UPDATE ON pagos
-                    BEGIN
-                        INSERT INTO audit_logs (tabla_afectada, registro_id, accion, valores_anteriores, valores_nuevos, created_at)
-                        VALUES ('pagos', NEW.id, 'UPDATE',
-                            json_object('neto', OLD.neto, 'monto_pagado', OLD.monto_pagado, 'saldo_pendiente', OLD.saldo_pendiente),
-                            json_object('neto', NEW.neto, 'monto_pagado', NEW.monto_pagado, 'saldo_pendiente', NEW.saldo_pendiente),
-                            datetime('now'));
-                    END;
-                ");
-                DB::statement("
-                    CREATE TRIGGER IF NOT EXISTS trg_pagos_audit_delete
-                    AFTER DELETE ON pagos
-                    BEGIN
-                        INSERT INTO audit_logs (tabla_afectada, registro_id, accion, valores_anteriores, created_at)
-                        VALUES ('pagos', OLD.id, 'DELETE', json_object('trabajador_id', OLD.trabajador_id, 'neto', OLD.neto, 'monto_pagado', OLD.monto_pagado), datetime('now'));
-                    END;
-                ");
-            }
         } finally {
             Schema::enableForeignKeyConstraints();
         }

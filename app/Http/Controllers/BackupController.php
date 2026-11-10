@@ -277,10 +277,13 @@ class BackupController extends Controller
 
     protected function restoreFromStructuredJson(array $tablesData): void
     {
-        $driver = config('database.default');
+        $driver = DB::connection()->getDriverName();
 
         if ($driver === 'sqlite') {
             DB::statement('PRAGMA foreign_keys = OFF;');
+            DB::statement('DROP TRIGGER IF EXISTS trg_pagos_audit_insert;');
+            DB::statement('DROP TRIGGER IF EXISTS trg_pagos_audit_update;');
+            DB::statement('DROP TRIGGER IF EXISTS trg_pagos_audit_delete;');
         } elseif ($driver === 'pgsql') {
             DB::statement('SET session_replication_role = replica;');
         }
@@ -289,16 +292,30 @@ class BackupController extends Controller
         try {
             // Delete in reverse dependency order
             foreach (array_reverse($this->backupTables) as $table) {
-                if (isset($tablesData[$table]) && Schema::hasTable($table)) {
-                    DB::table($table)->delete();
+                if (!Schema::hasTable($table)) {
+                    continue;
                 }
+                if ($table === 'users' && empty($tablesData['users'])) {
+                    continue;
+                }
+                DB::table($table)->delete();
             }
 
             // Insert in forward dependency order
             foreach ($this->backupTables as $table) {
                 if (!empty($tablesData[$table]) && Schema::hasTable($table)) {
-                    foreach (array_chunk($tablesData[$table], 200) as $chunk) {
-                        DB::table($table)->insert($chunk);
+                    $validColumns = array_flip(Schema::getColumnListing($table));
+                    $filteredRows = [];
+                    foreach ($tablesData[$table] as $row) {
+                        if (is_array($row)) {
+                            $filteredRows[] = array_intersect_key($row, $validColumns);
+                        }
+                    }
+
+                    foreach (array_chunk($filteredRows, 200) as $chunk) {
+                        if (!empty($chunk)) {
+                            DB::table($table)->insert($chunk);
+                        }
                     }
 
                     // Reset sequence in PostgreSQL so subsequent inserts get the right ID
@@ -323,17 +340,7 @@ class BackupController extends Controller
 
     protected function restoreFromSqliteFile(string $extractedSqlite): void
     {
-        $driver = config('database.default');
-
-        if ($driver === 'sqlite') {
-            $dbPath = config('database.connections.sqlite.database', database_path('database.sqlite'));
-            DB::disconnect('sqlite');
-            File::copy($extractedSqlite, $dbPath);
-            DB::reconnect('sqlite');
-            return;
-        }
-
-        // Cross-engine restore: read tables from the SQLite file using PDO and import into PostgreSQL/MySQL
+        // Universal table-by-table import from the SQLite backup file so migrations and schema stay intact
         $pdo = new \PDO('sqlite:' . $extractedSqlite);
         $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         $tablesData = [];

@@ -25,6 +25,12 @@ class AppServiceProvider extends ServiceProvider
 
         if (\Illuminate\Support\Facades\DB::getDriverName() === 'sqlite') {
             \Illuminate\Support\Facades\DB::statement('PRAGMA foreign_keys = ON;');
+            try {
+                \Illuminate\Support\Facades\DB::statement('DROP TRIGGER IF EXISTS trg_pagos_audit_insert;');
+                \Illuminate\Support\Facades\DB::statement('DROP TRIGGER IF EXISTS trg_pagos_audit_update;');
+                \Illuminate\Support\Facades\DB::statement('DROP TRIGGER IF EXISTS trg_pagos_audit_delete;');
+            } catch (\Throwable $e) {
+            }
         }
 
         // Enforce foreign keys on every newly established SQLite connection or reconnection

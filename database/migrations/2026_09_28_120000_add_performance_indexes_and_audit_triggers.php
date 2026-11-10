@@ -55,7 +55,9 @@ return new class extends Migration
         if (Schema::hasTable('pago_items')) {
             Schema::table('pago_items', function (Blueprint $table) {
                 $table->index('pago_id', 'idx_pago_items_pago_id');
-                $table->index('tipo_trabajo_id', 'idx_pago_items_tipo_trabajo_id');
+                if (Schema::hasColumn('pago_items', 'tipo_trabajo_id')) {
+                    $table->index('tipo_trabajo_id', 'idx_pago_items_tipo_trabajo_id');
+                }
             });
         }
 
@@ -68,7 +70,9 @@ return new class extends Migration
 
         if (Schema::hasTable('fondos_pagos')) {
             Schema::table('fondos_pagos', function (Blueprint $table) {
-                $table->index(['tipo_movimiento', 'created_at'], 'idx_fondos_tipo_fecha');
+                if (Schema::hasColumn('fondos_pagos', 'tipo_movimiento')) {
+                    $table->index(['tipo_movimiento', 'created_at'], 'idx_fondos_tipo_fecha');
+                }
             });
         }
 
@@ -78,139 +82,141 @@ return new class extends Migration
             });
         }
 
-        // 3. Triggers en Base de Datos (Auditoría e Integridad)
-        // A. Auditoría de Modificación en Pagos
-        DB::unprepared("
-            CREATE TRIGGER IF NOT EXISTS trg_audit_pagos_update
-            AFTER UPDATE ON pagos
-            WHEN OLD.neto != NEW.neto OR OLD.subtotal != NEW.subtotal OR OLD.anticipos_descontados != NEW.anticipos_descontados OR OLD.monto_pagado != NEW.monto_pagado
-            BEGIN
-                INSERT INTO audit_logs (table_name, record_id, action, old_values, new_values, created_at)
-                VALUES (
-                    'pagos',
-                    OLD.id,
-                    'UPDATE',
-                    json_object('neto', OLD.neto, 'subtotal', OLD.subtotal, 'anticipos_descontados', OLD.anticipos_descontados, 'monto_pagado', OLD.monto_pagado, 'fecha', OLD.fecha),
-                    json_object('neto', NEW.neto, 'subtotal', NEW.subtotal, 'anticipos_descontados', NEW.anticipos_descontados, 'monto_pagado', NEW.monto_pagado, 'fecha', NEW.fecha),
-                    datetime('now')
-                );
-            END;
-        ");
+        // 3. Triggers en Base de Datos (Auditoría e Integridad en SQLite)
+        if (DB::connection()->getDriverName() === 'sqlite') {
+            // A. Auditoría de Modificación en Pagos
+            DB::unprepared("
+                CREATE TRIGGER IF NOT EXISTS trg_audit_pagos_update
+                AFTER UPDATE ON pagos
+                WHEN OLD.neto != NEW.neto OR OLD.subtotal != NEW.subtotal OR OLD.anticipos_descontados != NEW.anticipos_descontados OR OLD.monto_pagado != NEW.monto_pagado
+                BEGIN
+                    INSERT INTO audit_logs (table_name, record_id, action, old_values, new_values, created_at)
+                    VALUES (
+                        'pagos',
+                        OLD.id,
+                        'UPDATE',
+                        json_object('neto', OLD.neto, 'subtotal', OLD.subtotal, 'anticipos_descontados', OLD.anticipos_descontados, 'monto_pagado', OLD.monto_pagado, 'fecha', OLD.fecha),
+                        json_object('neto', NEW.neto, 'subtotal', NEW.subtotal, 'anticipos_descontados', NEW.anticipos_descontados, 'monto_pagado', NEW.monto_pagado, 'fecha', NEW.fecha),
+                        datetime('now')
+                    );
+                END;
+            ");
 
-        // B. Auditoría de Eliminación en Pagos
-        DB::unprepared("
-            CREATE TRIGGER IF NOT EXISTS trg_audit_pagos_delete
-            AFTER DELETE ON pagos
-            BEGIN
-                INSERT INTO audit_logs (table_name, record_id, action, old_values, new_values, created_at)
-                VALUES (
-                    'pagos',
-                    OLD.id,
-                    'DELETE',
-                    json_object('trabajador_id', OLD.trabajador_id, 'neto', OLD.neto, 'subtotal', OLD.subtotal, 'anticipos_descontados', OLD.anticipos_descontados, 'fecha', OLD.fecha),
-                    NULL,
-                    datetime('now')
-                );
-            END;
-        ");
+            // B. Auditoría de Eliminación en Pagos
+            DB::unprepared("
+                CREATE TRIGGER IF NOT EXISTS trg_audit_pagos_delete
+                AFTER DELETE ON pagos
+                BEGIN
+                    INSERT INTO audit_logs (table_name, record_id, action, old_values, new_values, created_at)
+                    VALUES (
+                        'pagos',
+                        OLD.id,
+                        'DELETE',
+                        json_object('trabajador_id', OLD.trabajador_id, 'neto', OLD.neto, 'subtotal', OLD.subtotal, 'anticipos_descontados', OLD.anticipos_descontados, 'fecha', OLD.fecha),
+                        NULL,
+                        datetime('now')
+                    );
+                END;
+            ");
 
-        // C. Auditoría de Modificación en Anticipos
-        DB::unprepared("
-            CREATE TRIGGER IF NOT EXISTS trg_audit_anticipos_update
-            AFTER UPDATE ON anticipos
-            WHEN OLD.monto != NEW.monto OR OLD.saldo != NEW.saldo
-            BEGIN
-                INSERT INTO audit_logs (table_name, record_id, action, old_values, new_values, created_at)
-                VALUES (
-                    'anticipos',
-                    OLD.id,
-                    'UPDATE',
-                    json_object('monto', OLD.monto, 'saldo', OLD.saldo, 'trabajador_id', OLD.trabajador_id),
-                    json_object('monto', NEW.monto, 'saldo', NEW.saldo, 'trabajador_id', NEW.trabajador_id),
-                    datetime('now')
-                );
-            END;
-        ");
+            // C. Auditoría de Modificación en Anticipos
+            DB::unprepared("
+                CREATE TRIGGER IF NOT EXISTS trg_audit_anticipos_update
+                AFTER UPDATE ON anticipos
+                WHEN OLD.monto != NEW.monto OR OLD.saldo != NEW.saldo
+                BEGIN
+                    INSERT INTO audit_logs (table_name, record_id, action, old_values, new_values, created_at)
+                    VALUES (
+                        'anticipos',
+                        OLD.id,
+                        'UPDATE',
+                        json_object('monto', OLD.monto, 'saldo', OLD.saldo, 'trabajador_id', OLD.trabajador_id),
+                        json_object('monto', NEW.monto, 'saldo', NEW.saldo, 'trabajador_id', NEW.trabajador_id),
+                        datetime('now')
+                    );
+                END;
+            ");
 
-        // D. Auditoría de Eliminación en Anticipos
-        DB::unprepared("
-            CREATE TRIGGER IF NOT EXISTS trg_audit_anticipos_delete
-            AFTER DELETE ON anticipos
-            BEGIN
-                INSERT INTO audit_logs (table_name, record_id, action, old_values, new_values, created_at)
-                VALUES (
-                    'anticipos',
-                    OLD.id,
-                    'DELETE',
-                    json_object('trabajador_id', OLD.trabajador_id, 'monto', OLD.monto, 'saldo', OLD.saldo, 'fecha', OLD.fecha),
-                    NULL,
-                    datetime('now')
-                );
-            END;
-        ");
+            // D. Auditoría de Eliminación en Anticipos
+            DB::unprepared("
+                CREATE TRIGGER IF NOT EXISTS trg_audit_anticipos_delete
+                AFTER DELETE ON anticipos
+                BEGIN
+                    INSERT INTO audit_logs (table_name, record_id, action, old_values, new_values, created_at)
+                    VALUES (
+                        'anticipos',
+                        OLD.id,
+                        'DELETE',
+                        json_object('trabajador_id', OLD.trabajador_id, 'monto', OLD.monto, 'saldo', OLD.saldo, 'fecha', OLD.fecha),
+                        NULL,
+                        datetime('now')
+                    );
+                END;
+            ");
 
-        // E. Auditoría de Transacciones de Minerales (Compras y Ventas)
-        DB::unprepared("
-            CREATE TRIGGER IF NOT EXISTS trg_audit_transacciones_update
-            AFTER UPDATE ON transacciones_minerales
-            WHEN OLD.monto_total != NEW.monto_total OR OLD.tipo != NEW.tipo OR OLD.peso_neto_seco != NEW.peso_neto_seco
-            BEGIN
-                INSERT INTO audit_logs (table_name, record_id, action, old_values, new_values, created_at)
-                VALUES (
-                    'transacciones_minerales',
-                    OLD.id,
-                    'UPDATE',
-                    json_object('tipo', OLD.tipo, 'monto_total', OLD.monto_total, 'cliente_proveedor', OLD.cliente_proveedor, 'peso_neto_seco', OLD.peso_neto_seco),
-                    json_object('tipo', NEW.tipo, 'monto_total', NEW.monto_total, 'cliente_proveedor', NEW.cliente_proveedor, 'peso_neto_seco', NEW.peso_neto_seco),
-                    datetime('now')
-                );
-            END;
-        ");
+            // E. Auditoría de Transacciones de Minerales (Compras y Ventas)
+            DB::unprepared("
+                CREATE TRIGGER IF NOT EXISTS trg_audit_transacciones_update
+                AFTER UPDATE ON transacciones_minerales
+                WHEN OLD.monto_total != NEW.monto_total OR OLD.tipo != NEW.tipo OR OLD.peso_neto_seco != NEW.peso_neto_seco
+                BEGIN
+                    INSERT INTO audit_logs (table_name, record_id, action, old_values, new_values, created_at)
+                    VALUES (
+                        'transacciones_minerales',
+                        OLD.id,
+                        'UPDATE',
+                        json_object('tipo', OLD.tipo, 'monto_total', OLD.monto_total, 'cliente_proveedor', OLD.cliente_proveedor, 'peso_neto_seco', OLD.peso_neto_seco),
+                        json_object('tipo', NEW.tipo, 'monto_total', NEW.monto_total, 'cliente_proveedor', NEW.cliente_proveedor, 'peso_neto_seco', NEW.peso_neto_seco),
+                        datetime('now')
+                    );
+                END;
+            ");
 
-        DB::unprepared("
-            CREATE TRIGGER IF NOT EXISTS trg_audit_transacciones_delete
-            AFTER DELETE ON transacciones_minerales
-            BEGIN
-                INSERT INTO audit_logs (table_name, record_id, action, old_values, new_values, created_at)
-                VALUES (
-                    'transacciones_minerales',
-                    OLD.id,
-                    'DELETE',
-                    json_object('tipo', OLD.tipo, 'monto_total', OLD.monto_total, 'cliente_proveedor', OLD.cliente_proveedor),
-                    NULL,
-                    datetime('now')
-                );
-            END;
-        ");
+            DB::unprepared("
+                CREATE TRIGGER IF NOT EXISTS trg_audit_transacciones_delete
+                AFTER DELETE ON transacciones_minerales
+                BEGIN
+                    INSERT INTO audit_logs (table_name, record_id, action, old_values, new_values, created_at)
+                    VALUES (
+                        'transacciones_minerales',
+                        OLD.id,
+                        'DELETE',
+                        json_object('tipo', OLD.tipo, 'monto_total', OLD.monto_total, 'cliente_proveedor', OLD.cliente_proveedor),
+                        NULL,
+                        datetime('now')
+                    );
+                END;
+            ");
 
-        // F. Trigger de Integridad: El saldo de un anticipo nunca puede ser negativo
-        DB::unprepared("
-            CREATE TRIGGER IF NOT EXISTS trg_integrity_anticipos_saldo_non_negative
-            BEFORE UPDATE OF saldo ON anticipos
-            WHEN NEW.saldo < 0
-            BEGIN
-                SELECT RAISE(ABORT, 'Error de Integridad Contable: El saldo del anticipo no puede ser menor a cero.');
-            END;
-        ");
+            // F. Trigger de Integridad: El saldo de un anticipo nunca puede ser negativo
+            DB::unprepared("
+                CREATE TRIGGER IF NOT EXISTS trg_integrity_anticipos_saldo_non_negative
+                BEFORE UPDATE OF saldo ON anticipos
+                WHEN NEW.saldo < 0
+                BEGIN
+                    SELECT RAISE(ABORT, 'Error de Integridad Contable: El saldo del anticipo no puede ser menor a cero.');
+                END;
+            ");
 
-        // G. Trigger de Integridad: El monto neto de un pago no puede ser negativo
-        DB::unprepared("
-            CREATE TRIGGER IF NOT EXISTS trg_integrity_pagos_neto_non_negative_ins
-            BEFORE INSERT ON pagos
-            WHEN NEW.neto < 0
-            BEGIN
-                SELECT RAISE(ABORT, 'Error de Integridad Contable: El monto neto a liquidar no puede ser negativo.');
-            END;
-        ");
+            // G. Trigger de Integridad: El monto neto de un pago no puede ser negativo
+            DB::unprepared("
+                CREATE TRIGGER IF NOT EXISTS trg_integrity_pagos_neto_non_negative_ins
+                BEFORE INSERT ON pagos
+                WHEN NEW.neto < 0
+                BEGIN
+                    SELECT RAISE(ABORT, 'Error de Integridad Contable: El monto neto a liquidar no puede ser negativo.');
+                END;
+            ");
 
-        DB::unprepared("
-            CREATE TRIGGER IF NOT EXISTS trg_integrity_pagos_neto_non_negative_upd
-            BEFORE UPDATE OF neto ON pagos
-            WHEN NEW.neto < 0
-            BEGIN
-                SELECT RAISE(ABORT, 'Error de Integridad Contable: El monto neto a liquidar no puede ser negativo.');
-            END;
-        ");
+            DB::unprepared("
+                CREATE TRIGGER IF NOT EXISTS trg_integrity_pagos_neto_non_negative_upd
+                BEFORE UPDATE OF neto ON pagos
+                WHEN NEW.neto < 0
+                BEGIN
+                    SELECT RAISE(ABORT, 'Error de Integridad Contable: El monto neto a liquidar no puede ser negativo.');
+                END;
+            ");
+        }
     }
 
     /**
