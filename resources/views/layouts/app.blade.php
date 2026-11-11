@@ -949,33 +949,30 @@
 
             const modalContainer = document.createElement('div');
             modalContainer.id = 'scpm-custom-confirm-modal';
-            modalContainer.className = 'fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md transition-opacity duration-200';
-            modalContainer.style.opacity = '0';
+            modalContainer.style.cssText = 'position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 2147483647 !important; display: flex !important; align-items: center !important; justify-content: center !important; padding: 16px !important; background-color: rgba(2, 6, 23, 0.85) !important; backdrop-filter: blur(10px) !important; -webkit-backdrop-filter: blur(10px) !important; opacity: 0; transition: opacity 0.18s ease;';
 
             const reportBtnHtml = reportUrl ? `
-                <a href="${reportUrl}" class="px-4 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-400 border border-amber-500/30 transition-all flex items-center gap-1.5">
+                <a href="${reportUrl}" style="padding: 10px 16px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 12px; background: rgba(245, 158, 11, 0.16); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
                     <i class="fa-solid fa-file-lines"></i> Ver Reporte
                 </a>
             ` : '';
 
             modalContainer.innerHTML = `
-                <div class="scpm-modal-card relative w-full max-w-md rounded-2xl bg-slate-900 border border-slate-700/80 shadow-2xl overflow-hidden transform scale-95 transition-transform duration-200">
-                    <div class="h-1 w-full bg-gradient-to-r from-amber-500 via-rose-500 to-red-600"></div>
-                    <div class="p-6 text-center space-y-4">
-                        <div class="mx-auto w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 shadow-inner">
-                            <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+                <div class="scpm-modal-card" style="position: relative; z-index: 2147483647; width: 100%; max-width: 420px; border-radius: 18px; background-color: #0f172a; border: 1px solid rgba(148, 163, 184, 0.28); box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.08); overflow: hidden; transform: scale(0.95); transition: transform 0.18s ease;">
+                    <div style="height: 4px; width: 100%; background: linear-gradient(90deg, #f59e0b 0%, #f43f5e 50%, #dc2626 100%);"></div>
+                    <div style="padding: 28px 24px 22px; text-align: center;">
+                        <div style="margin: 0 auto 16px; width: 56px; height: 56px; border-radius: 16px; background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.32); display: flex; align-items: center; justify-content: center; color: #fb7185; box-shadow: 0 8px 20px rgba(244, 63, 94, 0.15);">
+                            <i class="fa-solid fa-triangle-exclamation" style="font-size: 24px;"></i>
                         </div>
-                        <div class="space-y-2">
-                            <h3 class="text-lg font-extrabold text-white tracking-tight">Confirmar Acción</h3>
-                            <p class="text-sm text-slate-200 font-medium leading-relaxed px-2">${message}</p>
-                        </div>
+                        <h3 style="margin: 0 0 8px; font-size: 18px; font-weight: 800; color: #ffffff; letter-spacing: -0.01em;">Confirmar Acción</h3>
+                        <p style="margin: 0; font-size: 14px; color: #e2e8f0; font-weight: 500; line-height: 1.55; padding: 0 8px;">${message}</p>
                     </div>
-                    <div class="px-6 py-4 border-t border-slate-800 bg-slate-950/60 flex flex-wrap justify-center gap-3">
-                        <button type="button" id="scpm-confirm-cancel" class="px-4 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all cursor-pointer">
+                    <div style="padding: 16px 24px; border-top: 1px solid rgba(51, 65, 85, 0.7); background-color: #090d16; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px;">
+                        <button type="button" id="scpm-confirm-cancel" style="padding: 10px 18px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; border-radius: 12px; background-color: #1e293b; color: #e2e8f0; border: 1px solid #334155; cursor: pointer; transition: all 0.15s ease;">
                             Cancelar
                         </button>
                         ${reportBtnHtml}
-                        <button type="button" id="scpm-confirm-ok" class="px-5 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white shadow-lg shadow-rose-600/25 transition-all cursor-pointer">
+                        <button type="button" id="scpm-confirm-ok" style="padding: 10px 22px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; border-radius: 12px; background: linear-gradient(135deg, #e11d48 0%, #dc2626 100%); color: #ffffff; border: 1px solid rgba(251, 113, 133, 0.3); box-shadow: 0 6px 18px rgba(225, 29, 72, 0.35); cursor: pointer; transition: all 0.15s ease;">
                             Confirmar
                         </button>
                     </div>

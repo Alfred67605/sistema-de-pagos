@@ -158,7 +158,7 @@
     </div>
 
     <!-- Modal Nuevo Anticipo -->
-    <div id="modalAnticipo" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm modal-hide transition-all duration-300" style="display: none; align-items: center; justify-content: center;">
+    <div id="modalAnticipo" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm modal-hide transition-all duration-300" style="display: none; align-items: center; justify-content: center; z-index: 9999;">
         <div class="mining-card w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden transform transition-all duration-300 mx-auto my-auto border border-slate-800">
             <div class="bg-slate-900/80 px-6 py-4 flex items-center justify-between border-b border-slate-800">
                 <h3 class="text-base font-extrabold text-slate-100 flex items-center gap-2.5">
