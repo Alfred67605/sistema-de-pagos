@@ -270,7 +270,7 @@ if (!function_exists('montoEnLetrasOficial')) {
                             <i class="fa-solid fa-gem text-2xl" style="color: #0284c7 !important;"></i>
                         </div>
                         <div>
-                            <h2 class="text-xl font-black uppercase tracking-widest leading-none" style="color: #ffffff !important; font-weight: 900;">EMPRESA MINERA</h2>
+                            <h2 class="text-xl font-black uppercase tracking-widest leading-none" style="color: #ffffff !important; font-weight: 900;">EMPRESA MINERA KOYOSITA S.R.L.</h2>
                             <div class="flex items-center gap-2 mt-1.5">
                                 <span class="text-[10.5px] font-mono font-bold tracking-wider uppercase px-3 py-0.5 rounded-full" style="background-color: rgba(255, 255, 255, 0.2) !important; color: #ffffff !important; border: 1px solid #7dd3fc !important;">
                                     <i class="fa-solid fa-shield-halved mr-1"></i> CONTROL OPERATIVO MINERO
@@ -515,7 +515,7 @@ if (!function_exists('montoEnLetrasOficial')) {
     <!-- ══════════ TICKET IMPRESIÓN TÉRMICA 80MM / 100x148MM ══════════ -->
     <div id="thermal-ticket-80mm">
         <div style="text-align: center; margin-bottom: 6px;">
-            <div style="font-weight: 900; font-size: 13px; text-transform: uppercase;">EMPRESA MINERA</div>
+            <div style="font-weight: 900; font-size: 13px; text-transform: uppercase;">EMPRESA MINERA KOYOSITA S.R.L.</div>
             <div style="font-size: 10px; font-weight: 700; text-transform: uppercase;">RECIBO DE PAGO DE PERSONAL</div>
             <div style="font-size: 10px; font-weight: bold; margin-top: 2px;">N.º {{ str_pad($pago->id, 5, '0', STR_PAD_LEFT) }}</div>
             <div style="font-size: 9.5px;">Fecha: {{ $pago->fecha->format('d/m/Y') }}</div>
@@ -721,7 +721,7 @@ if (!function_exists('montoEnLetrasOficial')) {
             </head>
             <body>
                 <table style="width:100%; border-collapse:collapse;">
-                    <tr><td colspan="4" class="header-banner">EMPRESA MINERA — COMPROBANTE DE PAGO DE PERSONAL</td></tr>
+                    <tr><td colspan="4" class="header-banner">EMPRESA MINERA KOYOSITA S.R.L. — COMPROBANTE DE PAGO DE PERSONAL</td></tr>
                     <tr>
                         <td class="info-header" colspan="2">RECIBO N.º: {{ str_pad($pago->id, 5, '0', STR_PAD_LEFT) }}</td>
                         <td class="info-header" colspan="2" style="text-align:right;">FECHA: {{ $pago->fecha->format('d/m/Y') }}</td>

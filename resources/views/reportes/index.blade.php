@@ -1270,7 +1270,7 @@ table.rpt-tbl tbody tr:hover td { background: var(--rpt-row-hover); }
                             <i class="fa-solid fa-mountain"></i>
                         </div>
                         <div>
-                            <h1 class="exec-company-name">EMPRESA MINERA SCPM — TORMAN</h1>
+                            <h1 class="exec-company-name">EMPRESA MINERA KOYOSITA S.R.L.</h1>
                             <div class="exec-report-title">REPORTE EJECUTIVO Y AUDITORÍA DE COSTOS POR BOCAMINA</div>
                             <div class="exec-report-subtitle">SISTEMA INTEGRADO DE CONTROL OPERATIVO, PLANILLAS Y NÓMINA DE PERSONAL</div>
                         </div>
@@ -1614,7 +1614,7 @@ table.rpt-tbl tbody tr:hover td { background: var(--rpt-row-hover); }
                     <div class="exec-sig-box">
                         <p class="exec-sig-name">Gerencia General / Finanzas</p>
                         <p class="exec-sig-title">APROBADO POR</p>
-                        <p class="exec-sig-sub">Corporación Minera SCPM - TORMAN</p>
+                        <p class="exec-sig-sub">Empresa Minera KOYOSITA S.R.L.</p>
                     </div>
                 </div>
 
@@ -1634,7 +1634,7 @@ table.rpt-tbl tbody tr:hover td { background: var(--rpt-row-hover); }
                     <div class="exec-header-left">
                         <div class="exec-logo-icon"><i class="fa-solid fa-user-group"></i></div>
                         <div>
-                            <h1 class="exec-company-name">EMPRESA MINERA SCPM — TORMAN</h1>
+                            <h1 class="exec-company-name">EMPRESA MINERA KOYOSITA S.R.L.</h1>
                             <div class="exec-report-title">REPORTE CONSOLIDADO DE HABERES Y LIQUIDACIONES DE TRABAJADORES</div>
                             <div class="exec-report-subtitle">HISTORIAL AUDITADO DE PAGOS, BONIFICACIONES Y DESCUENTOS POR PLANILLA</div>
                         </div>
@@ -1760,7 +1760,7 @@ table.rpt-tbl tbody tr:hover td { background: var(--rpt-row-hover); }
                     <div class="exec-sig-box">
                         <p class="exec-sig-name">Gerencia General / Finanzas</p>
                         <p class="exec-sig-title">APROBADO POR</p>
-                        <p class="exec-sig-sub">Corporación Minera SCPM - TORMAN</p>
+                        <p class="exec-sig-sub">Empresa Minera KOYOSITA S.R.L.</p>
                     </div>
                 </div>
 
@@ -1779,7 +1779,7 @@ table.rpt-tbl tbody tr:hover td { background: var(--rpt-row-hover); }
                     <div class="exec-header-left">
                         <div class="exec-logo-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
                         <div>
-                            <h1 class="exec-company-name">EMPRESA MINERA SCPM — TORMAN</h1>
+                            <h1 class="exec-company-name">EMPRESA MINERA KOYOSITA S.R.L.</h1>
                             <div class="exec-report-title">ESTADO CONSOLIDADO DE VALES DE ANTICIPO Y CUENTAS DEUDORAS</div>
                             <div class="exec-report-subtitle">CONTROL Y SEGUIMIENTO DE SALDOS POR DESCONTAR AL PERSONAL</div>
                         </div>
@@ -1888,7 +1888,7 @@ table.rpt-tbl tbody tr:hover td { background: var(--rpt-row-hover); }
                     <div class="exec-sig-box">
                         <p class="exec-sig-name">Gerencia General / Finanzas</p>
                         <p class="exec-sig-title">APROBADO POR</p>
-                        <p class="exec-sig-sub">Corporación Minera SCPM - TORMAN</p>
+                        <p class="exec-sig-sub">Empresa Minera KOYOSITA S.R.L.</p>
                     </div>
                 </div>
 
@@ -1907,7 +1907,7 @@ table.rpt-tbl tbody tr:hover td { background: var(--rpt-row-hover); }
                     <div class="exec-header-left">
                         <div class="exec-logo-icon"><i class="fa-solid fa-chart-pie"></i></div>
                         <div>
-                            <h1 class="exec-company-name">EMPRESA MINERA SCPM — TORMAN</h1>
+                            <h1 class="exec-company-name">EMPRESA MINERA KOYOSITA S.R.L.</h1>
                             <div class="exec-report-title">INFORME GERENCIAL Y BALANCE FINANCIERO OPERATIVO</div>
                             <div class="exec-report-subtitle">CONSOLIDADO DE FONDOS DE CAJA, PLANILLAS Y FLUJO DE EGRESOS</div>
                         </div>
@@ -2019,7 +2019,7 @@ table.rpt-tbl tbody tr:hover td { background: var(--rpt-row-hover); }
                     <div class="exec-sig-box">
                         <p class="exec-sig-name">Gerencia General / Finanzas</p>
                         <p class="exec-sig-title">APROBADO POR</p>
-                        <p class="exec-sig-sub">Corporación Minera SCPM - TORMAN</p>
+                        <p class="exec-sig-sub">Empresa Minera KOYOSITA S.R.L.</p>
                     </div>
                 </div>
 

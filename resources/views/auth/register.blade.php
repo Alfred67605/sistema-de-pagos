@@ -7,7 +7,9 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrar Administrador - SCPM</title>
+    <title>Registrar Administrador - KOYOSITA S.R.L.</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/logo_koyosita.png') }}">
+    <link rel="shortcut icon" type="image/x-icon" href="/app.ico">
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -363,10 +365,8 @@
             
             <!-- Brand text on mobile -->
             <div class="flex items-center space-x-3 lg:invisible">
-                <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 shadow-md">
-                    <i class="fa-solid fa-gem text-slate-950 text-base"></i>
-                </div>
-                <span class="text-sm font-bold uppercase tracking-wider text-amber-500">SCPM</span>
+                <img src="{{ asset('images/logo_koyosita.png') }}" alt="KOYOSITA S.R.L." class="w-9 h-9 rounded-lg object-cover shadow-md border border-amber-500/40">
+                <span class="text-sm font-bold uppercase tracking-wider text-amber-500">KOYOSITA S.R.L.</span>
             </div>
 
             <!-- Centralized Form Container -->
@@ -385,11 +385,11 @@
 
                     <!-- Centered Header -->
                     <div class="text-center mb-8 relative z-10 animate-fade-in-up delay-100">
-                        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 mb-3 shadow-lg shadow-orange-500/20">
-                            <i class="fa-solid fa-gem text-slate-950 text-2xl"></i>
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl overflow-hidden mb-3 shadow-lg shadow-orange-500/20 border border-amber-500/40">
+                            <img src="{{ asset('images/logo_koyosita.png') }}" alt="KOYOSITA S.R.L." class="w-full h-full object-cover">
                         </div>
-                        <h2 class="text-3xl font-extrabold tracking-wider uppercase text-slate-100">SCPM</h2>
-                        <span class="text-[9px] text-amber-500 font-mono tracking-widest block mt-0.5">SISTEMA CONTROL DE PAGOS</span>
+                        <h2 class="text-2xl font-extrabold tracking-wider uppercase text-slate-100">KOYOSITA S.R.L.</h2>
+                        <span class="text-[9px] text-amber-500 font-mono tracking-widest block mt-0.5">EMPRESA MINERA — CONTROL DE PAGOS</span>
                         <p class="text-xs text-slate-400 mt-2">
                             Registrar Cuenta Administrador
                         </p>
@@ -485,7 +485,7 @@
 
             <!-- Footer copyright area -->
             <div class="text-center lg:text-left text-[10px] text-slate-600 font-mono mt-8">
-                <span>&copy; {{ date('Y') }} TORMAN Minería. Todos los derechos reservados.</span>
+                <span>&copy; {{ date('Y') }} Empresa Minera KOYOSITA S.R.L. Todos los derechos reservados.</span>
             </div>
 
         </div>
@@ -495,12 +495,12 @@
             
             <!-- Upper Header (Logo) -->
             <div class="flex items-center space-x-3 animate-fade-in-up">
-                <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg">
-                    <i class="fa-solid fa-gem text-slate-950 text-lg"></i>
+                <div class="flex items-center justify-center w-12 h-12 rounded-xl overflow-hidden shadow-lg border border-amber-500/40">
+                    <img src="{{ asset('images/logo_koyosita.png') }}" alt="KOYOSITA S.R.L." class="w-full h-full object-cover">
                 </div>
                 <div>
-                    <span class="text-base font-extrabold uppercase tracking-widest text-slate-100 leading-none block">TORMAN</span>
-                    <span class="text-[9px] text-amber-500 font-mono tracking-widest block mt-0.5">MINERÍA & OPERACIONES</span>
+                    <span class="text-base font-extrabold uppercase tracking-widest text-slate-100 leading-none block">KOYOSITA S.R.L.</span>
+                    <span class="text-[9px] text-amber-500 font-mono tracking-widest block mt-0.5">EMPRESA MINERA & OPERACIONES</span>
                 </div>
             </div>
 

@@ -434,7 +434,7 @@ function doExportPDF(btn) {
 <body>
     <div class="header">
         <div>
-            <h1 class="title">EMPRESA MINERA — REPORTE DE COMERCIALIZACIÓN DE MINERALES</h1>
+            <h1 class="title">EMPRESA MINERA KOYOSITA S.R.L. — REPORTE DE COMERCIALIZACIÓN DE MINERALES</h1>
             <p class="subtitle">Generado el ${new Date().toLocaleDateString('es-BO')} a las ${new Date().toLocaleTimeString('es-BO')}</p>
         </div>
         <div style="text-align:right;">

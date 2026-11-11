@@ -344,7 +344,7 @@
                     </div>
                     <div>
                         <h1 style="font-size:18px; font-weight:900; color:#0f172a; text-transform:uppercase; letter-spacing:0.04em; margin:0; line-height:1.1;">
-                            EMPRESA MINERA — CONTROL OPERATIVO
+                            EMPRESA MINERA KOYOSITA S.R.L. — CONTROL OPERATIVO
                         </h1>
                         <p style="font-size:12.5px; font-weight:800; color:#0284c7; text-transform:uppercase; letter-spacing:0.03em; margin:3px 0 0 0;">
                             REPORTE EJECUTIVO DE PAGOS POR SERVICIOS EXTERNOS Y MAQUINARIA
@@ -811,7 +811,7 @@ function doExportExcel(btnEl) {
         </head>
         <body>
             <table style="width:100%; border-collapse:collapse;">
-                <tr><td colspan="11" class="header-banner">EMPRESA MINERA — REPORTE DE PAGOS POR SERVICIOS EXTERNOS</td></tr>
+                <tr><td colspan="11" class="header-banner">EMPRESA MINERA KOYOSITA S.R.L. — REPORTE DE PAGOS POR SERVICIOS EXTERNOS</td></tr>
                 <tr><td colspan="11" class="info-sub">FECHA DE GENERACIÓN: ${new Date().toLocaleDateString('es-BO')} ${new Date().toLocaleTimeString('es-BO')} · USUARIO: {{ $usuarioActual }}</td></tr>
                 <tr><td colspan="11">&nbsp;</td></tr>
                 ${rowsHtml}

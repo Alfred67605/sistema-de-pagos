@@ -10,9 +10,10 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Sistema de Gestión Minera') - SCPM</title>
+    <title>@yield('title', 'Sistema de Gestión Minera') - KOYOSITA S.R.L.</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="icon" type="image/x-icon" href="/app.ico">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo_koyosita.png') }}">
+    <link rel="shortcut icon" type="image/x-icon" href="/app.ico">
     <link rel="manifest" href="/manifest.webmanifest">
     
     <!-- Google Fonts: Outfit & Plus Jakarta Sans -->
@@ -432,15 +433,15 @@
             <!-- Brand / Logo Header -->
             <div class="flex items-center justify-between px-4 h-16 border-b border-white/5 flex-shrink-0">
                 <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 overflow-hidden group">
-                    <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-500 shadow-sm flex-shrink-0 group-hover:border-amber-500/60 transition-colors">
-                        <i class="fa-solid fa-gem text-base drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]"></i>
+                    <div class="flex items-center justify-center w-10 h-10 rounded-xl overflow-hidden shadow-md flex-shrink-0 border border-amber-500/40 group-hover:border-amber-400 transition-colors">
+                        <img src="{{ asset('images/logo_koyosita.png') }}" alt="KOYOSITA S.R.L." class="w-full h-full object-cover">
                     </div>
                     <div x-show="!sidebarCollapsed" x-transition.opacity.duration.150ms class="min-w-0">
                         <div class="flex items-center space-x-1">
-                            <span class="text-xs font-black tracking-widest text-slate-100 uppercase">TORMAN</span>
-                            <span class="text-xs font-black tracking-widest text-amber-500 uppercase">MINERÍA</span>
+                            <span class="text-xs font-black tracking-widest text-slate-100 uppercase">KOYOSITA</span>
+                            <span class="text-xs font-black tracking-widest text-amber-500 uppercase">S.R.L.</span>
                         </div>
-                        <span class="text-[9px] font-semibold text-slate-400 font-mono tracking-wider block">GESTIÓN Y PAGOS</span>
+                        <span class="text-[9px] font-semibold text-slate-400 font-mono tracking-wider block">EMPRESA MINERA</span>
                     </div>
                 </a>
 
@@ -853,9 +854,9 @@
              x-transition:leave-end="-translate-x-full">
             
             <div class="flex items-center justify-between pb-4 border-b border-white/5">
-                <div class="flex items-center space-x-2">
-                    <i class="fa-solid fa-gem text-amber-500 text-lg"></i>
-                    <span class="font-bold text-sm text-slate-100">TORMAN MINERÍA</span>
+                <div class="flex items-center space-x-2.5">
+                    <img src="{{ asset('images/logo_koyosita.png') }}" alt="KOYOSITA S.R.L." class="w-8 h-8 rounded-lg object-cover border border-amber-500/40">
+                    <span class="font-bold text-sm text-slate-100">KOYOSITA S.R.L.</span>
                 </div>
                 <button @click="mobileMenuOpen = false" class="text-slate-400 hover:text-white p-1">
                     <i class="fa-solid fa-xmark text-lg"></i>

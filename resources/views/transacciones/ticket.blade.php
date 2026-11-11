@@ -78,7 +78,7 @@
 
     <!-- ══════════ TICKET DE COMPRA / VENTA DE MINERAL ══════════ -->
     <div style="text-align: center; margin-bottom: 6px;">
-        <div style="font-weight: 900; font-size: 13px; text-transform: uppercase;">EMPRESA MINERA</div>
+        <div style="font-weight: 900; font-size: 13px; text-transform: uppercase;">EMPRESA MINERA KOYOSITA S.R.L.</div>
         <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; margin-top: 2px;">
             RECIBO DE {{ $transaccion->tipo === 'compra' ? 'COMPRA DE MINERAL' : 'VENTA DE MINERAL' }}
         </div>
