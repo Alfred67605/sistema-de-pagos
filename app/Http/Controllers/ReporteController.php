@@ -453,7 +453,7 @@ class ReporteController extends Controller
             }
         }
 
-        $query = \App\Models\TransaccionMineral::with('bocamina')->orderBy('fecha', 'desc')->orderBy('id', 'desc');
+        $query = \App\Models\TransaccionMineral::with(['bocamina', 'analisis', 'lote.analisis'])->orderBy('fecha', 'desc')->orderBy('id', 'desc');
 
         if ($fechaDesde) $query->where('fecha', '>=', $fechaDesde);
         if ($fechaHasta) $query->where('fecha', '<=', $fechaHasta);
@@ -551,7 +551,7 @@ class ReporteController extends Controller
             }
         }
 
-        $query = \App\Models\TransaccionMineral::with('bocamina')->orderBy('fecha', 'desc')->orderBy('id', 'desc');
+        $query = \App\Models\TransaccionMineral::with(['bocamina', 'analisis', 'lote.analisis'])->orderBy('fecha', 'desc')->orderBy('id', 'desc');
 
         if ($fechaDesde) $query->where('fecha', '>=', $fechaDesde);
         if ($fechaHasta) $query->where('fecha', '<=', $fechaHasta);
@@ -563,36 +563,132 @@ class ReporteController extends Controller
         $bocaminaFiltro = $request->input('bocamina_id');
         if ($bocaminaFiltro) $query->where('bocamina_id', $bocaminaFiltro);
 
+        $rows = $query->get();
+
+        $totalCompras = (float) $rows->where('tipo', 'compra')->sum('monto_total');
+        $totalVentas  = (float) $rows->where('tipo', 'venta')->sum('monto_total');
+        $balanceNeto  = $totalVentas - $totalCompras;
+        $pesoCompras  = (float) $rows->where('tipo', 'compra')->sum('peso_neto_seco');
+        $pesoVentas   = (float) $rows->where('tipo', 'venta')->sum('peso_neto_seco');
+        $totalCant    = (float) $rows->sum('cantidad');
+        $totalPeso    = (float) $rows->sum('peso_neto_seco');
+        $totalMonto   = (float) $rows->sum('monto_total');
+
+        $filename = 'Reporte_Comercializacion_KOYOSITA_' . date('Y-m-d_H-i') . '.xls';
+
         $headers = [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="Reporte_Comercializacion_' . date('Y-m-d_H-i') . '.csv"',
+            'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
             'Pragma' => 'no-cache',
             'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
             'Expires' => '0'
         ];
 
-        return response()->stream(function() use ($query) {
-            $handle = fopen('php://output', 'w');
-            fwrite($handle, "\xEF\xBB\xBF");
-            fputcsv($handle, ['ID', 'Fecha', 'Tipo', 'Cliente/Proveedor', 'Bocamina', 'Presentación', 'Cantidad', 'Peso Neto Seco (Kg)', 'Precio Unitario (Bs)', 'Monto Total (Bs)', 'Observación']);
+        return response()->stream(function() use ($rows, $totalCompras, $totalVentas, $balanceNeto, $pesoCompras, $pesoVentas, $totalCant, $totalPeso, $totalMonto) {
+            echo "\xEF\xBB\xBF";
+            $fechaGen = date('d/m/Y H:i:s');
+            echo '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
+            echo '<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">';
+            echo '<style>
+                body, table { font-family: Calibri, Arial, sans-serif; font-size: 10pt; color: #0f172a; }
+                table { border-collapse: collapse; width: 100%; }
+                .title { background-color: #0f172a; color: #ffffff; font-size: 14pt; font-weight: bold; padding: 10px 12px; text-align: left; }
+                .subtitle { background-color: #1e293b; color: #f59e0b; font-size: 10pt; font-weight: bold; padding: 6px 12px; text-align: left; }
+                .kpi-label { background-color: #f1f5f9; color: #475569; font-weight: bold; font-size: 9pt; border: 1px solid #cbd5e1; padding: 6px 8px; text-transform: uppercase; }
+                .kpi-val { background-color: #ffffff; color: #0f172a; font-weight: bold; font-size: 11pt; border: 1px solid #cbd5e1; padding: 6px 8px; text-align: right; }
+                th.col-hdr { background-color: #0f172a; color: #ffffff; font-weight: bold; font-size: 9.5pt; text-transform: uppercase; border: 1px solid #334155; padding: 8px 10px; text-align: center; }
+                td.cell { border: 1px solid #cbd5e1; padding: 6px 8px; vertical-align: middle; }
+                td.cell-even { background-color: #f8fafc; border: 1px solid #cbd5e1; padding: 6px 8px; vertical-align: middle; }
+                .num { mso-number-format:"\#\,\#\#0\.00"; text-align: right; font-family: Consolas, monospace; }
+                .center { text-align: center; }
+                .compra { color: #b45309; font-weight: bold; }
+                .venta { color: #047857; font-weight: bold; }
+                .tfoot { background-color: #0f172a; color: #ffffff; font-weight: bold; font-size: 10pt; border: 1px solid #0f172a; padding: 8px 10px; }
+                .tfoot-num { background-color: #0f172a; color: #fbbf24; font-weight: bold; font-size: 10pt; border: 1px solid #0f172a; padding: 8px 10px; mso-number-format:"\#\,\#\#0\.00"; text-align: right; }
+            </style></head><body>';
 
-            foreach ($query->cursor() as $row) {
-                fputcsv($handle, [
-                    $row->tipo === 'compra' ? 'LOT-' . str_pad($row->id, 5, '0', STR_PAD_LEFT) : 'SLD-' . str_pad($row->id, 5, '0', STR_PAD_LEFT),
-                    $row->fecha ? $row->fecha->format('d/m/Y') : '',
-                    strtoupper($row->tipo),
-                    $row->cliente_proveedor,
-                    $row->bocamina->nombre ?? 'N/A',
-                    $row->presentacion === 'Otro' ? ($row->presentacion_otro ?: 'Otro') : $row->presentacion,
-                    number_format($row->cantidad, 2, '.', ''),
-                    number_format($row->peso_neto_seco, 2, '.', ''),
-                    number_format($row->precio_unidad, 2, '.', ''),
-                    number_format($row->monto_total, 2, '.', ''),
-                    $row->observacion ?? ''
-                ]);
+            echo '<table>';
+            echo '<tr><td colspan="14" class="title">EMPRESA MINERA KOYOSITA S.R.L. — REPORTE DE COMERCIALIZACIÓN DE MINERALES</td></tr>';
+            echo '<tr><td colspan="14" class="subtitle">Generado el ' . $fechaGen . ' · Total de Registros: ' . count($rows) . '</td></tr>';
+            echo '<tr><td colspan="14"></td></tr>';
+
+            echo '<tr>';
+            echo '<td colspan="2" class="kpi-label">Total Compras (Bs.)</td><td colspan="2" class="kpi-val num">' . number_format($totalCompras, 2, '.', '') . '</td>';
+            echo '<td colspan="2" class="kpi-label">Total Ventas (Bs.)</td><td colspan="2" class="kpi-val num">' . number_format($totalVentas, 2, '.', '') . '</td>';
+            echo '<td colspan="2" class="kpi-label">Balance Neto (Bs.)</td><td colspan="2" class="kpi-val num">' . number_format($balanceNeto, 2, '.', '') . '</td>';
+            echo '<td class="kpi-label">Peso Compras / Ventas (Kg)</td><td class="kpi-val">' . number_format($pesoCompras, 2) . ' / ' . number_format($pesoVentas, 2) . '</td>';
+            echo '</tr>';
+            echo '<tr><td colspan="14"></td></tr>';
+
+            echo '<thead><tr>';
+            echo '<th class="col-hdr">Código / Lote</th>';
+            echo '<th class="col-hdr">Fecha</th>';
+            echo '<th class="col-hdr">Tipo</th>';
+            echo '<th class="col-hdr">Cliente / Proveedor</th>';
+            echo '<th class="col-hdr">Bocamina</th>';
+            echo '<th class="col-hdr">Presentación</th>';
+            echo '<th class="col-hdr">Leyes de Laboratorio (%)</th>';
+            echo '<th class="col-hdr">Cantidad</th>';
+            echo '<th class="col-hdr">Peso Bruto (Kg)</th>';
+            echo '<th class="col-hdr">Humedad (%)</th>';
+            echo '<th class="col-hdr">Peso Neto Seco (Kg)</th>';
+            echo '<th class="col-hdr">Peso Neto (TN)</th>';
+            echo '<th class="col-hdr">Precio Unit. (Bs/Kg)</th>';
+            echo '<th class="col-hdr">Monto Total (Bs.)</th>';
+            echo '</tr></thead><tbody>';
+
+            foreach ($rows as $idx => $row) {
+                $cls = ($idx % 2 === 1) ? 'cell-even' : 'cell';
+                $codigo = $row->tipo === 'compra' ? 'LOT-' . str_pad($row->id, 5, '0', STR_PAD_LEFT) : 'SLD-' . str_pad($row->id, 5, '0', STR_PAD_LEFT);
+                $fecha = $row->fecha ? $row->fecha->format('d/m/Y') : '';
+                $tipoTxt = strtoupper($row->tipo);
+                $tipoCls = $row->tipo === 'compra' ? 'compra' : 'venta';
+                $prov = e($row->cliente_proveedor ?? '—');
+                $boc = e($row->bocamina->nombre ?? 'Sin asignar');
+                $pres = e($row->presentacion === 'Otro' ? ($row->presentacion_otro ?: 'Otro') : ($row->presentacion ?? '—'));
+
+                $analisisList = ($row->tipo === 'compra' || ($row->analisis && $row->analisis->count() > 0))
+                    ? $row->analisis
+                    : ($row->lote ? $row->lote->analisis : collect());
+                $leyesArr = [];
+                foreach ($analisisList as $an) {
+                    $leyesArr[] = e($an->mineral) . ': ' . number_format((float)$an->ley, 2) . '%';
+                }
+                $leyesStr = count($leyesArr) > 0 ? implode(' | ', $leyesArr) : '—';
+
+                $pesoBruto = (float)($row->peso_bruto ?: $row->peso_neto_seco);
+                $humedad = (float)($row->humedad_porcentaje ?? 0);
+                $pesoNetoKg = (float)$row->peso_neto_seco;
+                $pesoNetoTn = $pesoNetoKg / 1000.0;
+
+                echo '<tr>';
+                echo '<td class="' . $cls . ' center" style="font-weight:bold;">' . $codigo . '</td>';
+                echo '<td class="' . $cls . ' center">' . $fecha . '</td>';
+                echo '<td class="' . $cls . ' center ' . $tipoCls . '">' . $tipoTxt . '</td>';
+                echo '<td class="' . $cls . '">' . $prov . '</td>';
+                echo '<td class="' . $cls . '">' . $boc . '</td>';
+                echo '<td class="' . $cls . ' center">' . $pres . '</td>';
+                echo '<td class="' . $cls . '">' . $leyesStr . '</td>';
+                echo '<td class="' . $cls . ' num">' . number_format((float)$row->cantidad, 2, '.', '') . '</td>';
+                echo '<td class="' . $cls . ' num">' . number_format($pesoBruto, 2, '.', '') . '</td>';
+                echo '<td class="' . $cls . ' num">' . number_format($humedad, 2, '.', '') . '</td>';
+                echo '<td class="' . $cls . ' num">' . number_format($pesoNetoKg, 2, '.', '') . '</td>';
+                echo '<td class="' . $cls . ' num">' . number_format($pesoNetoTn, 3, '.', '') . '</td>';
+                echo '<td class="' . $cls . ' num">' . number_format((float)$row->precio_unidad, 2, '.', '') . '</td>';
+                echo '<td class="' . $cls . ' num" style="font-weight:bold;">' . number_format((float)$row->monto_total, 2, '.', '') . '</td>';
+                echo '</tr>';
             }
 
-            fclose($handle);
+            echo '</tbody><tfoot><tr>';
+            echo '<td colspan="7" class="tfoot" style="text-align:right;">TOTALES DEL PERÍODO FILTRADO:</td>';
+            echo '<td class="tfoot-num">' . number_format($totalCant, 2, '.', '') . '</td>';
+            echo '<td class="tfoot"></td>';
+            echo '<td class="tfoot"></td>';
+            echo '<td class="tfoot-num">' . number_format($totalPeso, 2, '.', '') . '</td>';
+            echo '<td class="tfoot-num">' . number_format($totalPeso / 1000.0, 3, '.', '') . '</td>';
+            echo '<td class="tfoot"></td>';
+            echo '<td class="tfoot-num">' . number_format($totalMonto, 2, '.', '') . '</td>';
+            echo '</tr></tfoot></table></body></html>';
         }, 200, $headers);
     }
 }

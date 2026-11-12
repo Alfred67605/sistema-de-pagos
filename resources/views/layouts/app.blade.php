@@ -247,26 +247,42 @@
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.94) 0%, rgba(248, 250, 252, 0.90) 55%, rgba(241, 245, 249, 0.86) 100%) !important;
         }
 
-        /* Capas de color en tarjetas KPI (Cyan, Indigo/Purple, Rose, Emerald, Amber) en Modo Claro */
+        /* Capas de color en tarjetas KPI y cajas de resumen (Cyan, Sky, Indigo/Purple, Rose, Emerald, Amber) en Modo Claro */
         html.light-theme .pointer-events-none[class*="from-cyan-950"],
-        html.light-theme .pointer-events-none[class*="from-sky-950"] {
-            background: linear-gradient(135deg, rgba(240, 249, 255, 0.95) 0%, rgba(224, 242, 254, 0.88) 100%) !important;
+        html.light-theme .pointer-events-none[class*="from-sky-950"],
+        html.light-theme [class*="bg-sky-950"],
+        html.light-theme [class*="bg-cyan-950"] {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%) !important;
+            border-color: #bae6fd !important;
         }
         html.light-theme .pointer-events-none[class*="from-indigo-950"],
-        html.light-theme .pointer-events-none[class*="from-purple-950"] {
-            background: linear-gradient(135deg, rgba(238, 242, 255, 0.95) 0%, rgba(243, 232, 255, 0.88) 100%) !important;
+        html.light-theme .pointer-events-none[class*="from-purple-950"],
+        html.light-theme [class*="bg-indigo-950"],
+        html.light-theme [class*="bg-purple-950"] {
+            background: linear-gradient(135deg, #eef2ff 0%, #f3e8ff 100%) !important;
+            border-color: #c7d2fe !important;
         }
         html.light-theme .pointer-events-none[class*="from-rose-950"],
-        html.light-theme .pointer-events-none[class*="from-red-950"] {
-            background: linear-gradient(135deg, rgba(255, 241, 242, 0.95) 0%, rgba(255, 228, 230, 0.88) 100%) !important;
+        html.light-theme .pointer-events-none[class*="from-red-950"],
+        html.light-theme [class*="bg-rose-950"],
+        html.light-theme [class*="bg-red-950"] {
+            background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%) !important;
+            border-color: #fecdd3 !important;
         }
         html.light-theme .pointer-events-none[class*="from-emerald-950"],
-        html.light-theme .pointer-events-none[class*="from-teal-950"] {
-            background: linear-gradient(135deg, rgba(236, 253, 245, 0.95) 0%, rgba(209, 250, 229, 0.88) 100%) !important;
+        html.light-theme .pointer-events-none[class*="from-teal-950"],
+        html.light-theme [class*="bg-emerald-950"],
+        html.light-theme [class*="bg-teal-950"] {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%) !important;
+            border-color: #a7f3d0 !important;
         }
         html.light-theme .pointer-events-none[class*="from-amber-950"],
-        html.light-theme .pointer-events-none[class*="from-orange-950"] {
-            background: linear-gradient(135deg, rgba(255, 251, 235, 0.95) 0%, rgba(254, 243, 199, 0.88) 100%) !important;
+        html.light-theme .pointer-events-none[class*="from-orange-950"],
+        html.light-theme [class*="bg-amber-950"],
+        html.light-theme [class*="bg-orange-950"],
+        html.light-theme [class*="from-amber-950"][class*="via-slate-900"] {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%) !important;
+            border-color: #fcd34d !important;
         }
 
         /* Fotografías de marca de agua sutiles en Modo Claro */

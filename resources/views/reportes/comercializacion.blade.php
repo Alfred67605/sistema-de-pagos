@@ -18,7 +18,7 @@
             <button type="button" onclick="doExportPDF(this)" class="inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-md transition cursor-pointer">
                 <i class="fa-solid fa-file-pdf mr-2"></i> PDF
             </button>
-            <button type="button" onclick="window.print()" class="inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-500 text-white shadow-md transition cursor-pointer">
+            <button type="button" onclick="doExportPDF(this)" class="inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-500 text-white shadow-md transition cursor-pointer">
                 <i class="fa-solid fa-print mr-2"></i> Imprimir
             </button>
         </div>
@@ -217,24 +217,37 @@
             </div>
         @else
             <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left">
+                <table class="w-full text-sm text-left" id="comercializacion-report-table">
                     <thead class="text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800">
                         <tr>
-                            <th class="px-5 py-3">Fecha</th>
-                            <th class="px-5 py-3">Tipo</th>
-                            <th class="px-5 py-3">Bocamina</th>
-                            <th class="px-5 py-3">Mineral / Presentación</th>
-                            <th class="px-5 py-3 text-right">Peso Neto (TN)</th>
-                            <th class="px-5 py-3 text-right">Monto Total</th>
+                            <th class="px-4 py-3">Lote / ID</th>
+                            <th class="px-4 py-3">Fecha</th>
+                            <th class="px-4 py-3">Tipo</th>
+                            <th class="px-4 py-3">Cliente / Proveedor</th>
+                            <th class="px-4 py-3">Bocamina</th>
+                            <th class="px-4 py-3">Presentación / Leyes</th>
+                            <th class="px-4 py-3 text-right">Cantidad</th>
+                            <th class="px-4 py-3 text-right">Peso Neto Seco (Kg)</th>
+                            <th class="px-4 py-3 text-right">Monto Total</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-800/50">
                         @foreach($transacciones as $tx)
+                        @php
+                            $codigoTx = $tx->tipo === 'compra' ? 'LOT-' . str_pad($tx->id, 5, '0', STR_PAD_LEFT) : 'SLD-' . str_pad($tx->id, 5, '0', STR_PAD_LEFT);
+                            $presTx = $tx->presentacion === 'Otro' ? ($tx->presentacion_otro ?: 'Otro') : ($tx->presentacion ?? '—');
+                            $analisisList = ($tx->tipo === 'compra' || ($tx->analisis && $tx->analisis->count() > 0))
+                                ? $tx->analisis
+                                : ($tx->lote ? $tx->lote->analisis : collect());
+                        @endphp
                         <tr class="hover:bg-slate-800/30 transition-colors">
-                            <td class="px-5 py-3 text-slate-300 whitespace-nowrap">
+                            <td class="px-4 py-3 font-mono font-bold text-xs {{ $tx->tipo === 'compra' ? 'text-amber-400' : 'text-emerald-400' }} whitespace-nowrap">
+                                {{ $codigoTx }}
+                            </td>
+                            <td class="px-4 py-3 text-slate-300 font-mono text-xs whitespace-nowrap">
                                 {{ \Carbon\Carbon::parse($tx->fecha)->format('d/m/Y') }}
                             </td>
-                            <td class="px-5 py-3">
+                            <td class="px-4 py-3">
                                 @if($tx->tipo === 'venta')
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
                                         <i class="fa-solid fa-arrow-up text-[8px]"></i> Venta
@@ -245,32 +258,43 @@
                                     </span>
                                 @endif
                             </td>
-                            <td class="px-5 py-3 text-slate-300">{{ $tx->bocamina->nombre ?? '—' }}</td>
-                            <td class="px-5 py-3 text-slate-300">
-                                {{ $tx->tipo_mineral ?? '—' }}
-                                @if($tx->presentacion ?? null)
-                                    <span class="text-slate-500 text-xs">/ {{ $tx->presentacion }}</span>
+                            <td class="px-4 py-3 text-slate-200 font-bold text-xs">{{ $tx->cliente_proveedor ?? '—' }}</td>
+                            <td class="px-4 py-3 text-slate-300 text-xs">{{ $tx->bocamina->nombre ?? '—' }}</td>
+                            <td class="px-4 py-3 text-slate-300 text-xs">
+                                <span class="font-semibold">{{ $presTx }}</span>
+                                @if($analisisList && count($analisisList) > 0)
+                                    <div class="flex flex-wrap gap-1 mt-1">
+                                        @foreach($analisisList as $an)
+                                            <span class="inline-block px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400 font-mono text-[10px] font-bold">
+                                                {{ $an->mineral }}: {{ number_format($an->ley, 2) }}%
+                                            </span>
+                                        @endforeach
+                                    </div>
                                 @endif
                             </td>
-                            <td class="px-5 py-3 text-right text-slate-200 font-mono">
-                                {{ $tx->peso_neto_seco ? number_format($tx->peso_neto_seco, 2) : '—' }}
+                            <td class="px-4 py-3 text-right text-slate-300 font-mono text-xs whitespace-nowrap">
+                                {{ number_format($tx->cantidad ?? 0, 2) }}
                             </td>
-                            <td class="px-5 py-3 text-right font-bold {{ $tx->tipo === 'venta' ? 'text-emerald-400' : 'text-rose-400' }} font-mono">
-                                Bs {{ number_format($tx->monto_total, 2) }}
+                            <td class="px-4 py-3 text-right text-slate-200 font-mono text-xs whitespace-nowrap">
+                                {{ $tx->peso_neto_seco ? number_format($tx->peso_neto_seco, 2) . ' Kg' : '—' }}
+                            </td>
+                            <td class="px-4 py-3 text-right font-bold {{ $tx->tipo === 'venta' ? 'text-emerald-400' : 'text-rose-400' }} font-mono text-xs whitespace-nowrap">
+                                Bs. {{ number_format($tx->monto_total, 2) }}
                             </td>
                         </tr>
                         @endforeach
                     </tbody>
                     <tfoot class="border-t-2 border-slate-700 bg-slate-900/60">
                         <tr>
-                            <td colspan="4" class="px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-400">Totales del Período</td>
-                            <td class="px-5 py-3 text-right text-sm font-bold text-slate-200 font-mono">
-                                {{ number_format($totalPesoNetoVentas, 2) }} TN
+                            <td colspan="7" class="px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-400 text-right">Totales del Período (Compras / Ventas):</td>
+                            <td class="px-4 py-3 text-right text-xs font-bold text-slate-200 font-mono whitespace-nowrap">
+                                {{ number_format($totalPesoNetoCompras + $totalPesoNetoVentas, 2) }} Kg
+                                <span class="block text-[10px] text-slate-400">({{ number_format(($totalPesoNetoCompras + $totalPesoNetoVentas) / 1000, 3) }} TN)</span>
                             </td>
-                            <td class="px-5 py-3 text-right text-sm font-bold font-mono">
-                                <span class="text-emerald-400">Bs {{ number_format($totalVentas, 2) }}</span>
-                                <span class="text-slate-500 mx-1">/</span>
-                                <span class="text-rose-400">Bs {{ number_format($totalCompras, 2) }}</span>
+                            <td class="px-4 py-3 text-right text-xs font-bold font-mono whitespace-nowrap">
+                                <span class="text-rose-400" title="Total Compras">C: Bs. {{ number_format($totalCompras, 2) }}</span>
+                                <span class="text-slate-500 mx-1">|</span>
+                                <span class="text-emerald-400" title="Total Ventas">V: Bs. {{ number_format($totalVentas, 2) }}</span>
                             </td>
                         </tr>
                     </tfoot>
@@ -366,31 +390,51 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <script>
 function doExportPDF(btn) {
-    const activeTable = document.querySelector('table:not(.no-print)');
+    const activeTable = document.querySelector('#comercializacion-report-table') || document.querySelector('table:not(.no-print)');
     if (!activeTable) {
         window.print();
         return;
     }
 
-    let rowsHtml = '';
-    const rows = activeTable.querySelectorAll('tr');
-    rows.forEach((tr, index) => {
-        const isHeader = tr.parentElement.tagName === 'THEAD';
-        const cells = tr.querySelectorAll(isHeader ? 'th' : 'td');
-        let rowStr = '<tr>';
-        cells.forEach((td, cellIndex) => {
-            if (cellIndex === cells.length - 1 && td.classList.contains('no-print')) return;
-            
-            const txt = td.textContent.replace(/\s+/g, ' ').trim();
-            if (isHeader) {
-                rowStr += `<th>${txt}</th>`;
-            } else {
-                const isNum = txt.startsWith('Bs.') || txt.includes('Kg') || !isNaN(parseFloat(txt));
-                rowStr += `<td class="${isNum ? 'text-right font-mono' : ''}">${txt}</td>`;
-            }
+    let theadHtml = '';
+    let tbodyHtml = '';
+    let tfootHtml = '';
+
+    const theadRows = activeTable.querySelectorAll('thead tr');
+    theadRows.forEach(tr => {
+        theadHtml += '<tr>';
+        tr.querySelectorAll('th').forEach(th => {
+            const txt = th.textContent.replace(/\s+/g, ' ').trim();
+            const isRight = th.classList.contains('text-right');
+            theadHtml += `<th class="${isRight ? 'text-right' : ''}">${txt}</th>`;
         });
-        rowStr += '</tr>';
-        rowsHtml += rowStr;
+        theadHtml += '</tr>';
+    });
+
+    const tbodyRows = activeTable.querySelectorAll('tbody tr');
+    tbodyRows.forEach(tr => {
+        tbodyHtml += '<tr>';
+        tr.querySelectorAll('td').forEach((td, idx) => {
+            if (td.classList.contains('no-print')) return;
+            const txt = td.textContent.replace(/\s+/g, ' ').trim();
+            const colspan = td.getAttribute('colspan');
+            const isRight = td.classList.contains('text-right') || idx >= 6;
+            const isBold = td.classList.contains('font-bold') || idx === 0 || idx === 3 || idx === 8;
+            tbodyHtml += `<td ${colspan ? `colspan="${colspan}"` : ''} class="${isRight ? 'text-right font-mono' : ''} ${isBold ? 'font-bold' : ''}">${txt}</td>`;
+        });
+        tbodyHtml += '</tr>';
+    });
+
+    const tfootRows = activeTable.querySelectorAll('tfoot tr');
+    tfootRows.forEach(tr => {
+        tfootHtml += '<tr class="tfoot-row">';
+        tr.querySelectorAll('td').forEach(td => {
+            const txt = td.textContent.replace(/\s+/g, ' ').trim();
+            const colspan = td.getAttribute('colspan');
+            const isRight = td.classList.contains('text-right');
+            tfootHtml += `<td ${colspan ? `colspan="${colspan}"` : ''} class="${isRight ? 'text-right font-mono' : ''}">${txt}</td>`;
+        });
+        tfootHtml += '</tr>';
     });
 
     const oldIframe = document.getElementById('scpm-comercializacion-iframe');
@@ -398,37 +442,40 @@ function doExportPDF(btn) {
 
     const iframe = document.createElement('iframe');
     iframe.id = 'scpm-comercializacion-iframe';
-    iframe.style.position = 'fixed';
-    iframe.style.right = '0';
-    iframe.style.bottom = '0';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    iframe.style.border = 'none';
-    iframe.style.visibility = 'hidden';
+    iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:none;visibility:hidden;';
     document.body.appendChild(iframe);
+
+    const kpiCompras = @json('Bs. ' . number_format($totalCompras, 2));
+    const kpiVentas = @json('Bs. ' . number_format($totalVentas, 2));
+    const kpiBalance = @json('Bs. ' . number_format($totalVentas - $totalCompras, 2));
+    const kpiPeso = @json(number_format($totalPesoNetoCompras + $totalPesoNetoVentas, 2) . ' Kg (' . number_format(($totalPesoNetoCompras + $totalPesoNetoVentas) / 1000, 3) . ' TN)');
 
     const docHtml = `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Reporte_Comercializacion_${new Date().toISOString().slice(0,10)}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>Reporte_Comercializacion_KOYOSITA_${new Date().toISOString().slice(0,10)}</title>
     <style>
-        @page { size: letter landscape; margin: 6mm 8mm; }
+        @page { size: letter landscape; margin: 8mm 10mm; }
         * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
-        body { font-family: 'Outfit', sans-serif; background: #ffffff !important; color: #0f172a !important; margin: 0; padding: 10px; }
-        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0f172a; padding-bottom: 8px; margin-bottom: 12px; }
-        .title { font-size: 16px; font-weight: 900; color: #0f172a; text-transform: uppercase; margin: 0; }
-        .subtitle { font-size: 9.5px; color: #64748b; margin: 3px 0 0 0; font-family: 'JetBrains Mono', monospace; }
-        .badge { font-size: 8.5px; font-weight: 800; background: #0f172a; color: #ffffff; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; }
-        table { width: 100%; border-collapse: collapse; font-size: 9.5px; margin-top: 8px; }
-        th { background: #0f172a; color: #ffffff; padding: 6px 8px; text-align: left; font-size: 8.5px; text-transform: uppercase; font-weight: 800; border: 1px solid #1e293b; }
-        td { padding: 5px 8px; border: 1px solid #e2e8f0; color: #1e293b; }
-        tr:nth-child(even) td { background: #f8fafc; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #ffffff !important; color: #0f172a !important; margin: 0; padding: 10px; }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2.5px solid #0f172a; padding-bottom: 10px; margin-bottom: 12px; }
+        .title { font-size: 16px; font-weight: 900; color: #0f172a; text-transform: uppercase; margin: 0; letter-spacing: -0.01em; }
+        .subtitle { font-size: 10px; color: #475569; margin: 4px 0 0 0; font-family: Consolas, monospace; font-weight: 600; }
+        .badge { font-size: 8.5px; font-weight: 800; background: #0f172a; color: #ffffff; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; display: inline-block; }
+        .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+        .kpi-box { border: 1px solid #cbd5e1; border-radius: 6px; padding: 7px 10px; background: #f8fafc; }
+        .kpi-lbl { font-size: 8px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.04em; }
+        .kpi-val { font-size: 12px; font-weight: 900; color: #0f172a; font-family: Consolas, monospace; margin-top: 2px; }
+        table { width: 100%; border-collapse: collapse; font-size: 9.5px; margin-top: 4px; }
+        th { background: #0f172a; color: #ffffff; padding: 7px 8px; text-align: left; font-size: 8.5px; text-transform: uppercase; font-weight: 800; border: 1px solid #0f172a; letter-spacing: 0.03em; }
+        td { padding: 6px 8px; border: 1px solid #cbd5e1; color: #1e293b; vertical-align: middle; }
+        tbody tr:nth-child(even) td { background: #f8fafc; }
+        tfoot tr.tfoot-row td { background: #0f172a !important; color: #ffffff !important; font-weight: 800; font-size: 9.5px; border: 1px solid #0f172a; padding: 7px 8px; }
         .text-right { text-align: right; }
-        .font-mono { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
-        .footer { margin-top: 16px; padding-top: 6px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 8px; color: #94a3b8; text-transform: uppercase; }
+        .font-mono { font-family: Consolas, 'Courier New', monospace; }
+        .font-bold { font-weight: 700; }
+        .footer { margin-top: 14px; padding-top: 6px; border-top: 1px solid #cbd5e1; display: flex; justify-content: space-between; font-size: 8.5px; color: #64748b; text-transform: uppercase; font-weight: 700; }
     </style>
 </head>
 <body>
@@ -439,15 +486,23 @@ function doExportPDF(btn) {
         </div>
         <div style="text-align:right;">
             <span class="badge">Documento Oficial</span>
-            <div style="font-size:10px; font-weight:800; color:#0f172a; margin-top:3px;">CONTROL OPERATIVO MINERO</div>
+            <div style="font-size:10px; font-weight:800; color:#0f172a; margin-top:4px;">CONTROL OPERATIVO MINERO</div>
         </div>
     </div>
+    <div class="kpis">
+        <div class="kpi-box"><div class="kpi-lbl">Total Compras (Egresos)</div><div class="kpi-val">${kpiCompras}</div></div>
+        <div class="kpi-box"><div class="kpi-lbl">Total Ventas (Ingresos)</div><div class="kpi-val">${kpiVentas}</div></div>
+        <div class="kpi-box"><div class="kpi-lbl">Balance Neto</div><div class="kpi-val">${kpiBalance}</div></div>
+        <div class="kpi-box"><div class="kpi-lbl">Peso Neto Total</div><div class="kpi-val">${kpiPeso}</div></div>
+    </div>
     <table>
-        ${rowsHtml}
+        <thead>${theadHtml}</thead>
+        <tbody>${tbodyHtml}</tbody>
+        <tfoot>${tfootHtml}</tfoot>
     </table>
     <div class="footer">
-        <span>Sistema de Pagos y Control Minero SCPM</span>
-        <span>Página 1 / 1</span>
+        <span>EMPRESA MINERA KOYOSITA S.R.L. — SISTEMA DE CONTROL MINERO</span>
+        <span>PÁGINA 1 / 1</span>
     </div>
 </body>
 </html>`;
