@@ -39,6 +39,19 @@
         color: #94a3b8;
         margin-bottom: 0.4rem;
     }
+    html.light-theme .se-card {
+        background: #ffffff;
+        border-color: #e2e8f0;
+        box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.06);
+    }
+    html.light-theme .se-input {
+        background-color: #f8fafc;
+        border-color: #cbd5e1;
+        color: #0f172a;
+    }
+    html.light-theme .se-label {
+        color: #475569;
+    }
 </style>
 
 <div x-data="{

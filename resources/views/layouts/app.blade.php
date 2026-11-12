@@ -59,21 +59,323 @@
         .light-theme {
             --bg-canvas: #f1f5f9;
             --bg-surface-1: #ffffff;
-            --bg-surface-2: #f8fafc;
-            --bg-surface-3: #e2e8f0;
-            --bg-input: #ffffff;
-            --border-subtle: rgba(15, 23, 42, 0.08);
-            --border-medium: rgba(15, 23, 42, 0.14);
-            --border-highlight: rgba(217, 119, 6, 0.45);
+            --bg-surface-2: #ffffff;
+            --bg-surface-3: #f8fafc;
+            --bg-input: #f8fafc;
+            --border-subtle: #e2e8f0;
+            --border-medium: #cbd5e1;
+            --border-highlight: rgba(217, 119, 6, 0.55);
             --accent-gold: #d97706;
             --accent-gold-hover: #b45309;
-            --accent-gold-glow: rgba(217, 119, 6, 0.12);
+            --accent-gold-glow: rgba(217, 119, 6, 0.14);
             --text-primary: #0f172a;
-            --text-secondary: #475569;
+            --text-secondary: #334155;
             --text-tertiary: #64748b;
-            --card-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.06), 0 2px 4px -1px rgba(15, 23, 42, 0.04);
-            --card-shadow-hover: 0 12px 24px -4px rgba(15, 23, 42, 0.1), 0 0 16px rgba(217, 119, 6, 0.1);
+            --card-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+            --card-shadow-hover: 0 12px 28px -4px rgba(15, 23, 42, 0.12), 0 0 16px rgba(217, 119, 6, 0.12);
         }
+
+        /* ══════════════════════════════════════════════════════════════════
+           MODO CLARO EJECUTIVO INTEGRAL (html.light-theme)
+           Adaptación completa de tarjetas, banners, KPIs, tablas y textos
+           ══════════════════════════════════════════════════════════════════ */
+        html.light-theme body {
+            background-color: #f1f5f9 !important;
+            color: #0f172a !important;
+        }
+
+        /* 1. Tipografía oscura y nítida sobre fondos claros */
+        html.light-theme .text-slate-100,
+        html.light-theme .text-slate-200 {
+            color: #0f172a !important;
+        }
+        html.light-theme .text-slate-300 {
+            color: #334155 !important;
+        }
+        html.light-theme .text-slate-400 {
+            color: #475569 !important;
+        }
+        html.light-theme .text-slate-500,
+        html.light-theme .text-slate-600 {
+            color: #64748b !important;
+        }
+        html.light-theme .hover\:text-white:hover,
+        html.light-theme .hover\:text-slate-200:hover,
+        html.light-theme .hover\:text-slate-100:hover {
+            color: #0f172a !important;
+        }
+
+        /* Títulos y valores con .text-white dentro de tarjetas, banners y cabeceras */
+        html.light-theme .mining-hero-container h1.text-white,
+        html.light-theme .mining-hero-container h2.text-white,
+        html.light-theme .mining-hero-container h3.text-white,
+        html.light-theme .mining-hero-container p.text-white,
+        html.light-theme .mining-hero-container div.text-white,
+        html.light-theme .glass-card h1.text-white,
+        html.light-theme .glass-card h2.text-white,
+        html.light-theme .glass-card h3.text-white,
+        html.light-theme .glass-card h4.text-white,
+        html.light-theme .glass-card p.text-white,
+        html.light-theme .glass-card div.text-white:not([class*="bg-gradient-to-"]):not([class*="bg-amber-"]):not([class*="bg-emerald-"]):not([class*="bg-rose-"]):not([class*="bg-cyan-"]):not([class*="bg-sky-"]):not([class*="bg-indigo-"]):not([class*="bg-purple-"]):not([class*="bg-teal-"]):not([class*="bg-blue-"]):not([class*="bg-orange-"]),
+        html.light-theme .glass-card span.text-white:not([class*="bg-gradient-to-"]):not([class*="bg-amber-"]):not([class*="bg-emerald-"]):not([class*="bg-rose-"]):not([class*="bg-cyan-"]):not([class*="bg-sky-"]):not([class*="bg-indigo-"]):not([class*="bg-purple-"]):not([class*="bg-teal-"]):not([class*="bg-blue-"]):not([class*="bg-orange-"]),
+        html.light-theme .mining-card h1.text-white,
+        html.light-theme .mining-card h2.text-white,
+        html.light-theme .mining-card h3.text-white,
+        html.light-theme .mining-card h4.text-white,
+        html.light-theme .mining-card p.text-white,
+        html.light-theme .mining-card div.text-white:not([class*="bg-gradient-to-"]):not([class*="bg-amber-"]):not([class*="bg-emerald-"]):not([class*="bg-rose-"]):not([class*="bg-cyan-"]):not([class*="bg-sky-"]):not([class*="bg-indigo-"]):not([class*="bg-purple-"]):not([class*="bg-teal-"]):not([class*="bg-blue-"]):not([class*="bg-orange-"]),
+        html.light-theme .mining-card span.text-white:not([class*="bg-gradient-to-"]):not([class*="bg-amber-"]):not([class*="bg-emerald-"]):not([class*="bg-rose-"]):not([class*="bg-cyan-"]):not([class*="bg-sky-"]):not([class*="bg-indigo-"]):not([class*="bg-purple-"]):not([class*="bg-teal-"]):not([class*="bg-blue-"]):not([class*="bg-orange-"]),
+        html.light-theme .m-card h1.text-white,
+        html.light-theme .m-card h2.text-white,
+        html.light-theme .m-card h3.text-white,
+        html.light-theme .m-card h4.text-white,
+        html.light-theme .m-card div.text-white:not([class*="bg-gradient-to-"]),
+        html.light-theme .m-card span.text-white:not([class*="bg-gradient-to-"]),
+        html.light-theme .m-modal h2.text-white,
+        html.light-theme .m-modal h3.text-white,
+        html.light-theme .m-modal div.text-white:not([class*="bg-gradient-to-"]),
+        html.light-theme .m-modal span.text-white:not([class*="bg-gradient-to-"]),
+        html.light-theme .p-card .text-white:not([class*="bg-gradient-to-"]),
+        html.light-theme .se-card .text-white:not([class*="bg-gradient-to-"]),
+        html.light-theme .erp-card .text-white:not([class*="bg-gradient-to-"]),
+        html.light-theme .rpt-card .text-white:not([class*="bg-gradient-to-"]),
+        html.light-theme table tbody td.text-white,
+        html.light-theme table tbody td .text-white:not([class*="bg-gradient-to-"]) {
+            color: #0f172a !important;
+        }
+
+        /* Preservar texto blanco puro en botones sólidos, íconos con fondo de color y tarjetas .m-kpi */
+        html.light-theme .btn-emerald,
+        html.light-theme .btn-cyan,
+        html.light-theme .btn-export-excel,
+        html.light-theme .btn-export-pdf,
+        html.light-theme .btn-nuevo-tipo,
+        html.light-theme .m-btn-amber,
+        html.light-theme .m-btn-emerald,
+        html.light-theme .p-btn-teal,
+        html.light-theme .m-kpi,
+        html.light-theme .m-kpi *,
+        html.light-theme button.text-white,
+        html.light-theme a.text-white[class*="bg-gradient-to-"],
+        html.light-theme a.text-white[class*="bg-emerald-"],
+        html.light-theme a.text-white[class*="bg-rose-"],
+        html.light-theme a.text-white[class*="bg-sky-"],
+        html.light-theme a.text-white[class*="bg-cyan-"],
+        html.light-theme a.text-white[class*="bg-amber-"],
+        html.light-theme a.text-white[class*="bg-indigo-"],
+        html.light-theme [class*="from-amber-500"].text-white,
+        html.light-theme [class*="from-orange-500"].text-white,
+        html.light-theme [class*="from-emerald-500"].text-white,
+        html.light-theme [class*="from-teal-500"].text-white,
+        html.light-theme [class*="from-cyan-500"].text-white,
+        html.light-theme [class*="from-sky-500"].text-white,
+        html.light-theme [class*="from-blue-500"].text-white,
+        html.light-theme [class*="from-indigo-500"].text-white,
+        html.light-theme [class*="from-purple-500"].text-white,
+        html.light-theme [class*="from-rose-500"].text-white {
+            color: #ffffff !important;
+        }
+
+        /* 2. Acentos cromáticos legibles en Modo Claro */
+        html.light-theme .text-cyan-200,
+        html.light-theme .text-cyan-200\/90,
+        html.light-theme .text-cyan-300,
+        html.light-theme .text-cyan-300\/90,
+        html.light-theme .text-cyan-400 {
+            color: #0369a1 !important;
+        }
+        html.light-theme .text-sky-200,
+        html.light-theme .text-sky-300,
+        html.light-theme .text-sky-400 {
+            color: #0284c7 !important;
+        }
+        html.light-theme .text-indigo-200,
+        html.light-theme .text-indigo-300,
+        html.light-theme .text-indigo-400 {
+            color: #4338ca !important;
+        }
+        html.light-theme .text-purple-200,
+        html.light-theme .text-purple-200\/90,
+        html.light-theme .text-purple-300,
+        html.light-theme .text-purple-300\/90,
+        html.light-theme .text-purple-400 {
+            color: #6d28d9 !important;
+        }
+        html.light-theme .text-rose-200,
+        html.light-theme .text-rose-200\/90,
+        html.light-theme .text-rose-300,
+        html.light-theme .text-rose-300\/90,
+        html.light-theme .text-rose-400 {
+            color: #be123c !important;
+        }
+        html.light-theme .text-emerald-200,
+        html.light-theme .text-emerald-200\/90,
+        html.light-theme .text-emerald-300,
+        html.light-theme .text-emerald-300\/90,
+        html.light-theme .text-emerald-400 {
+            color: #047857 !important;
+        }
+        html.light-theme .text-teal-200,
+        html.light-theme .text-teal-300,
+        html.light-theme .text-teal-400 {
+            color: #0f766e !important;
+        }
+        html.light-theme .text-amber-200,
+        html.light-theme .text-amber-200\/90,
+        html.light-theme .text-amber-300,
+        html.light-theme .text-amber-300\/90,
+        html.light-theme .text-amber-400 {
+            color: #b45309 !important;
+        }
+        html.light-theme .text-orange-300,
+        html.light-theme .text-orange-400 {
+            color: #c2410c !important;
+        }
+
+        /* 3. Neutralización de capas oscuras (overlays from-slate-950 / from-slate-900) en Banners y Tarjetas */
+        html.light-theme .mining-hero-container {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 60%, #f1f5f9 100%) !important;
+            border-color: #cbd5e1 !important;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 4px 10px -2px rgba(15, 23, 42, 0.03) !important;
+        }
+        html.light-theme .pointer-events-none[class*="from-slate-950"],
+        html.light-theme .pointer-events-none[class*="via-slate-950"],
+        html.light-theme .pointer-events-none[class*="to-slate-950"],
+        html.light-theme .pointer-events-none[class*="from-slate-900"],
+        html.light-theme .pointer-events-none[class*="via-slate-900"],
+        html.light-theme .pointer-events-none[class*="to-slate-900"] {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.94) 0%, rgba(248, 250, 252, 0.90) 55%, rgba(241, 245, 249, 0.86) 100%) !important;
+        }
+
+        /* Capas de color en tarjetas KPI (Cyan, Indigo/Purple, Rose, Emerald, Amber) en Modo Claro */
+        html.light-theme .pointer-events-none[class*="from-cyan-950"],
+        html.light-theme .pointer-events-none[class*="from-sky-950"] {
+            background: linear-gradient(135deg, rgba(240, 249, 255, 0.95) 0%, rgba(224, 242, 254, 0.88) 100%) !important;
+        }
+        html.light-theme .pointer-events-none[class*="from-indigo-950"],
+        html.light-theme .pointer-events-none[class*="from-purple-950"] {
+            background: linear-gradient(135deg, rgba(238, 242, 255, 0.95) 0%, rgba(243, 232, 255, 0.88) 100%) !important;
+        }
+        html.light-theme .pointer-events-none[class*="from-rose-950"],
+        html.light-theme .pointer-events-none[class*="from-red-950"] {
+            background: linear-gradient(135deg, rgba(255, 241, 242, 0.95) 0%, rgba(255, 228, 230, 0.88) 100%) !important;
+        }
+        html.light-theme .pointer-events-none[class*="from-emerald-950"],
+        html.light-theme .pointer-events-none[class*="from-teal-950"] {
+            background: linear-gradient(135deg, rgba(236, 253, 245, 0.95) 0%, rgba(209, 250, 229, 0.88) 100%) !important;
+        }
+        html.light-theme .pointer-events-none[class*="from-amber-950"],
+        html.light-theme .pointer-events-none[class*="from-orange-950"] {
+            background: linear-gradient(135deg, rgba(255, 251, 235, 0.95) 0%, rgba(254, 243, 199, 0.88) 100%) !important;
+        }
+
+        /* Fotografías de marca de agua sutiles en Modo Claro */
+        html.light-theme .mining-hero-img,
+        html.light-theme .glass-card img.pointer-events-none,
+        html.light-theme .mining-card img.pointer-events-none {
+            opacity: 0.08 !important;
+            mix-blend-mode: multiply !important;
+        }
+
+        /* 4. Superficies oscuras codificadas (bg-slate-950 / 900 / 800) convertidas a superficies claras */
+        html.light-theme .bg-slate-950,
+        html.light-theme .bg-slate-950\/95,
+        html.light-theme .bg-slate-950\/90,
+        html.light-theme .bg-slate-950\/80,
+        html.light-theme .bg-slate-950\/70,
+        html.light-theme .bg-slate-950\/60,
+        html.light-theme .bg-slate-950\/50,
+        html.light-theme .bg-slate-950\/40,
+        html.light-theme .bg-slate-950\/30 {
+            background-color: #f8fafc !important;
+        }
+        html.light-theme .bg-slate-900,
+        html.light-theme .bg-slate-900\/95,
+        html.light-theme .bg-slate-900\/90,
+        html.light-theme .bg-slate-900\/80,
+        html.light-theme .bg-slate-900\/75,
+        html.light-theme .bg-slate-900\/70,
+        html.light-theme .bg-slate-900\/60,
+        html.light-theme .bg-slate-900\/50,
+        html.light-theme .bg-slate-900\/40,
+        html.light-theme .bg-slate-900\/30 {
+            background-color: #ffffff !important;
+        }
+        html.light-theme .bg-slate-800,
+        html.light-theme .bg-slate-800\/90,
+        html.light-theme .bg-slate-800\/80,
+        html.light-theme .bg-slate-800\/70,
+        html.light-theme .bg-slate-800\/60,
+        html.light-theme .bg-slate-800\/50,
+        html.light-theme .bg-slate-800\/40,
+        html.light-theme .bg-slate-800\/30 {
+            background-color: #f1f5f9 !important;
+        }
+        html.light-theme .hover\:bg-slate-800:hover,
+        html.light-theme .hover\:bg-slate-800\/60:hover,
+        html.light-theme .hover\:bg-slate-700:hover,
+        html.light-theme .hover\:bg-white\/5:hover,
+        html.light-theme .hover\:bg-white\/10:hover {
+            background-color: #e2e8f0 !important;
+        }
+        html.light-theme .bg-white\/5,
+        html.light-theme .bg-white\/10,
+        html.light-theme .bg-white\/\[0\.02\],
+        html.light-theme .bg-white\/\[0\.03\] {
+            background-color: rgba(15, 23, 42, 0.04) !important;
+        }
+
+        /* 5. Bordes y divisores nítidos en Modo Claro */
+        html.light-theme .border-white\/5,
+        html.light-theme .border-white\/10,
+        html.light-theme .border-white\/15,
+        html.light-theme .border-white\/20,
+        html.light-theme .border-slate-800,
+        html.light-theme .border-slate-800\/80,
+        html.light-theme .border-slate-800\/60,
+        html.light-theme .border-slate-800\/50,
+        html.light-theme .border-slate-700,
+        html.light-theme .border-slate-700\/80,
+        html.light-theme .border-slate-700\/60,
+        html.light-theme .border-slate-700\/50 {
+            border-color: #e2e8f0 !important;
+        }
+        html.light-theme .divide-slate-800 > :not([hidden]) ~ :not([hidden]),
+        html.light-theme .divide-slate-800\/80 > :not([hidden]) ~ :not([hidden]),
+        html.light-theme .divide-slate-800\/60 > :not([hidden]) ~ :not([hidden]),
+        html.light-theme .divide-slate-800\/50 > :not([hidden]) ~ :not([hidden]),
+        html.light-theme .divide-white\/5 > :not([hidden]) ~ :not([hidden]) {
+            border-color: #e2e8f0 !important;
+        }
+
+        /* 6. Inputs, Selects y Textareas en Modo Claro */
+        html.light-theme input:not([type="checkbox"]):not([type="radio"]),
+        html.light-theme select,
+        html.light-theme textarea {
+            background-color: #f8fafc !important;
+            border-color: #cbd5e1 !important;
+            color: #0f172a !important;
+            box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.03) !important;
+        }
+        html.light-theme input:not([type="checkbox"]):not([type="radio"]):focus,
+        html.light-theme select:focus,
+        html.light-theme textarea:focus {
+            background-color: #ffffff !important;
+            border-color: #d97706 !important;
+            box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.15) !important;
+        }
+        html.light-theme select option {
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+        }
+
+        /* 7. Sombras de hover suaves en Modo Claro */
+        html.light-theme .glow-gold:hover    { box-shadow: 0 12px 28px -5px rgba(15, 23, 42, 0.12), 0 0 20px rgba(245, 158, 11, 0.18) !important; }
+        html.light-theme .glow-copper:hover  { box-shadow: 0 12px 28px -5px rgba(15, 23, 42, 0.12), 0 0 20px rgba(249, 115, 22, 0.18) !important; }
+        html.light-theme .glow-emerald:hover { box-shadow: 0 12px 28px -5px rgba(15, 23, 42, 0.12), 0 0 20px rgba(16, 185, 129, 0.18) !important; }
+        html.light-theme .glow-cyan:hover    { box-shadow: 0 12px 28px -5px rgba(15, 23, 42, 0.12), 0 0 20px rgba(6, 182, 212, 0.18) !important; }
+        html.light-theme .glow-purple:hover  { box-shadow: 0 12px 28px -5px rgba(15, 23, 42, 0.12), 0 0 20px rgba(168, 85, 247, 0.18) !important; }
+        html.light-theme .glow-rose:hover    { box-shadow: 0 12px 28px -5px rgba(15, 23, 42, 0.12), 0 0 20px rgba(244, 63, 94, 0.18) !important; }
 
         [x-cloak] { display: none !important; }
 
@@ -948,28 +1250,41 @@
             const existing = document.getElementById('scpm-custom-confirm-modal');
             if (existing) existing.remove();
 
+            const isLight = document.documentElement.classList.contains('light-theme');
+            const overlayBg = isLight ? 'rgba(15, 23, 42, 0.55)' : 'rgba(2, 6, 23, 0.85)';
+            const cardBg = isLight ? '#ffffff' : '#0f172a';
+            const cardBorder = isLight ? '#cbd5e1' : 'rgba(148, 163, 184, 0.28)';
+            const cardShadow = isLight ? '0 25px 60px -10px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(15, 23, 42, 0.05)' : '0 25px 60px -10px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.08)';
+            const titleColor = isLight ? '#0f172a' : '#ffffff';
+            const msgColor = isLight ? '#334155' : '#e2e8f0';
+            const footerBg = isLight ? '#f8fafc' : '#090d16';
+            const footerBorder = isLight ? '#e2e8f0' : 'rgba(51, 65, 85, 0.7)';
+            const cancelBg = isLight ? '#ffffff' : '#1e293b';
+            const cancelColor = isLight ? '#334155' : '#e2e8f0';
+            const cancelBorder = isLight ? '#cbd5e1' : '#334155';
+
             const modalContainer = document.createElement('div');
             modalContainer.id = 'scpm-custom-confirm-modal';
-            modalContainer.style.cssText = 'position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 2147483647 !important; display: flex !important; align-items: center !important; justify-content: center !important; padding: 16px !important; background-color: rgba(2, 6, 23, 0.85) !important; backdrop-filter: blur(10px) !important; -webkit-backdrop-filter: blur(10px) !important; opacity: 0; transition: opacity 0.18s ease;';
+            modalContainer.style.cssText = `position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 2147483647 !important; display: flex !important; align-items: center !important; justify-content: center !important; padding: 16px !important; background-color: ${overlayBg} !important; backdrop-filter: blur(10px) !important; -webkit-backdrop-filter: blur(10px) !important; opacity: 0; transition: opacity 0.18s ease;`;
 
             const reportBtnHtml = reportUrl ? `
-                <a href="${reportUrl}" style="padding: 10px 16px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 12px; background: rgba(245, 158, 11, 0.16); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+                <a href="${reportUrl}" style="padding: 10px 16px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 12px; background: rgba(245, 158, 11, 0.16); color: ${isLight ? '#b45309' : '#fbbf24'}; border: 1px solid rgba(245, 158, 11, 0.35); display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
                     <i class="fa-solid fa-file-lines"></i> Ver Reporte
                 </a>
             ` : '';
 
             modalContainer.innerHTML = `
-                <div class="scpm-modal-card" style="position: relative; z-index: 2147483647; width: 100%; max-width: 420px; border-radius: 18px; background-color: #0f172a; border: 1px solid rgba(148, 163, 184, 0.28); box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.08); overflow: hidden; transform: scale(0.95); transition: transform 0.18s ease;">
+                <div class="scpm-modal-card" style="position: relative; z-index: 2147483647; width: 100%; max-width: 420px; border-radius: 18px; background-color: ${cardBg}; border: 1px solid ${cardBorder}; box-shadow: ${cardShadow}; overflow: hidden; transform: scale(0.95); transition: transform 0.18s ease;">
                     <div style="height: 4px; width: 100%; background: linear-gradient(90deg, #f59e0b 0%, #f43f5e 50%, #dc2626 100%);"></div>
                     <div style="padding: 28px 24px 22px; text-align: center;">
-                        <div style="margin: 0 auto 16px; width: 56px; height: 56px; border-radius: 16px; background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.32); display: flex; align-items: center; justify-content: center; color: #fb7185; box-shadow: 0 8px 20px rgba(244, 63, 94, 0.15);">
+                        <div style="margin: 0 auto 16px; width: 56px; height: 56px; border-radius: 16px; background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.32); display: flex; align-items: center; justify-content: center; color: #e11d48; box-shadow: 0 8px 20px rgba(244, 63, 94, 0.15);">
                             <i class="fa-solid fa-triangle-exclamation" style="font-size: 24px;"></i>
                         </div>
-                        <h3 style="margin: 0 0 8px; font-size: 18px; font-weight: 800; color: #ffffff; letter-spacing: -0.01em;">Confirmar Acción</h3>
-                        <p style="margin: 0; font-size: 14px; color: #e2e8f0; font-weight: 500; line-height: 1.55; padding: 0 8px;">${message}</p>
+                        <h3 style="margin: 0 0 8px; font-size: 18px; font-weight: 800; color: ${titleColor}; letter-spacing: -0.01em;">Confirmar Acción</h3>
+                        <p style="margin: 0; font-size: 14px; color: ${msgColor}; font-weight: 500; line-height: 1.55; padding: 0 8px;">${message}</p>
                     </div>
-                    <div style="padding: 16px 24px; border-top: 1px solid rgba(51, 65, 85, 0.7); background-color: #090d16; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px;">
-                        <button type="button" id="scpm-confirm-cancel" style="padding: 10px 18px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; border-radius: 12px; background-color: #1e293b; color: #e2e8f0; border: 1px solid #334155; cursor: pointer; transition: all 0.15s ease;">
+                    <div style="padding: 16px 24px; border-top: 1px solid ${footerBorder}; background-color: ${footerBg}; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px;">
+                        <button type="button" id="scpm-confirm-cancel" style="padding: 10px 18px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; border-radius: 12px; background-color: ${cancelBg}; color: ${cancelColor}; border: 1px solid ${cancelBorder}; cursor: pointer; transition: all 0.15s ease;">
                             Cancelar
                         </button>
                         ${reportBtnHtml}

@@ -281,18 +281,40 @@
 }
 
 /* ─── Light Theme overrides ─── */
-.light-theme .m-card    { background: #ffffff; border-color: #e2e8f0; }
-.light-theme .m-tabs    { background: #f8fafc; border-color: #e2e8f0; }
-.light-theme .m-tab:hover { background: rgba(0,0,0,0.03); }
-.light-theme .m-table thead tr { background: #f8fafc; }
-.light-theme .m-table tbody tr:hover { background: rgba(0,0,0,0.02); }
-.light-theme .m-input   { background: #f8fafc; border-color: #e2e8f0; color: #0f172a; }
+html.light-theme {
+    --m-bg: #f1f5f9;
+    --m-card: #ffffff;
+    --m-border: #e2e8f0;
+    --m-border-hover: #cbd5e1;
+    --m-text: #0f172a;
+    --m-muted: #475569;
+}
+.light-theme .m-card    { background: #ffffff; border-color: #e2e8f0; box-shadow: 0 4px 16px -2px rgba(15,23,42,0.06); }
+.light-theme .m-card-hover:hover { border-color: #cbd5e1; box-shadow: 0 12px 24px -4px rgba(15,23,42,0.1); }
+.light-theme .m-tabs    { background: #ffffff; border-color: #cbd5e1; box-shadow: 0 2px 8px rgba(15,23,42,0.04); }
+.light-theme .m-tab:hover { background: #f1f5f9; color: #0f172a; }
+.light-theme .m-tab-caja.active    { background: rgba(2,132,199,0.12); color: #0369a1; border-color: rgba(2,132,199,0.35); }
+.light-theme .m-tab-compras.active { background: rgba(217,119,6,0.12); color: #b45309; border-color: rgba(217,119,6,0.35); }
+.light-theme .m-tab-ventas.active  { background: rgba(5,150,105,0.12); color: #047857; border-color: rgba(5,150,105,0.35); }
+.light-theme .m-tab-stock.active   { background: rgba(8,145,178,0.12); color: #0e7490; border-color: rgba(8,145,178,0.35); }
+.light-theme .m-tab-reportes.active{ background: rgba(124,58,237,0.12); color: #6d28d9; border-color: rgba(124,58,237,0.35); }
+.light-theme .m-table thead tr { background: #f8fafc; border-bottom-color: #e2e8f0; }
+.light-theme .m-table thead th { color: #475569; }
+.light-theme .m-table tbody tr { border-bottom-color: #f1f5f9; }
+.light-theme .m-table tbody tr:hover { background: #f8fafc; }
+.light-theme .m-table tbody td { color: #0f172a; }
+.light-theme .m-input   { background: #f8fafc; border-color: #cbd5e1; color: #0f172a; }
 .light-theme .m-input option { background: #ffffff; color: #0f172a; }
-.light-theme .m-modal   { background: #ffffff; border-color: #e2e8f0; }
-.light-theme .m-modal-header { border-color: #e2e8f0; }
-.light-theme .m-modal-section { border-color: #f1f5f9; }
+.light-theme .m-btn-ghost { background: #f8fafc; color: #334155; border-color: #cbd5e1; }
+.light-theme .m-btn-ghost:hover { background: #e2e8f0; color: #0f172a; }
+.light-theme .m-modal-overlay { background: rgba(15,23,42,0.55); }
+.light-theme .m-modal   { background: #ffffff; border-color: #cbd5e1; box-shadow: 0 25px 60px rgba(15,23,42,0.22); }
+.light-theme .m-modal-header { border-color: #e2e8f0; background: #f8fafc; }
+.light-theme .m-modal-section { border-color: #e2e8f0; }
 .light-theme .m-modal-footer { background: #f8fafc; border-color: #e2e8f0; }
-.light-theme .m-section-header { background: rgba(0,0,0,0.01); }
+.light-theme .m-section-header { background: #f8fafc; border-color: #e2e8f0; }
+.light-theme .m-stock-bar { background: #e2e8f0; }
+.light-theme .erp-card { background: #ffffff; border-color: #e2e8f0; box-shadow: 0 4px 16px -2px rgba(15,23,42,0.06); }
 
 /* ─── Backwards compat ─── */
 .erp-card  { background:var(--m-card,rgba(15,23,42,0.7)); border:1px solid var(--m-border,rgba(148,163,184,0.08)); border-radius:16px; }

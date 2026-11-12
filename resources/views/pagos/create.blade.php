@@ -112,13 +112,22 @@
 .total-row:last-child { border-bottom: none; }
 
 /* Light theme overrides */
-.light-theme .p-card { background: #ffffff; border-color: #e2e8f0; }
-.light-theme .p-input { background: #f8fafc; border-color: #e2e8f0; color: #0f172a; }
+html.light-theme {
+    --p-bg: #f1f5f9;
+    --p-card: #ffffff;
+    --p-border: #e2e8f0;
+    --p-text: #0f172a;
+    --p-muted: #475569;
+}
+.light-theme .p-card { background: #ffffff; border-color: #e2e8f0; box-shadow: 0 4px 16px -2px rgba(15,23,42,0.06); }
+.light-theme .p-input { background: #f8fafc; border-color: #cbd5e1; color: #0f172a; }
 .light-theme .p-input option { background: #fff; color: #0f172a; }
-.light-theme .item-row { background: #f8fafc; border-color: #e2e8f0; }
+.light-theme .p-btn-ghost { background: #f8fafc; color: #334155; border-color: #cbd5e1; }
+.light-theme .p-btn-ghost:hover { background: #e2e8f0; color: #0f172a; }
+.light-theme .item-row { background: #f8fafc; border-color: #cbd5e1; }
 .light-theme .item-row-header { border-color: #e2e8f0; }
-.light-theme .total-box { background: rgba(20,184,166,0.04); border-color: rgba(20,184,166,0.2); }
-.light-theme .total-row { border-color: #f1f5f9; }
+.light-theme .total-box { background: rgba(20,184,166,0.06); border-color: rgba(20,184,166,0.3); }
+.light-theme .total-row { border-color: #e2e8f0; }
 </style>
 
 <div x-data="pagoWizard()" class="space-y-6">
